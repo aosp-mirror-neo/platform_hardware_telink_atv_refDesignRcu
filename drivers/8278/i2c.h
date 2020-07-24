@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     i2c.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 
@@ -31,23 +31,23 @@
 #include "gpio.h"
 
 
-#define I2C_SLAVE_DEVICE_NO_START_EN   						0
+#define I2C_SLAVE_DEVICE_NO_START_EN                           0
 
 /**
  *  @brief  select pin as SDA and SCL of i2c
  */
 typedef enum{
-	I2C_GPIO_SDA_A3		= GPIO_PA3,
-	I2C_GPIO_SDA_B6		= GPIO_PB6,
-	I2C_GPIO_SDA_C0		= GPIO_PC0,
-	I2C_GPIO_SDA_C2		= GPIO_PC2,
+    I2C_GPIO_SDA_A3        = GPIO_PA3,
+    I2C_GPIO_SDA_B6        = GPIO_PB6,
+    I2C_GPIO_SDA_C0        = GPIO_PC0,
+    I2C_GPIO_SDA_C2        = GPIO_PC2,
 }I2C_GPIO_SdaTypeDef;
 
 typedef enum{
-	I2C_GPIO_SCL_A4		= GPIO_PA4,
-	I2C_GPIO_SCL_D7		= GPIO_PD7,
-	I2C_GPIO_SCL_C1	 	= GPIO_PC1,
-	I2C_GPIO_SCL_C3		= GPIO_PC3,
+    I2C_GPIO_SCL_A4        = GPIO_PA4,
+    I2C_GPIO_SCL_D7        = GPIO_PD7,
+    I2C_GPIO_SCL_C1        = GPIO_PC1,
+    I2C_GPIO_SCL_C3        = GPIO_PC3,
 }I2C_GPIO_SclTypeDef;
 
 
@@ -55,28 +55,28 @@ typedef enum{
  *  @brief  select i2c slave mode: DMA and MAPPING
  *
  *   dma mode:
- *   		   all sram(64k area form 0x40000~0x4ffff, address 3 byte) could be used for reading or writing data buffer,
+ *              all sram(64k area form 0x40000~0x4ffff, address 3 byte) could be used for reading or writing data buffer,
  *             i2c master just need send sram address(3 byte) on i2c bus in i2c reading or writing, reading/writing
  *             sram address could be anywhere and could be different.
- *			   i2c master timing is:
- *              	1.master write:  start + device_id(W) + address2+ address1 + address0 + data(1,2...n byte)  +  stop
+ *               i2c master timing is:
+ *                  1.master write:  start + device_id(W) + address2+ address1 + address0 + data(1,2...n byte)  +  stop
  *                  2.master read:   start + device_id(W) + address2+ address1 + address0 + start + device_id(R) + data(1,2...n byte) + stop
  *
  *   mapping mode:
- *  			i2c slave data buffer sram could be configured by function: void i2c_slave_mapping_mode_data_buffer_config(unsigned char * pMapBuf),
+ *              i2c slave data buffer sram could be configured by function: void i2c_slave_mapping_mode_data_buffer_config(unsigned char * pMapBuf),
  *              and it is also configured in function: void i2c_slave_init(unsigned char device_ID,I2C_SlaveMode mode,unsigned char * pMapBuf)
- *   			reading/writing data buffer configured by pMapBuf addressed in core_e1/e2/e3,
- *   		    for i2c master: writing data buffer is pMapBuf,and reading data buffer is (pMapBuf+64) (this offset 64 is managed by MCU hardware, user can not change it)
+ *               reading/writing data buffer configured by pMapBuf addressed in core_e1/e2/e3,
+ *               for i2c master: writing data buffer is pMapBuf,and reading data buffer is (pMapBuf+64) (this offset 64 is managed by MCU hardware, user can not change it)
  *
  *              i2c master no need send any address when reading or writing data, which means i2c master timing is:
- *              	1.master write:  start + device_id(W) + data(1,2...n byte)  +  stop
+ *                  1.master write:  start + device_id(W) + data(1,2...n byte)  +  stop
  *                  2.master read:   start + device_id(W) + start + device_id(R) + data(1,2...n byte) + stop
  *
  *
  */
 typedef enum {
-	I2C_SLAVE_DMA = 0,
-	I2C_SLAVE_MAP,
+    I2C_SLAVE_DMA = 0,
+    I2C_SLAVE_MAP,
 }I2C_SlaveMode;
 
 
@@ -87,8 +87,8 @@ typedef enum {
  */
 static inline void reset_i2c_module(void)
 {
-	reg_rst0 |= FLD_RST0_I2C;
-	reg_rst0 &= (~FLD_RST0_I2C);
+    reg_rst0 |= FLD_RST0_I2C;
+    reg_rst0 &= (~FLD_RST0_I2C);
 }
 
 /**
@@ -98,7 +98,7 @@ static inline void reset_i2c_module(void)
  */
 static inline void i2c_set_id(unsigned char SlaveID)
 {
-    reg_i2c_id	  = SlaveID; //slave address
+    reg_i2c_id      = SlaveID; //slave address
 }
 
 /**
@@ -108,9 +108,9 @@ static inline void i2c_set_id(unsigned char SlaveID)
  */
 static inline void i2c_slave_mapping_mode_data_buffer_config(unsigned char * pMapBuf)
 {
-	 reg_i2c_slave_map_addrl  = (unsigned char)(((unsigned int)pMapBuf & 0xff)); //
-	 reg_i2c_slave_map_addrm = (unsigned char)(((unsigned int)pMapBuf>>8)&0xff);
-	 reg_i2c_slave_map_addrh = 0x04;
+     reg_i2c_slave_map_addrl  = (unsigned char)(((unsigned int)pMapBuf & 0xff)); //
+     reg_i2c_slave_map_addrm = (unsigned char)(((unsigned int)pMapBuf>>8)&0xff);
+     reg_i2c_slave_map_addrh = 0x04;
 }
 /**
  * @brief      This function serves to select a pin port for I2C interface.

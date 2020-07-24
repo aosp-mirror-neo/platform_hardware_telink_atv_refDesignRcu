@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     selection_sort.c
  *
  * @brief    for TLSR chips
@@ -21,41 +21,41 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 
 void selection_sort_char(unsigned char * arr, int size){
-	//sorting
-	int i, j;
-	for(i = 0; i < size; ++i)
-	{
-		for( j = i + 1; j < size; ++j)
-		{
-			if (arr[j] < arr[i])
-			{
-				unsigned char t = arr[i];
-				arr[i] = arr[j];
-				arr[j] = t;
-			}
-		}
-	}
+    //sorting
+    int i, j;
+    for(i = 0; i < size; ++i)
+    {
+        for( j = i + 1; j < size; ++j)
+        {
+            if (arr[j] < arr[i])
+            {
+                unsigned char t = arr[i];
+                arr[i] = arr[j];
+                arr[j] = t;
+            }
+        }
+    }
 }
 
 void selection_sort_int(unsigned int * arr, int size){
-	//sorting
-	int i, j;
-	for(i = 0; i < size; ++i)
-	{
-		for( j = i + 1; j < size; ++j)
-		{
-			if (arr[j] < arr[i])
-			{
-				unsigned int t = arr[i];
-				arr[i] = arr[j];
-				arr[j] = t;
-			}
-		}
-	}
+    //sorting
+    int i, j;
+    for(i = 0; i < size; ++i)
+    {
+        for( j = i + 1; j < size; ++j)
+        {
+            if (arr[j] < arr[i])
+            {
+                unsigned int t = arr[i];
+                arr[i] = arr[j];
+                arr[j] = t;
+            }
+        }
+    }
 }
 
 

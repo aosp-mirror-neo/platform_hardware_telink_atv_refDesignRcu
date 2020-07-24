@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     ble_ll_ota.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 /*
  * ble_ll_ota.h
  *
@@ -35,31 +35,31 @@
 
 
 #ifndef BLE_OTA_FW_CHECK_EN
-#define BLE_OTA_FW_CHECK_EN					1
+#define BLE_OTA_FW_CHECK_EN                    1
 #endif
 
-#define FW_MAX_SIZE							0x40000			//256K
+#define FW_MAX_SIZE                            0x40000            //256K
 
-#define CMD_OTA_FW_VERSION					0xff00
-#define CMD_OTA_START						0xff01
-#define CMD_OTA_END							0xff02
+#define CMD_OTA_FW_VERSION                    0xff00
+#define CMD_OTA_START                        0xff01
+#define CMD_OTA_END                            0xff02
+#define CMD_OTA_SIGNATURE                    0xff03
 
-
-#define FLAG_FW_CHECK						0x5D
-#define FW_CHECK_AGTHM2						0x02
+#define FLAG_FW_CHECK                        0x5D
+#define FW_CHECK_AGTHM2                        0x02
 
 
 
 typedef struct{
-	u8  ota_start_flag;
+    u8  ota_start_flag;
 #if (BLE_OTA_FW_CHECK_EN)
-	u8 	fw_check_en;
-	u8  fw_check_match;
-	u8  rsvd;
+    u8     fw_check_en;
+    u8  fw_check_match;
+    u8  rsvd;
 
-	u32 fw_crc_init;
+    u32 fw_crc_init;
 
-	u16 fw_crc_last_index;
+    u16 fw_crc_last_index;
 #endif
 }ota_service_t;
 
@@ -70,8 +70,8 @@ extern int blt_ota_start_flag;
 extern u32 blt_ota_start_tick;
 extern u32 blt_ota_timeout_us;
 
-extern u32	ota_program_offset;
-extern int 	ota_firmware_size_k;
+extern u32    ota_program_offset;
+extern int     ota_firmware_size_k;
 
 
 typedef void (*ota_startCb_t)(void);
@@ -83,13 +83,18 @@ extern ota_resIndicateCb_t otaResIndicateCb;
 
 
 enum{
-	OTA_SUCCESS = 0,     //success
-	OTA_PACKET_LOSS,     //lost one or more OTA PDU
-	OTA_DATA_CRC_ERR,     //data CRC err
-	OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
- 	OTA_DATA_UNCOMPLETE,  //lost last one or more OTA PDU
- 	OTA_TIMEOUT, 		  //
- 	OTA_FW_CHECK_ERR,
+    OTA_SUCCESS = 0,     //success
+    OTA_PACKET_LOSS,     //lost one or more OTA PDU
+    OTA_DATA_CRC_ERR,     //data CRC err
+    OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
+     OTA_DATA_UNCOMPLETE,  //lost last one or more OTA PDU
+     OTA_TIMEOUT,           //
+     OTA_FW_CHECK_ERR,
+     OTA_LOW_VOLTAGE,
+     OTA_START_KEY_ERR,//8
+
+     //app not
+     OTA_USER_TERMINATE,//9
 };
 
 void bls_ota_procTimeout(void);

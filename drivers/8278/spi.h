@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     spi.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 #ifndef SPI_H
@@ -33,29 +33,29 @@
 #include "compiler.h"
 /**
  *  @brief  Define pin for SPI interface
- *  		SDO  SDI  SCK  CN
- *  		A2   A3   A4   D6
- *  		B7   B6   D7   D2
+ *          SDO  SDI  SCK  CN
+ *          A2   A3   A4   D6
+ *          B7   B6   D7   D2
  */
 
 typedef enum {
-	SPI_GPIO_SCL_A4=GPIO_PA4,
-	SPI_GPIO_SCL_D7=GPIO_PD7,
+    SPI_GPIO_SCL_A4=GPIO_PA4,
+    SPI_GPIO_SCL_D7=GPIO_PD7,
 }SPI_GPIO_SclkTypeDef;
 
 typedef enum {
-	SPI_GPIO_SDO_A2=GPIO_PA2,
-	SPI_GPIO_SDO_B7=GPIO_PB7,
+    SPI_GPIO_SDO_A2=GPIO_PA2,
+    SPI_GPIO_SDO_B7=GPIO_PB7,
 }SPI_GPIO_SdoTypeDef;
 
 typedef enum {
-	SPI_GPIO_SDI_A3=GPIO_PA3,
-	SPI_GPIO_SDI_B6=GPIO_PB6,
+    SPI_GPIO_SDI_A3=GPIO_PA3,
+    SPI_GPIO_SDI_B6=GPIO_PB6,
 }SPI_GPIO_SdiTypeDef;
 
 typedef enum {
-	SPI_GPIO_CS_D2=GPIO_PD2,
-	SPI_GPIO_CS_D6=GPIO_PD6,
+    SPI_GPIO_CS_D2=GPIO_PD2,
+    SPI_GPIO_CS_D6=GPIO_PD6,
 }SPI_GPIO_CsTypeDef;
 
 
@@ -91,24 +91,24 @@ typedef enum {
 
 static inline void reset_spi_module(void)
 {
-	reg_rst0 |= FLD_RST0_SPI;
-	reg_rst0 &= (~FLD_RST0_SPI);
+    reg_rst0 |= FLD_RST0_SPI;
+    reg_rst0 &= (~FLD_RST0_SPI);
 }
 /**
  * @brief     This function selects a pin port for the SPI interface (master mode)
  * @param[in] PinGrp - the selected pin port
  * @return    none
  *  A3:5b7[0] set 1 as spi input,set 0 not as spi input ;5b7[4] set 1 as i2c input ,set 0 not as i2c input
- *	A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
- *	B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
- *	D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
- *	5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
- *	spi i2c mux sel:
- *	step1:close gpio func;
- *	step2:set 0x5a8-0x5af sel spii2c func;
- *	step3:set 5b6[7:4] to sel spi or i2c output;
- *	step4:set 5b7[7:0] to sel spi or i2c input;
- *	step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
+ *    A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
+ *    B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
+ *    D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
+ *    5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
+ *    spi i2c mux sel:
+ *    step1:close gpio func;
+ *    step2:set 0x5a8-0x5af sel spii2c func;
+ *    step3:set 5b6[7:4] to sel spi or i2c output;
+ *    step4:set 5b7[7:0] to sel spi or i2c input;
+ *    step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
  */
 
 
@@ -119,16 +119,16 @@ extern void spi_master_gpio_set(SPI_GPIO_SclkTypeDef sclk_pin,SPI_GPIO_CsTypeDef
  * @param[in] PinGrp - the selected pin port
  * @return    none
  *  A3:5b7[0] set 1 as spi input,set 0 not as spi input ;5b7[4] set 1 as i2c input ,set 0 not as i2c input
- *	A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
- *	B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
- *	D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
- *	5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
- *	spi i2c mux sel:
- *	step1:close gpio func;
- *	step2:set 0x5a8-0x5af sel spii2c func;
- *	step3:set 5b6[7:4] to sel spi or i2c output;
- *	step4:set 5b7[7:0] to sel spi or i2c input;
- *	step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
+ *    A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
+ *    B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
+ *    D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
+ *    5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
+ *    spi i2c mux sel:
+ *    step1:close gpio func;
+ *    step2:set 0x5a8-0x5af sel spii2c func;
+ *    step3:set 5b6[7:4] to sel spi or i2c output;
+ *    step4:set 5b7[7:0] to sel spi or i2c input;
+ *    step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
  */
 
 
@@ -200,9 +200,9 @@ extern void spi_write(unsigned char *Cmd, int CmdLen, unsigned char *Data, int D
 extern void spi_read(unsigned char *Cmd, int CmdLen, unsigned char *Data, int DataLen, GPIO_PinTypeDef CSPin);
 
 /**
- * @brief 		This function use to set the share mode of SPI.
- * @param[in] 	none
- * @return 		none
+ * @brief         This function use to set the share mode of SPI.
+ * @param[in]     none
+ * @return         none
  */
 extern void spi_set_share_mode_en(void);
 

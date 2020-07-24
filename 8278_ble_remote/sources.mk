@@ -21,9 +21,10 @@ vendor/827x_ble_remote \
 drivers/8278 \
 . \
 common \
-boot/8278 \
+boot/8271 \
 application/usbstd \
 application/print \
 application/keyboard \
+application/audio \
 application/app \
 

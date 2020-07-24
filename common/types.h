@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     types.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 
 #pragma once
 
@@ -44,7 +44,7 @@ typedef long long s64;
 typedef unsigned long long u64;
 
 #ifndef NULL
-#define NULL 	0
+#define NULL     0
 #endif
 
 #ifndef __cplusplus
@@ -52,21 +52,21 @@ typedef unsigned long long u64;
 typedef u8 bool;
 
 #ifndef FALSE
-#define FALSE 	0
+#define FALSE     0
 #endif
 #ifndef TRUE
-#define TRUE 	(!FALSE)
+#define TRUE     (!FALSE)
 #endif
 
-#define false 	FALSE
-#define true 	TRUE
+#define false     FALSE
+#define true     TRUE
 
 #endif
 
 // There is no way to directly recognise whether a typedef is defined
 // http://stackoverflow.com/questions/3517174/how-to-check-if-a-datatype-is-defined-with-typedef
 #ifdef __GNUC__
-typedef	u16	wchar_t;		
+typedef    u16    wchar_t;
 #endif
 
 #ifndef WIN32

@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     hids.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 
 #pragma once
 
@@ -41,7 +41,7 @@
 /** @addtogroup  HIDS_Module Hids
  *  @{
  */
- 
+
 /** @addtogroup  Hids_Constant Hids Constants
  *  @{
  */
@@ -73,13 +73,19 @@
 /**
  *  @brief  HID Report ID
  */
- 
+
 #define HID_REPORT_ID_KEYBOARD_INPUT                    1   //!< Keyboard input report ID
 #define HID_REPORT_ID_CONSUME_CONTROL_INPUT             2   //!< Consumer Control input report ID
 #define HID_REPORT_ID_MOUSE_INPUT                       3   //!< Mouse input report ID
-#define HID_REPORT_ID_GAMEPAD_INPUT						4   //!< Gamepad  input report ID
+#define HID_REPORT_ID_GAMEPAD_INPUT                        4   //!< Gamepad  input report ID
 #define HID_REPORT_ID_LED_OUT                           0   //!< LED output report ID
 #define HID_REPORT_ID_FEATURE                           0   //!< Feature report ID
+
+#define HID_REPORT_ID_CTRL_VOICE                        9
+
+#define HID_REPORT_ID_AUDIO_FIRST_INPUT                 10//250
+#define HID_REPORT_ID_AUDIO_SECND_INPUT                 11//251
+#define HID_REPORT_ID_AUDIO_THIRD_INPUT                 12//247
 
 /** @} end of group HID_REPORT_ID */
 
@@ -193,7 +199,7 @@ typedef struct {
  /** @addtogroup  HIDS_Variables  Hids Variables
  *  @{
  */
- 
+
 
 
 /** @} end of group HIDS_Variables */

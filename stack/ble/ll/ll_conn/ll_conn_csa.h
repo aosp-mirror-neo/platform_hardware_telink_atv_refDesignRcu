@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     ll_conn_csa.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #ifndef LL_CONN_CSA_H_
 #define LL_CONN_CSA_H_
@@ -33,14 +33,14 @@
 
 //See the Core_v5.0(Vol 6/Part B/4.5.8, "Data Channel Index Selection") for more information.
 typedef enum {
-	CHANNAL_SELECTION_ALGORITHM_1      	=	0x00,
-	CHANNAL_SELECTION_ALGORITHM_2      	=	0x01,
+    CHANNAL_SELECTION_ALGORITHM_1          =    0x00,
+    CHANNAL_SELECTION_ALGORITHM_2          =    0x01,
 } channel_algorithm_t;
 
 
 
 typedef u8 (*ll_chn_index_calc_callback_t)(u8*, u16, u16);
-extern ll_chn_index_calc_callback_t	ll_chn_index_calc_cb;
+extern ll_chn_index_calc_callback_t    ll_chn_index_calc_cb;
 
 
 

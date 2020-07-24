@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     adc.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 #pragma once
 #include "bsp.h"
 #include "analog.h"
@@ -41,8 +41,8 @@
 
 //ADC reference voltage cfg
 typedef struct {
-	unsigned short adc_vref;     //default: 1175 mV,this value just for Vref=1.2V & Prescal=1/8,For Vulture this data has not been analyzed yet.
-	unsigned short adc_calib_en;
+    unsigned short adc_vref;     //default: 1175 mV,this value just for Vref=1.2V & Prescal=1/8,For Vulture this data has not been analyzed yet.
+    unsigned short adc_calib_en;
 }adc_vref_ctr_t;
 
 extern adc_vref_ctr_t adc_vref_cfg;
@@ -53,124 +53,124 @@ extern GPIO_PinTypeDef ADC_GPIO_tab[10];
  *  ADC reference voltage
  */
 typedef enum{
-	ADC_VREF_0P9V = 0x01,
-	ADC_VREF_1P2V = 0x02,
+    ADC_VREF_0P9V = 0x01,
+    ADC_VREF_1P2V = 0x02,
 }ADC_RefVolTypeDef;
 
 /**
  *  ADC Vbat divider
  */
 typedef enum{
-	ADC_VBAT_DIVIDER_OFF = 0,
-	ADC_VBAT_DIVIDER_1F4,
-	ADC_VBAT_DIVIDER_1F3,
-	ADC_VBAT_DIVIDER_1F2
+    ADC_VBAT_DIVIDER_OFF = 0,
+    ADC_VBAT_DIVIDER_1F4,
+    ADC_VBAT_DIVIDER_1F3,
+    ADC_VBAT_DIVIDER_1F2
 }ADC_VbatDivTypeDef;
 
 /**
- *	ADC analog input negative channel
+ *    ADC analog input negative channel
  */
 typedef enum {
-	NOINPUTN,
-	B0N,
-	B1N,
-	B2N,
-	B3N,
-	B4N,
-	B5N,
-	B6N,
-	B7N,
-	C4N,
-	C5N,
-	PGA0N,
-	PGA1N,
-	TEMSENSORN,
-	TEMSENSORN_EE,
-	GND,
+    NOINPUTN,
+    B0N,
+    B1N,
+    B2N,
+    B3N,
+    B4N,
+    B5N,
+    B6N,
+    B7N,
+    C4N,
+    C5N,
+    PGA0N,
+    PGA1N,
+    TEMSENSORN,
+    TEMSENSORN_EE,
+    GND,
 }ADC_InputNchTypeDef;
 
 /**
- *	ADC analog input positive channel
+ *    ADC analog input positive channel
  */
 typedef enum {
-	NOINPUTP,
-	B0P,
-	B1P,
-	B2P,
-	B3P,
-	B4P,
-	B5P,
-	B6P,
-	B7P,
-	C4P,
-	C5P,
-	PGA0P,
-	PGA1P,
-	TEMSENSORP,
-	TEMSENSORP_EE,
-	VBAT,
+    NOINPUTP,
+    B0P,
+    B1P,
+    B2P,
+    B3P,
+    B4P,
+    B5P,
+    B6P,
+    B7P,
+    C4P,
+    C5P,
+    PGA0P,
+    PGA1P,
+    TEMSENSORP,
+    TEMSENSORP_EE,
+    VBAT,
 }ADC_InputPchTypeDef;
 
 /**
- *	ADC resolution
+ *    ADC resolution
  */
 typedef enum{
-	RES8,
-	RES10,
-	RES12,
-	RES14
+    RES8,
+    RES10,
+    RES12,
+    RES14
 }ADC_ResTypeDef;
 
 /**
- *	ADC channel input mode
+ *    ADC channel input mode
  */
 typedef enum{
-	DIFFERENTIAL_MODE = 1,  //differential mode
+    DIFFERENTIAL_MODE = 1,  //differential mode
 }ADC_InputModeTypeDef;
 
 /**
  *  ADC Sampling cycles
  */
 typedef enum{
-	SAMPLING_CYCLES_3,
-	SAMPLING_CYCLES_6,
-	SAMPLING_CYCLES_9,
-	SAMPLING_CYCLES_12,
-	SAMPLING_CYCLES_15,
-	SAMPLING_CYCLES_18,
-	SAMPLING_CYCLES_21,
-	SAMPLING_CYCLES_24,
-	SAMPLING_CYCLES_27,
-	SAMPLING_CYCLES_30,
-	SAMPLING_CYCLES_33,
-	SAMPLING_CYCLES_36,
-	SAMPLING_CYCLES_39,
-	SAMPLING_CYCLES_42,
-	SAMPLING_CYCLES_45,
-	SAMPLING_CYCLES_48,
+    SAMPLING_CYCLES_3,
+    SAMPLING_CYCLES_6,
+    SAMPLING_CYCLES_9,
+    SAMPLING_CYCLES_12,
+    SAMPLING_CYCLES_15,
+    SAMPLING_CYCLES_18,
+    SAMPLING_CYCLES_21,
+    SAMPLING_CYCLES_24,
+    SAMPLING_CYCLES_27,
+    SAMPLING_CYCLES_30,
+    SAMPLING_CYCLES_33,
+    SAMPLING_CYCLES_36,
+    SAMPLING_CYCLES_39,
+    SAMPLING_CYCLES_42,
+    SAMPLING_CYCLES_45,
+    SAMPLING_CYCLES_48,
 }ADC_SampCycTypeDef;
 
 /**
  * ADC input channel: MISC
  */
 typedef enum{
-	ADC_MISC_CHN	= BIT(2),
+    ADC_MISC_CHN    = BIT(2),
 }ADC_ChTypeDef;
 
 /**
- *	ADC Prescaler Just for 1 or 1/8
+ *    ADC Prescaler Just for 1 or 1/8
  */
 typedef enum{
-	ADC_PRESCALER_1   = 0x00,
-	ADC_PRESCALER_1F8 = 0x03,
+    ADC_PRESCALER_1   = 0x00,
+    ADC_PRESCALER_1F8 = 0x03,
 }ADC_PreScalingTypeDef;
 
 
 /**
- *	ADC mode: Normal mode mode
+ *    ADC mode: Normal mode mode
  */
 typedef enum{
-	ADC_NORMAL_MODE      = 0,
+    ADC_NORMAL_MODE      = 0,
 }ADC_ModeTypeDef;
 
 
@@ -180,9 +180,9 @@ typedef enum{
  * @param[in] en - 1 enable  0 disable
  * @return     none.
  */
-static inline void	adc_calib_vref_enable(unsigned char en)
+static inline void    adc_calib_vref_enable(unsigned char en)
 {
-	adc_vref_cfg.adc_calib_en = en;
+    adc_vref_cfg.adc_calib_en = en;
 }
 
 
@@ -191,10 +191,10 @@ static inline void	adc_calib_vref_enable(unsigned char en)
  * @param[in]  none.
  * @return     none.
  */
-static inline void	adc_reset_adc_module (void)
+static inline void    adc_reset_adc_module (void)
 {
-	reg_rst1 = FLD_RST1_ADC;
-	reg_rst1 = 0;
+    reg_rst1 = FLD_RST1_ADC;
+    reg_rst1 = 0;
 }
 
 /**
@@ -204,25 +204,25 @@ static inline void	adc_reset_adc_module (void)
  */
 static inline void adc_enable_clk_24m_to_sar_adc (unsigned int en)
 {
-	if(en)
-	{
-		analog_write(areg_clk_setting	, analog_read(areg_clk_setting	) | FLD_CLK_24M_TO_SAR_EN);
-	}
-	else
-	{
-		analog_write(areg_clk_setting	, analog_read(areg_clk_setting	) & ~FLD_CLK_24M_TO_SAR_EN);
-	}
+    if(en)
+    {
+        analog_write(areg_clk_setting    , analog_read(areg_clk_setting    ) | FLD_CLK_24M_TO_SAR_EN);
+    }
+    else
+    {
+        analog_write(areg_clk_setting    , analog_read(areg_clk_setting    ) & ~FLD_CLK_24M_TO_SAR_EN);
+    }
 }
 /**************************************************************************************
 afe_0xF4
     BIT<2:0>  adc_clk_div
-      	  	  ADC clock(derive from external 24M crystal)
-      	  	  ADC clk frequency = 24M/(adc_clk_div + 1)
+                  ADC clock(derive from external 24M crystal)
+                  ADC clk frequency = 24M/(adc_clk_div + 1)
     BIT<7:3>  reserved
  *************************************************************************************/
-#define areg_adc_sampling_clk_div	   0xf4
+#define areg_adc_sampling_clk_div       0xf4
 enum{
-	FLD_ADC_SAMPLE_CLK_DIV  = 	       BIT_RNG(0,2),
+    FLD_ADC_SAMPLE_CLK_DIV  =            BIT_RNG(0,2),
 };
 
 /**
@@ -232,22 +232,22 @@ enum{
  */
 static inline void adc_set_sample_clk(unsigned char div)
 {
-	//afe_0xF4<7:3> is reserved, so no need to care its value
-	analog_write(areg_adc_sampling_clk_div,  div & 0x07 );
+    //afe_0xF4<7:3> is reserved, so no need to care its value
+    analog_write(areg_adc_sampling_clk_div,  div & 0x07 );
 }
 
 /**************************************************************************************
 afe_0xEA
     BIT<1:0>  adc_vrefm, Select VREF for Misc channel
-			0x1: 0.9V
- 	 	 	0x2: 1.2V
- 	 	 	0x3: VBAT/N (N=2/3/4, when afe_0xF9<3:2> is set as 0x3/0x2/0x1).
+            0x1: 0.9V
+               0x2: 1.2V
+               0x3: VBAT/N (N=2/3/4, when afe_0xF9<3:2> is set as 0x3/0x2/0x1).
 
-	notice that: when choose ADC_VREF_VBAT_N, must use adc_set_vref_vbat_divider to config N(1/2/3/4)
+    notice that: when choose ADC_VREF_VBAT_N, must use adc_set_vref_vbat_divider to config N(1/2/3/4)
  *************************************************************************************/
-#define areg_adc_vref				   0xea
+#define areg_adc_vref                   0xea
 enum{
-	FLD_ADC_VREF_CHN_M = 		       BIT_RNG(0,1),
+    FLD_ADC_VREF_CHN_M =                BIT_RNG(0,1),
 };
 
 /**
@@ -257,7 +257,7 @@ enum{
  */
 static inline void adc_set_vref(ADC_RefVolTypeDef vRef_M)
 {
-	analog_write(areg_adc_vref, vRef_M);
+    analog_write(areg_adc_vref, vRef_M);
 }
 
 /**
@@ -269,9 +269,9 @@ static inline void adc_set_vref(ADC_RefVolTypeDef vRef_M)
 void adc_set_ref_voltage(ADC_RefVolTypeDef v_ref);
 
 
-#define areg_adc_vref_vbat_div			0xf9
+#define areg_adc_vref_vbat_div            0xf9
 enum{
-	FLD_ADC_VREF_VBAT_DIV   = 	        BIT_RNG(2,3),
+    FLD_ADC_VREF_VBAT_DIV   =             BIT_RNG(2,3),
 };
 /**
  * @brief      This function select Vbat voltage divider
@@ -280,7 +280,7 @@ enum{
  */
 static inline void adc_set_vref_vbat_divider(ADC_VbatDivTypeDef vbat_div)
 {
-	analog_write (areg_adc_vref_vbat_div, (analog_read(areg_adc_vref_vbat_div)&(~FLD_ADC_VREF_VBAT_DIV)) | (vbat_div<<2) );
+    analog_write (areg_adc_vref_vbat_div, (analog_read(areg_adc_vref_vbat_div)&(~FLD_ADC_VREF_VBAT_DIV)) | (vbat_div<<2) );
 }
 
 
@@ -290,38 +290,38 @@ afe_0xEB
     BIT<3:0>  Select negative input for MISC channel
     BIT<7:4>  Select positive input for MISC channel
 
-	negative input:
-		0x0: No input
-		0x1: B<0>
-		0x2: B<1>
-		...
-		0x8: B<7>
-		0x9: C<4>
-		0xa: C<5>
-		0xb: rsvd
-		0xc: rsvd
-		0xd: old tempsensor_n (Temperature sensor negative output)
-		0xe: new tempsensor_n (Temperature sensor negative output)
-		0xf: Ground
+    negative input:
+        0x0: No input
+        0x1: B<0>
+        0x2: B<1>
+        ...
+        0x8: B<7>
+        0x9: C<4>
+        0xa: C<5>
+        0xb: rsvd
+        0xc: rsvd
+        0xd: old tempsensor_n (Temperature sensor negative output)
+        0xe: new tempsensor_n (Temperature sensor negative output)
+        0xf: Ground
 
-	positive input:
-		0x0: No input
-		0x1: B<0>
-		0x2: B<1>
-		...
-		0x8: B<7>
-		0x9: C<4>
-		0xa: C<5>
-		0xb: rsvd
-		0xc: rsvd
-		0xd: old tempsensor_p (Temperature sensor negative output)
-		0xe: new tempsensor_p (Temperature sensor negative output)
-		0xf: Vbat (Battery voltage)
+    positive input:
+        0x0: No input
+        0x1: B<0>
+        0x2: B<1>
+        ...
+        0x8: B<7>
+        0x9: C<4>
+        0xa: C<5>
+        0xb: rsvd
+        0xc: rsvd
+        0xd: old tempsensor_p (Temperature sensor negative output)
+        0xe: new tempsensor_p (Temperature sensor negative output)
+        0xf: Vbat (Battery voltage)
  *************************************************************************************/
-#define areg_adc_ain_chn_misc			0xeb
+#define areg_adc_ain_chn_misc            0xeb
 enum{
-	FLD_ADC_AIN_NEGATIVE = 		        BIT_RNG(0,3),
-	FLD_ADC_AIN_POSITIVE = 		        BIT_RNG(4,7),
+    FLD_ADC_AIN_NEGATIVE =                 BIT_RNG(0,3),
+    FLD_ADC_AIN_POSITIVE =                 BIT_RNG(4,7),
 };
 
 /**
@@ -332,7 +332,7 @@ enum{
  */
 static inline void adc_set_ain_chn_misc(ADC_InputPchTypeDef p_ain, ADC_InputNchTypeDef n_ain)
 {
-	analog_write (areg_adc_ain_chn_misc	, n_ain | p_ain<<4 );
+    analog_write (areg_adc_ain_chn_misc    , n_ain | p_ain<<4 );
 }
 
 /**
@@ -342,7 +342,7 @@ static inline void adc_set_ain_chn_misc(ADC_InputPchTypeDef p_ain, ADC_InputNchT
  */
 static inline void adc_set_ain_negative_chn_misc(ADC_InputNchTypeDef v_ain)
 {
-	analog_write (areg_adc_ain_chn_misc	, (analog_read(areg_adc_ain_chn_misc	)&(~FLD_ADC_AIN_NEGATIVE)) | (v_ain) );
+    analog_write (areg_adc_ain_chn_misc    , (analog_read(areg_adc_ain_chn_misc    )&(~FLD_ADC_AIN_NEGATIVE)) | (v_ain) );
 }
 /**
  * @brief      This function sets ADC analog positive input channel for the MISC channel
@@ -351,7 +351,7 @@ static inline void adc_set_ain_negative_chn_misc(ADC_InputNchTypeDef v_ain)
  */
 static inline void adc_set_ain_positive_chn_misc(ADC_InputPchTypeDef v_ain)
 {
-	analog_write (areg_adc_ain_chn_misc	, (analog_read(areg_adc_ain_chn_misc	)&(~FLD_ADC_AIN_POSITIVE)) | (v_ain<<4) );
+    analog_write (areg_adc_ain_chn_misc    , (analog_read(areg_adc_ain_chn_misc    )&(~FLD_ADC_AIN_POSITIVE)) | (v_ain<<4) );
 }
 
 /**
@@ -364,10 +364,10 @@ void adc_set_resolution(ADC_ResTypeDef v_res);
 
 
 
-#define anareg_adc_res_m					0xec
+#define anareg_adc_res_m                    0xec
 enum{
-	FLD_ADC_RES_M         =             BIT_RNG(0,1),
-	FLD_ADC_EN_DIFF_CHN_M =          	BIT(6),
+    FLD_ADC_RES_M         =             BIT_RNG(0,1),
+    FLD_ADC_EN_DIFF_CHN_M =              BIT(6),
 };
 /**
  * @brief      This function sets ADC resolution for the MISC channel
@@ -376,7 +376,7 @@ enum{
  */
 static inline void adc_set_resolution_chn_misc(ADC_ResTypeDef v_res)
 {
-	analog_write(anareg_adc_res_m, (analog_read(anareg_adc_res_m)&(~FLD_ADC_RES_M)) | (v_res) );
+    analog_write(anareg_adc_res_m, (analog_read(anareg_adc_res_m)&(~FLD_ADC_RES_M)) | (v_res) );
 }
 
 /**
@@ -386,8 +386,8 @@ static inline void adc_set_resolution_chn_misc(ADC_ResTypeDef v_res)
  */
 static inline void adc_set_input_mode_chn_misc(ADC_InputModeTypeDef m_input)
 {
-	 //differential mode
-	analog_write(anareg_adc_res_m, analog_read(anareg_adc_res_m) | FLD_ADC_EN_DIFF_CHN_M );
+     //differential mode
+    analog_write(anareg_adc_res_m, analog_read(anareg_adc_res_m) | FLD_ADC_EN_DIFF_CHN_M );
 }
 
 /**
@@ -399,9 +399,9 @@ static inline void adc_set_input_mode_chn_misc(ADC_InputModeTypeDef m_input)
 void adc_set_input_mode(ADC_InputModeTypeDef m_input);
 
 
-#define areg_adc_tsmaple_m				0xee
+#define areg_adc_tsmaple_m                0xee
 enum{
-	FLD_ADC_TSAMPLE_CYCLE_CHN_M = 		BIT_RNG(0,3),
+    FLD_ADC_TSAMPLE_CYCLE_CHN_M =         BIT_RNG(0,3),
 };
 
 /**
@@ -411,8 +411,8 @@ enum{
  */
 static inline void adc_set_tsample_cycle_chn_misc(ADC_SampCycTypeDef adcST)
 {
-	//ana_ee<7:4> is reserved, so no need care its value
-	analog_write(areg_adc_tsmaple_m, adcST );  //optimize, <7:4> not cared
+    //ana_ee<7:4> is reserved, so no need care its value
+    analog_write(areg_adc_tsmaple_m, adcST );  //optimize, <7:4> not cared
 }
 
 /**
@@ -424,27 +424,27 @@ static inline void adc_set_tsample_cycle_chn_misc(ADC_SampCycTypeDef adcST)
 void adc_set_tsample_cycle(ADC_SampCycTypeDef adcST);
 
 /**************************************************************************************
-afe_0xEF<7:0>  	r_max_mc[7:0]
-afe_0xF0<7:0>	rsvd
+afe_0xEF<7:0>    r_max_mc[7:0]
+afe_0xF0<7:0>    rsvd
 afe_0xF1
-		<3:0>   r_max_s
-		<5:4>   rsvd
-		<7:6>   r_max_mc[9:8]
+        <3:0>   r_max_s
+        <5:4>   rsvd
+        <7:6>   r_max_mc[9:8]
 
-	r_max_mc[9:0]: serves to set length of ��capture�� state for Misc channel.
-	r_max_s:       serves to set length of ��set�� state for Misc channel.
+    r_max_mc[9:0]: serves to set length of ��capture�� state for Misc channel.
+    r_max_s:       serves to set length of ��set�� state for Misc channel.
 
-	Note: State length indicates number of 24M clock cycles occupied by the state.
+    Note: State length indicates number of 24M clock cycles occupied by the state.
  *************************************************************************************/
-#define areg_r_max_mc	        0xef
+#define areg_r_max_mc            0xef
 enum{
-	FLD_R_MAX_MC0	= 			BIT_RNG(0,7),//0xef<7:0>  r_max_mc[7:0]
+    FLD_R_MAX_MC0    =           BIT_RNG(0,7),//0xef<7:0>  r_max_mc[7:0]
 };
 
-#define	areg_r_max_s			0xf1
+#define areg_r_max_s            0xf1
 enum{
-	FLD_R_MAX_S		=			BIT_RNG(0,3),//0xf1<3:0>  r_max_s
-	FLD_R_MAX_MC1	= 			BIT_RNG(6,7),//0xf1<7:6>  r_max_mc[9:8]
+    FLD_R_MAX_S      =          BIT_RNG(0,3),//0xf1<3:0>  r_max_s
+    FLD_R_MAX_MC1    =          BIT_RNG(6,7),//0xf1<7:6>  r_max_mc[9:8]
 };
 
 /**
@@ -454,7 +454,7 @@ enum{
  */
 static inline void adc_set_length_set_state (unsigned char r_max_s)
 {
-	analog_write(areg_r_max_s, (analog_read(areg_r_max_s)&(~FLD_R_MAX_S)) | (r_max_s) );
+    analog_write(areg_r_max_s, (analog_read(areg_r_max_s)&(~FLD_R_MAX_S)) | (r_max_s) );
 }
 
 /**
@@ -466,8 +466,8 @@ static inline void adc_set_length_set_state (unsigned char r_max_s)
  */
 static inline void adc_set_length_capture_state_for_chn_misc_rns (unsigned short r_max_mc)
 {
-	analog_write(areg_r_max_mc,  (r_max_mc & 0x0ff));
-	analog_write(areg_r_max_s,  ((analog_read(areg_r_max_s)&(~FLD_R_MAX_MC1)) | ((r_max_mc&0x3ff)>>8)<<6 ));
+    analog_write(areg_r_max_mc,  (r_max_mc & 0x0ff));
+    analog_write(areg_r_max_s,  ((analog_read(areg_r_max_s)&(~FLD_R_MAX_MC1)) | ((r_max_mc&0x3ff)>>8)<<6 ));
 }
 
 /**
@@ -478,25 +478,25 @@ static inline void adc_set_length_capture_state_for_chn_misc_rns (unsigned short
  */
 static inline void adc_set_state_length(unsigned short R_max_mc,unsigned char R_max_s)
 {
-	analog_write(areg_r_max_mc, R_max_mc);
-	analog_write(areg_r_max_s, ((R_max_mc>>8)<<6)| (R_max_s & FLD_R_MAX_S));
+    analog_write(areg_r_max_mc, R_max_mc);
+    analog_write(areg_r_max_s, ((R_max_mc>>8)<<6)| (R_max_s & FLD_R_MAX_S));
 }
 
 /***************************************************************************************
 afe_0xF2
     BIT<0>   rsvd
     BIT<1>   rsvd
-	BIT<2>   r_en_Misc    Enable Misc  channel. 1: enable;  0: disable
-	BIT<3>   writetocore_enable/disable 0:enable;  1:disable
-	BIT<5:4> r_max_scnt   Set total length for sampling state machine (i.e. max state index)
-	BIT<6>   rsvd
+    BIT<2>   r_en_Misc    Enable Misc  channel. 1: enable;  0: disable
+    BIT<3>   writetocore_enable/disable 0:enable;  1:disable
+    BIT<5:4> r_max_scnt   Set total length for sampling state machine (i.e. max state index)
+    BIT<6>   rsvd
     BIT<7>   rsvd
  *************************************************************************************/
-#define areg_adc_chn_en			0xf2
+#define areg_adc_chn_en            0xf2
 enum{
-	FLD_ADC_CHN_EN_M	= 		BIT(2),
-	FLD_ADC_CHN_EN_RNS	= 		BIT(3),
-	FLD_ADC_MAX_SCNT	=		BIT_RNG(4,5),
+    FLD_ADC_CHN_EN_M    =         BIT(2),
+    FLD_ADC_CHN_EN_RNS    =         BIT(3),
+    FLD_ADC_MAX_SCNT    =        BIT_RNG(4,5),
 };
 /**
  * @brief      This function sets ADC input channel.
@@ -505,7 +505,7 @@ enum{
  */
 static inline void  adc_set_chn_enable(ADC_ChTypeDef ad_ch)
 {
-	analog_write(areg_adc_chn_en, (analog_read(areg_adc_chn_en)&0xf0) | ad_ch );
+    analog_write(areg_adc_chn_en, (analog_read(areg_adc_chn_en)&0xf0) | ad_ch );
 }
 
 /**
@@ -516,7 +516,7 @@ static inline void  adc_set_chn_enable(ADC_ChTypeDef ad_ch)
  */
 static inline void adc_set_chn_enable_and_max_state_cnt(ADC_ChTypeDef ad_ch, unsigned char s_cnt)
 {
-	analog_write(areg_adc_chn_en, ad_ch | ((s_cnt&0x07)<<4) );
+    analog_write(areg_adc_chn_en, ad_ch | ((s_cnt&0x07)<<4) );
 }
 
 /**
@@ -526,39 +526,39 @@ static inline void adc_set_chn_enable_and_max_state_cnt(ADC_ChTypeDef ad_ch, uns
  */
 static inline void adc_set_max_state_cnt(unsigned char s_cnt)
 {
-	analog_write(areg_adc_chn_en, (analog_read(areg_adc_chn_en)&(~FLD_ADC_MAX_SCNT)) | ((s_cnt&0x07)<<4) );
+    analog_write(areg_adc_chn_en, (analog_read(areg_adc_chn_en)&(~FLD_ADC_MAX_SCNT)) | ((s_cnt&0x07)<<4) );
 }
 
 /**************************************************************************************
 afe_0xFA
-		BIT<1:0>  adc_itrim_preamp, Comparator preamp bias current trimming
-		BIT<3:2>  adc_itrim_vrefbuf, Vref buffer bias current trimming
-		BIT<5:4>  adc_itrim_vcmbuf, Vref buffer bias current trimming
+        BIT<1:0>  adc_itrim_preamp, Comparator preamp bias current trimming
+        BIT<3:2>  adc_itrim_vrefbuf, Vref buffer bias current trimming
+        BIT<5:4>  adc_itrim_vcmbuf, Vref buffer bias current trimming
 
-		BIT<7:6>  Analog input pre-scaling select
-					sel_ai_scale[1:0]: scaling factor
-							0x0: 1
-							0x3: 1/8
+        BIT<7:6>  Analog input pre-scaling select
+                    sel_ai_scale[1:0]: scaling factor
+                            0x0: 1
+                            0x3: 1/8
 
  *************************************************************************************/
-#define    areg_ain_scale        		0xfa
+#define    areg_ain_scale                0xfa
 enum{
-	FLD_ADC_ITRIM_PREAMP 	= 	BIT_RNG(0,1),
-	FLD_ADC_ITRIM_VREFBUF	= 	BIT_RNG(2,3),
-	FLD_ADC_ITRIM_VCMBUF	= 	BIT_RNG(4,5),
-	FLD_SEL_AIN_SCALE 		= 	BIT_RNG(6,7),
+    FLD_ADC_ITRIM_PREAMP     =     BIT_RNG(0,1),
+    FLD_ADC_ITRIM_VREFBUF    =     BIT_RNG(2,3),
+    FLD_ADC_ITRIM_VCMBUF    =     BIT_RNG(4,5),
+    FLD_SEL_AIN_SCALE         =     BIT_RNG(6,7),
 };
 
 
 /**************************************************************************************
 afe_0xFC
-	BIT<5>	  adc_pd, Power down ADC
-						1: Power down
-						0: Power up
+    BIT<5>      adc_pd, Power down ADC
+                        1: Power down
+                        0: Power up
  *************************************************************************************/
-#define areg_adc_pga_ctrl		0xfc
+#define areg_adc_pga_ctrl        0xfc
 enum{
-	FLD_SAR_ADC_POWER_DOWN 		= BIT(5),
+    FLD_SAR_ADC_POWER_DOWN         = BIT(5),
 };
 
 /**
@@ -569,12 +569,12 @@ enum{
  */
 static inline void adc_power_on_sar_adc (unsigned char on_off)
 {
-	analog_write (areg_adc_pga_ctrl, (analog_read(areg_adc_pga_ctrl)&(~FLD_SAR_ADC_POWER_DOWN)) | (!on_off)<<5  );
+    analog_write (areg_adc_pga_ctrl, (analog_read(areg_adc_pga_ctrl)&(~FLD_SAR_ADC_POWER_DOWN)) | (!on_off)<<5  );
 }
 
 /*************************************************************************************
-afe_0xF7<7:0>   adc_dat[7:0]  	Read only, Misc adc dat[7:0]
-afe_0xF8<7:0>   adc_dat[15:8]  	Read only
+afe_0xF7<7:0>   adc_dat[7:0]      Read only, Misc adc dat[7:0]
+afe_0xF8<7:0>   adc_dat[15:8]      Read only
  *************************************************************************************/
 #define    areg_adc_misc_l      0xf7
 #define    areg_adc_misc_h      0xf8
@@ -661,9 +661,9 @@ void adc_vbat_channel_init(void);
 unsigned int adc_sample_and_get_result(void);
 
 
-#define adc_data_sample_control		0xf3
+#define adc_data_sample_control        0xf3
 enum{
-	NOT_SAMPLE_ADC_DATA 		= BIT(0),
+    NOT_SAMPLE_ADC_DATA         = BIT(0),
 };
 
 /**

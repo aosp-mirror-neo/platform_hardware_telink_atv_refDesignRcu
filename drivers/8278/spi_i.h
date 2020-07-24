@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     spi_i.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "register.h"
 
@@ -32,8 +32,8 @@
   * @return    none
   */
 _attribute_ram_code_ static inline void mspi_wait(void){
-	while(reg_mspi_ctrl & FLD_MSPI_BUSY)
-		;
+    while(reg_mspi_ctrl & FLD_MSPI_BUSY)
+        ;
 }
 
 /**
@@ -42,7 +42,7 @@ _attribute_ram_code_ static inline void mspi_wait(void){
  * @return    none
  */
 _attribute_ram_code_ static inline void mspi_high(void){
-	reg_mspi_ctrl = FLD_MSPI_CS;
+    reg_mspi_ctrl = FLD_MSPI_CS;
 }
 
 /**
@@ -51,7 +51,7 @@ _attribute_ram_code_ static inline void mspi_high(void){
  * @return    none
  */
 _attribute_ram_code_ static inline void mspi_low(void){
-	reg_mspi_ctrl = 0;
+    reg_mspi_ctrl = 0;
 }
 
 /**
@@ -60,7 +60,7 @@ _attribute_ram_code_ static inline void mspi_low(void){
  * @return    the spi data.
  */
 _attribute_ram_code_ static inline unsigned char mspi_get(void){
-	return reg_mspi_data;
+    return reg_mspi_data;
 }
 
 /**
@@ -69,7 +69,7 @@ _attribute_ram_code_ static inline unsigned char mspi_get(void){
  * @return    none
  */
 _attribute_ram_code_ static inline void mspi_write(unsigned char c){
-	reg_mspi_data = c;
+    reg_mspi_data = c;
 }
 
 /**
@@ -78,7 +78,7 @@ _attribute_ram_code_ static inline void mspi_write(unsigned char c){
  * @return    none
  */
 _attribute_ram_code_ static inline void mspi_ctrl_write(unsigned char c){
-	reg_mspi_ctrl = c;
+    reg_mspi_ctrl = c;
 }
 
 /**
@@ -87,9 +87,9 @@ _attribute_ram_code_ static inline void mspi_ctrl_write(unsigned char c){
  * @return    read reault.
  */
 _attribute_ram_code_ static inline unsigned char mspi_read(void){
-	mspi_write(0);		// dummy, issue clock
-	mspi_wait();
-	return mspi_get();
+    mspi_write(0);        // dummy, issue clock
+    mspi_wait();
+    return mspi_get();
 }
 
 

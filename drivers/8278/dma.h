@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     dma.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #ifndef DMA_H_
 #define DMA_H_
@@ -30,36 +30,36 @@
 #include "compiler.h"
 
 
-#define DMA_RFRX_LEN_HW_INFO				0	// 826x: 8
-#define DMA_RFRX_OFFSET_HEADER				4	// 826x: 12
-#define DMA_RFRX_OFFSET_RFLEN				5   // 826x: 13
-#define DMA_RFRX_OFFSET_DATA				6	// 826x: 14
+#define DMA_RFRX_LEN_HW_INFO                0    // 826x: 8
+#define DMA_RFRX_OFFSET_HEADER              4    // 826x: 12
+#define DMA_RFRX_OFFSET_RFLEN               5   // 826x: 13
+#define DMA_RFRX_OFFSET_DATA                6    // 826x: 14
 
 
-#define DMA_RFRX_OFFSET_CRC24(p)			(p[DMA_RFRX_OFFSET_RFLEN]+6)  //data len:3
-#define DMA_RFRX_OFFSET_TIME_STAMP(p)		(p[DMA_RFRX_OFFSET_RFLEN]+9)  //data len:4
-#define DMA_RFRX_OFFSET_FREQ_OFFSET(p)		(p[DMA_RFRX_OFFSET_RFLEN]+13) //data len:2
-#define DMA_RFRX_OFFSET_RSSI(p)				(p[DMA_RFRX_OFFSET_RFLEN]+15) //data len:1, signed
+#define DMA_RFRX_OFFSET_CRC24(p)            (p[DMA_RFRX_OFFSET_RFLEN]+6)  //data len:3
+#define DMA_RFRX_OFFSET_TIME_STAMP(p)       (p[DMA_RFRX_OFFSET_RFLEN]+9)  //data len:4
+#define DMA_RFRX_OFFSET_FREQ_OFFSET(p)      (p[DMA_RFRX_OFFSET_RFLEN]+13) //data len:2
+#define DMA_RFRX_OFFSET_RSSI(p)             (p[DMA_RFRX_OFFSET_RFLEN]+15) //data len:1, signed
 
 
 
-#define	RFDMA_RX_DISABLE		(reg_dma_chn_en &= (~FLD_DMA_CHN_RF_RX))
-#define	RFDMA_RX_ENABLE			(reg_dma_chn_en |= (FLD_DMA_CHN_RF_RX))
+#define    RFDMA_RX_DISABLE        (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_RX))
+#define    RFDMA_RX_ENABLE         (reg_dma_chn_en |= (FLD_DMA_CHN_RF_RX))
 
-#define	RFDMA_TX_DISABLE		(reg_dma_chn_en &= (~FLD_DMA_CHN_RF_TX))
-#define	RFDMA_TX_ENABLE			(reg_dma_chn_en |= (FLD_DMA_CHN_RF_TX))
+#define    RFDMA_TX_DISABLE        (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_TX))
+#define    RFDMA_TX_ENABLE         (reg_dma_chn_en |= (FLD_DMA_CHN_RF_TX))
 
 
 typedef enum{
-	DMA0_UART_RX,
-	DMA1_UART_TX,
-	DMA2_RF_RX,
-	DMA3_RF_TX,
-	DMA4_AES_DECO,
-	DMA5_AES_CODE,
-	DMA6,
-	DMA7_PWM,
-}DMA_chn_Typdef; 
+    DMA0_UART_RX,
+    DMA1_UART_TX,
+    DMA2_RF_RX,
+    DMA3_RF_TX,
+    DMA4_AES_DECO,
+    DMA5_AES_CODE,
+    DMA6,
+    DMA7_PWM,
+}DMA_chn_Typdef;
 
 /**
  * @brief     This function resets the DMA module.
@@ -68,8 +68,8 @@ typedef enum{
  */
 static inline void dma_reset(void)
 {
-	reg_rst1 |= FLD_RST1_DMA;
-	reg_rst1 &= (~FLD_RST1_DMA);
+    reg_rst1 |= FLD_RST1_DMA;
+    reg_rst1 &= (~FLD_RST1_DMA);
 }
 /**
  * @brief     This function performs to enable DMA.
@@ -78,7 +78,7 @@ static inline void dma_reset(void)
  */
 static inline void dma_irq_enable(unsigned int msk)
 {
-	reg_dma_chn_irq_msk |= msk;
+    reg_dma_chn_irq_msk |= msk;
 }
 
 /**
@@ -88,7 +88,7 @@ static inline void dma_irq_enable(unsigned int msk)
  */
 static inline void dma_irq_disable(unsigned int msk)
 {
-	reg_dma_chn_irq_msk &= ~msk;
+    reg_dma_chn_irq_msk &= ~msk;
 }
 
 /**
@@ -99,12 +99,12 @@ static inline void dma_irq_disable(unsigned int msk)
 
 static inline void dma_chn_enable(unsigned char chn, unsigned int en)
 {
-	if(en){
-		reg_dma_chn_en |= chn;
-	}
-	else{
-		reg_dma_chn_en &= ~chn;
-	}
+    if(en){
+        reg_dma_chn_en |= chn;
+    }
+    else{
+        reg_dma_chn_en &= ~chn;
+    }
 }
 
 /**
@@ -116,16 +116,16 @@ static inline void dma_chn_enable(unsigned char chn, unsigned int en)
 
 static inline void dma_chn_irq_enable(unsigned char chn, unsigned int en)
 {
-	reg_dma_irq_status = chn;
+    reg_dma_irq_status = chn;
 
-	if(en){
-		reg_dma_chn_en |= chn;
-		reg_dma_chn_irq_msk |= chn;
-	}
-	else{
-		reg_dma_chn_en &= ~chn;
-		reg_dma_chn_irq_msk &= ~chn;
-	}
+    if(en){
+        reg_dma_chn_en |= chn;
+        reg_dma_chn_irq_msk |= chn;
+    }
+    else{
+        reg_dma_chn_en &= ~chn;
+        reg_dma_chn_irq_msk &= ~chn;
+    }
 }
 
 /**
@@ -136,7 +136,7 @@ static inline void dma_chn_irq_enable(unsigned char chn, unsigned int en)
 
 static inline void dma_chn_irq_status_clr(unsigned char irq_status)
 {
-	reg_dma_irq_status = irq_status;
+    reg_dma_irq_status = irq_status;
 }
 
 
@@ -158,7 +158,7 @@ static inline unsigned char dma_chn_irq_status_get(void)
  */
 static inline void dma_set_buff_size(DMA_chn_Typdef chn,unsigned int size)
 {
-	reg_dma_size(chn) = (unsigned char)(size/16);
+    reg_dma_size(chn) = (unsigned char)(size/16);
 }
 
 #endif /* DMA_H_ */

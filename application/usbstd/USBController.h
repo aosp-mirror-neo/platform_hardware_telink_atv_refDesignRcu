@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     USBController.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 
 #pragma once
 
@@ -55,14 +55,14 @@ Bits 5..4 = Usage Type (Iso Mode)
 #define EP_USAGE_TYPE_RSV                   3
 
 
-#define ENDPOINT_DIR_MASK				    BIT(7)
-#define ENDPOINT_DIR_OUT				    0
-#define ENDPOINT_DIR_IN 				    BIT(7)
-#define EP_TYPE_MASK					    3
-#define EP_TYPE_CONTROL 				    0
-#define EP_TYPE_ISOCHRONOUS 			    1
-#define EP_TYPE_BULK					    2
-#define EP_TYPE_INTERRUPT				    3
+#define ENDPOINT_DIR_MASK                    BIT(7)
+#define ENDPOINT_DIR_OUT                    0
+#define ENDPOINT_DIR_IN                     BIT(7)
+#define EP_TYPE_MASK                        3
+#define EP_TYPE_CONTROL                     0
+#define EP_TYPE_ISOCHRONOUS                 1
+#define EP_TYPE_BULK                        2
+#define EP_TYPE_INTERRUPT                    3
 
 /* Disable C linkage for C++ Compilers: */
 #if defined(__cplusplus)

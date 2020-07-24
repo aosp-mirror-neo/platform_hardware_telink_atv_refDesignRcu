@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     CDCClassDevice.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma once
 
 /* Includes: */
@@ -36,34 +36,34 @@
 
 typedef struct
 {
-	struct
-	{
-		u8 ControlInterfaceNumber;
-		u8 DataINEndpointNumber;
-		u16 DataINEndpointSize;
-		bool DataINEndpointDoubleBank;
-		u8 DataOUTEndpointNumber;
-		u16 DataOUTEndpointSize;
-		bool DataOUTEndpointDoubleBank;
-		u8 NotificationEndpointNumber;
-		u16 NotificationEndpointSize;
-		bool NotificationEndpointDoubleBank;
-	} Config;
+    struct
+    {
+        u8 ControlInterfaceNumber;
+        u8 DataINEndpointNumber;
+        u16 DataINEndpointSize;
+        bool DataINEndpointDoubleBank;
+        u8 DataOUTEndpointNumber;
+        u16 DataOUTEndpointSize;
+        bool DataOUTEndpointDoubleBank;
+        u8 NotificationEndpointNumber;
+        u16 NotificationEndpointSize;
+        bool NotificationEndpointDoubleBank;
+    } Config;
 
-	struct
-	{
-		struct
-		{
-			u16 HostToDevice;
-			u16 DeviceToHost;
-		} ControlLineStates;
+    struct
+    {
+        struct
+        {
+            u16 HostToDevice;
+            u16 DeviceToHost;
+        } ControlLineStates;
 
-		CDC_LineEncoding_t LineEncoding;
-	} State;
+        CDC_LineEncoding_t LineEncoding;
+    } State;
 } USB_ClassInfo_CDC_Device_t;
 
 
 /* Disable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
-	}
+    }
 #endif

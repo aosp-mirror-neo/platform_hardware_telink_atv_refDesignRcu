@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     uart.c
  *
  * @brief    for TLSR chips
@@ -22,137 +22,137 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 #include "uart.h"
 #include "gpio.h"
 #include "compiler.h"
 
 /**
  * @brief     This function is used to look for the prime.if the prime is finded,it will
- * 			  return 1, or return 0.
+ *               return 1, or return 0.
  * @param[in] the value to judge
  * @return    none
  */
 static unsigned char IsPrime(unsigned int n)
 {
-	unsigned int i = 5;
-	if(n <= 3){
-		return 1; //although n is prime, but the bwpc must be larger than 2.
-	}
-	else if((n %2 == 0) || (n % 3 == 0)){
-		return 0;
-	}
-	else{
-		for(i=5;i*i<n;i+=6){
-			if((n % i == 0)||(n %(i+2))==0){
-				return 0;
-			}
-		}
-		return 1;
-	}
+    unsigned int i = 5;
+    if(n <= 3){
+        return 1; //although n is prime, but the bwpc must be larger than 2.
+    }
+    else if((n %2 == 0) || (n % 3 == 0)){
+        return 0;
+    }
+    else{
+        for(i=5;i*i<n;i+=6){
+            if((n % i == 0)||(n %(i+2))==0){
+                return 0;
+            }
+        }
+        return 1;
+    }
 }
 
 /**
- * @brief  		This function serves to calculate the best bwpc(bit width) .i.e reg0x96
- * @param[in] 	baut_rate:The value of the baut rate to set.
- * @param[in] 	tmp_sysclk:The system clock
- *    			algorithm: BaudRate*(div+1)*(bwpc+1)=system clock
- *    			simplify the expression: div*bwpc =  constant(z)
- *    			bwpc range from 3 to 15.so loop and
- *    			get the minimum one decimal point
- * @return 		the position of getting the minimum value
+ * @brief          This function serves to calculate the best bwpc(bit width) .i.e reg0x96
+ * @param[in]     baut_rate:The value of the baut rate to set.
+ * @param[in]     tmp_sysclk:The system clock
+ *                algorithm: BaudRate*(div+1)*(bwpc+1)=system clock
+ *                simplify the expression: div*bwpc =  constant(z)
+ *                bwpc range from 3 to 15.so loop and
+ *                get the minimum one decimal point
+ * @return         the position of getting the minimum value
  */
 static unsigned char g_bwpc = 0;
 static unsigned int  g_uart_div = 0;
 static void GetBetterBwpc(unsigned int baut_rate,unsigned int  tmp_sysclk )
 {
-	unsigned char i = 0, j= 0;
-	unsigned int primeInt = 0;
-	unsigned char primeDec = 0;
-	unsigned int D_intdec[13],D_int[13];
-	unsigned char D_dec[13];
+    unsigned char i = 0, j= 0;
+    unsigned int primeInt = 0;
+    unsigned char primeDec = 0;
+    unsigned int D_intdec[13],D_int[13];
+    unsigned char D_dec[13];
 
-	primeInt = tmp_sysclk/baut_rate;
-	primeDec = 10*tmp_sysclk/baut_rate - 10*primeInt;
-	/************************************************************
-	 * calculate the primeInt and check whether primeInt is prime.
-	 */
-	if(IsPrime(primeInt)){ // primeInt is prime
-		primeInt += 1;  //+1 must be not prime. and primeInt must be larger than 2.
-	}
-	else{
-		if(primeDec > 5){ // >5
-			primeInt += 1;
-			if(IsPrime(primeInt)){
-				primeInt -= 1;
-			}
-		}
-	}
-	/*******************************************
-	 * get the best division value and bit width
-	 */
-	for(i=3;i<=15;i++){
-		D_intdec[i-3] = (10*primeInt)/(i+1);////get the LSB
-		D_dec[i-3] = D_intdec[i-3] - 10*(D_intdec[i-3]/10);///get the decimal section
-		D_int[i-3] = D_intdec[i-3]/10;///get the integer section
-	}
+    primeInt = tmp_sysclk/baut_rate;
+    primeDec = 10*tmp_sysclk/baut_rate - 10*primeInt;
+    /************************************************************
+     * calculate the primeInt and check whether primeInt is prime.
+     */
+    if(IsPrime(primeInt)){ // primeInt is prime
+        primeInt += 1;  //+1 must be not prime. and primeInt must be larger than 2.
+    }
+    else{
+        if(primeDec > 5){ // >5
+            primeInt += 1;
+            if(IsPrime(primeInt)){
+                primeInt -= 1;
+            }
+        }
+    }
+    /*******************************************
+     * get the best division value and bit width
+     */
+    for(i=3;i<=15;i++){
+        D_intdec[i-3] = (10*primeInt)/(i+1);////get the LSB
+        D_dec[i-3] = D_intdec[i-3] - 10*(D_intdec[i-3]/10);///get the decimal section
+        D_int[i-3] = D_intdec[i-3]/10;///get the integer section
+    }
 
-	//find the max and min one decimation point
-	unsigned char position_min = 0,position_max = 0;
-	unsigned int min = 0xffffffff,max = 0x00;
-	for(j=0;j<13;j++){
-		if((D_dec[j] <= min)&&(D_int[j] != 0x01)){
-			min = D_dec[j];
-			position_min = j;
-		}
-		if(D_dec[j]>=max){
-			max = D_dec[j];
-			position_max = j;
-		}
-	}
+    //find the max and min one decimation point
+    unsigned char position_min = 0,position_max = 0;
+    unsigned int min = 0xffffffff,max = 0x00;
+    for(j=0;j<13;j++){
+        if((D_dec[j] <= min)&&(D_int[j] != 0x01)){
+            min = D_dec[j];
+            position_min = j;
+        }
+        if(D_dec[j]>=max){
+            max = D_dec[j];
+            position_max = j;
+        }
+    }
 
-	if((D_dec[position_min]<5) && (D_dec[position_max]>=5)){
-		if(D_dec[position_min]<(10-D_dec[position_max])){
-			g_bwpc = position_min + 3;
-			g_uart_div = D_int[position_min]-1;
-		}
-		else{
-			g_bwpc = position_max + 3;
-			g_uart_div = D_int[position_max];
-		}
-	}
-	else if((D_dec[position_min]<5) && (D_dec[position_max]<5)){
-		g_bwpc = position_min + 3;
-		g_uart_div = D_int[position_min] - 1;
-	}
-	else{
-		g_bwpc = position_max + 3;
-		g_uart_div = D_int[position_max];
-	}
+    if((D_dec[position_min]<5) && (D_dec[position_max]>=5)){
+        if(D_dec[position_min]<(10-D_dec[position_max])){
+            g_bwpc = position_min + 3;
+            g_uart_div = D_int[position_min]-1;
+        }
+        else{
+            g_bwpc = position_max + 3;
+            g_uart_div = D_int[position_max];
+        }
+    }
+    else if((D_dec[position_min]<5) && (D_dec[position_max]<5)){
+        g_bwpc = position_min + 3;
+        g_uart_div = D_int[position_min] - 1;
+    }
+    else{
+        g_bwpc = position_max + 3;
+        g_uart_div = D_int[position_max];
+    }
 }
 
 /**
- * @brief      	This function initializes the UART module.
- * @param[in]  	g_uart_div  -  uart clock divider
- * @param[in]  	g_bwpc      -  bitwidth, should be set to larger than
+ * @brief          This function initializes the UART module.
+ * @param[in]      g_uart_div  -  uart clock divider
+ * @param[in]      g_bwpc      -  bitwidth, should be set to larger than
  *
- *  			sys_clk      baud rate   g_uart_div         g_bwpc
+ *              sys_clk      baud rate   g_uart_div         g_bwpc
  *
- *	  	  	  	16Mhz        9600          118   			 13
- *           	 	 	 	 19200         118     			 6
- *          	 	 	 	 115200         9       		 13
+ *              16Mhz        9600          118                13
+ *                           19200         118                 6
+ *                           115200          9                13
  *
- *	  	  	  	24Mhz        9600          249       		 9
- *           	 	 	 	 19200		   124               9
- *           	 	 	 	 115200         12    			 15
+ *              24Mhz        9600          249                9
+ *                           19200         124                9
+ *                           115200         12               15
  *
- *	  	  	  	32Mhz        9600          235       		 13
- *           	 	 	 	 19200		   235               6
- *           	 	 	 	 115200         17    			 13
+ *              32Mhz        9600          235                13
+ *                           19200         235                 6
+ *                           115200         17                13
  *
- *	  	  	  	48Mhz        9600          499       		 9
- *           	 	 	 	 19200		   249               9
- *           	 	 	 	 115200         25    			 15
+ *              48Mhz        9600          499                9
+ *                           19200         249                9
+ *                           115200         25               15
  *
  * @param[in]  Parity      - selected parity type for UART interface
  * @param[in]  StopBit     - selected length of stop bit for UART interface
@@ -169,16 +169,16 @@ void uart_init(unsigned short g_uart_div, unsigned char g_bwpc, UART_ParityTypeD
 
     //parity config
     if (Parity) {
-    	reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_EN; //enable parity function
+        reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_EN; //enable parity function
         if (PARITY_EVEN == Parity) {
-        	reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_POLARITY); //enable even parity
+            reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_POLARITY); //enable even parity
         }
         else if (PARITY_ODD == Parity) {
-        	reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_POLARITY; //enable odd parity
+            reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_POLARITY; //enable odd parity
         }
     }
     else {
-    	reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_EN); //disable parity function
+        reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_EN); //disable parity function
     }
 
     //stop bit config
@@ -187,37 +187,37 @@ void uart_init(unsigned short g_uart_div, unsigned char g_bwpc, UART_ParityTypeD
 }
 /**
  * @brief      This function initializes the UART module.
- * @param[in]  Baudrate  	- uart baud rate
+ * @param[in]  Baudrate      - uart baud rate
  * @param[in]  System_clock - clock of system
- * @param[in]  Parity      	- selected parity type for UART interface
- * @param[in]  StopBit     	- selected length of stop bit for UART interface
+ * @param[in]  Parity          - selected parity type for UART interface
+ * @param[in]  StopBit         - selected length of stop bit for UART interface
  * @return     none
  */
 void uart_init_baudrate(unsigned int Baudrate,unsigned int System_clock , UART_ParityTypeDef Parity, UART_StopBitTypeDef StopBit)
 {
-	GetBetterBwpc(Baudrate,System_clock); //get the best bwpc and uart_div
-	reg_uart_ctrl0 = g_bwpc; //set bwpc
-	reg_uart_clk_div = (g_uart_div | FLD_UART_CLK_DIV_EN); //set div_clock
-	reg_uart_rx_timeout0 = (g_bwpc+1) * 12; //one byte includes 12 bits at most
+    GetBetterBwpc(Baudrate,System_clock); //get the best bwpc and uart_div
+    reg_uart_ctrl0 = g_bwpc; //set bwpc
+    reg_uart_clk_div = (g_uart_div | FLD_UART_CLK_DIV_EN); //set div_clock
+    reg_uart_rx_timeout0 = (g_bwpc+1) * 12; //one byte includes 12 bits at most
 
     reg_uart_rx_timeout1  = UART_BW_MUL2; //if over 2*(tmp_bwpc+1),one transaction end.
-	//parity config
-	if (Parity) {
-		reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_EN; //enable parity function
-		if (PARITY_EVEN == Parity) {
-			reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_POLARITY); //enable even parity
-		}
-		else if (PARITY_ODD == Parity) {
-			reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_POLARITY; //enable odd parity
-		}
-	}
-	else {
-		reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_EN); //disable parity function
-	}
+    //parity config
+    if (Parity) {
+        reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_EN; //enable parity function
+        if (PARITY_EVEN == Parity) {
+            reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_POLARITY); //enable even parity
+        }
+        else if (PARITY_ODD == Parity) {
+            reg_uart_ctrl1  |= FLD_UART_CTRL1_PARITY_POLARITY; //enable odd parity
+        }
+    }
+    else {
+        reg_uart_ctrl1  &= (~FLD_UART_CTRL1_PARITY_EN); //disable parity function
+    }
 
-	//stop bit config
-	reg_uart_ctrl1  &= (~FLD_UART_CTRL1_STOP_BIT);
-	reg_uart_ctrl1  |= StopBit;
+    //stop bit config
+    reg_uart_ctrl1  &= (~FLD_UART_CTRL1_STOP_BIT);
+    reg_uart_ctrl1  |= StopBit;
 }
 
 /**
@@ -228,18 +228,18 @@ void uart_init_baudrate(unsigned int Baudrate,unsigned int System_clock , UART_P
 void uart_dma_enable(unsigned char rx_dma_en, unsigned char tx_dma_en)
 {
 
-	//enable DMA function of tx and rx
-	if(rx_dma_en){
-		reg_uart_ctrl0 |= FLD_UART_RX_DMA_EN ;
-	}else{
-		reg_uart_ctrl0 &= (~FLD_UART_RX_DMA_EN );
-	}
+    //enable DMA function of tx and rx
+    if(rx_dma_en){
+        reg_uart_ctrl0 |= FLD_UART_RX_DMA_EN ;
+    }else{
+        reg_uart_ctrl0 &= (~FLD_UART_RX_DMA_EN );
+    }
 
-	if(tx_dma_en){
-		reg_uart_ctrl0  |= FLD_UART_TX_DMA_EN;
-	}else{
-		reg_uart_ctrl0	&= (~FLD_UART_TX_DMA_EN);
-	}
+    if(tx_dma_en){
+        reg_uart_ctrl0  |= FLD_UART_TX_DMA_EN;
+    }else{
+        reg_uart_ctrl0    &= (~FLD_UART_TX_DMA_EN);
+    }
 
 }
 
@@ -251,26 +251,26 @@ void uart_dma_enable(unsigned char rx_dma_en, unsigned char tx_dma_en)
  */
 void uart_irq_enable(unsigned char rx_irq_en, unsigned char tx_irq_en)
 {
-	if(rx_irq_en){
-		reg_uart_ctrl0 |= FLD_UART_RX_IRQ_EN ;
-	}else{
-		reg_uart_ctrl0 &= (~FLD_UART_RX_IRQ_EN );
-	}
+    if(rx_irq_en){
+        reg_uart_ctrl0 |= FLD_UART_RX_IRQ_EN ;
+    }else{
+        reg_uart_ctrl0 &= (~FLD_UART_RX_IRQ_EN );
+    }
 
-	if(tx_irq_en){
-		reg_uart_ctrl0  |= FLD_UART_TX_IRQ_EN;
-	}else{
-		reg_uart_ctrl0	&= (~FLD_UART_TX_IRQ_EN);
-	}
+    if(tx_irq_en){
+        reg_uart_ctrl0  |= FLD_UART_TX_IRQ_EN;
+    }else{
+        reg_uart_ctrl0    &= (~FLD_UART_TX_IRQ_EN);
+    }
 
-	if(tx_irq_en||rx_irq_en)
-	{
-		reg_irq_mask |= FLD_IRQ_UART_EN;
-	}
-	else
-	{
-		reg_irq_mask &= ~FLD_IRQ_UART_EN;
-	}
+    if(tx_irq_en||rx_irq_en)
+    {
+        reg_irq_mask |= FLD_IRQ_UART_EN;
+    }
+    else
+    {
+        reg_irq_mask &= ~FLD_IRQ_UART_EN;
+    }
 }
 
 /**
@@ -287,7 +287,7 @@ void uart_irq_enable(unsigned char rx_irq_en, unsigned char tx_irq_en)
 
 void uart_ndma_irq_triglevel(unsigned char rx_level, unsigned char tx_level)
 {
-	reg_uart_ctrl3 = rx_level | (tx_level<<4);
+    reg_uart_ctrl3 = rx_level | (tx_level<<4);
 }
 
 /**
@@ -299,7 +299,7 @@ void uart_ndma_irq_triglevel(unsigned char rx_level, unsigned char tx_level)
 
 unsigned char uart_ndmairq_get(void)
 {
-	return  (reg_uart_status0&FLD_UART_IRQ_FLAG );
+    return  (reg_uart_status0&FLD_UART_IRQ_FLAG );
 }
 unsigned char uart_TxIndex = 0;
 
@@ -315,10 +315,10 @@ void uart_ndma_send_byte(unsigned char uartData)
 
     while((reg_uart_buf_cnt>>4)>7);
 
-	reg_uart_data_buf(uart_TxIndex) = uartData;
+    reg_uart_data_buf(uart_TxIndex) = uartData;
 
-	uart_TxIndex++;
-	uart_TxIndex &= 0x03;// cycle the four register 0x90 0x91 0x92 0x93.
+    uart_TxIndex++;
+    uart_TxIndex &= 0x03;// cycle the four register 0x90 0x91 0x92 0x93.
 }
 
 /**
@@ -332,8 +332,8 @@ volatile unsigned char uart_dma_send(unsigned char* Addr)
 {
     if (reg_uart_status1 & FLD_UART_TX_DONE )
     {
-    	reg_dma1_addr = (unsigned short)((unsigned int)Addr); //packet data, start address is sendBuff+1
-        reg_dma_tx_rdy0	 |= FLD_DMA_CHN_UART_TX;
+        reg_dma1_addr = (unsigned short)((unsigned int)Addr); //packet data, start address is sendBuff+1
+        reg_dma_tx_rdy0     |= FLD_DMA_CHN_UART_TX;
         return 1;
     }
 
@@ -349,17 +349,17 @@ volatile unsigned char uart_dma_send(unsigned char* Addr)
  */
 volatile unsigned char uart_send_byte(unsigned char byte)
 {
-	unsigned int addr;
+    unsigned int addr;
 
-	unsigned char b[5] = {1, 0,0,0,0};
+    unsigned char b[5] = {1, 0,0,0,0};
 
-	addr = (unsigned int)b;
+    addr = (unsigned int)b;
 
-	b[4] = byte;
+    b[4] = byte;
     if (reg_uart_status1 & FLD_UART_TX_DONE ) {
-    	reg_dma1_addr = addr; //packet data, start address is sendBuff+1
-    	reg_dma1_addrHi = ((addr>>16)&0xff);
-        reg_dma_tx_rdy0	 = FLD_DMA_CHN1;
+        reg_dma1_addr = addr; //packet data, start address is sendBuff+1
+        reg_dma1_addrHi = ((addr>>16)&0xff);
+        reg_dma_tx_rdy0     = FLD_DMA_CHN1;
         return 1;
     }
 
@@ -414,7 +414,7 @@ unsigned char uart_is_parity_error(void)
  */
 void uart_clear_parity_error(void)
 {
-	reg_uart_status0|= FLD_UART_CLEAR_RX_FLAG; //write 1 to clear
+    reg_uart_status0|= FLD_UART_CLEAR_RX_FLAG; //write 1 to clear
 }
 
 /**
@@ -432,9 +432,9 @@ void uart_set_rts(unsigned char Enable, UART_RTSModeTypeDef Mode, unsigned char 
 {
     if (Enable)
     {
-    	gpio_set_func(pin,AS_UART);//enable rts pin
-    	gpio_set_input_en(pin, 1);//enable input
-    	gpio_set_output_en(pin, 1);//enable output
+        gpio_set_func(pin,AS_UART);//enable rts pin
+        gpio_set_input_en(pin, 1);//enable input
+        gpio_set_output_en(pin, 1);//enable output
         reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_EN; //enable RTS function
     }
     else
@@ -444,17 +444,17 @@ void uart_set_rts(unsigned char Enable, UART_RTSModeTypeDef Mode, unsigned char 
 
     if (Mode)
     {
-    	reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_MANUAL_EN;
+        reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_MANUAL_EN;
     }
     else {
-    	reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_MANUAL_EN);
+        reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_MANUAL_EN);
     }
 
     if (Invert) {
-    	reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_PARITY;
+        reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_PARITY;
     }
     else {
-    	reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_PARITY);
+        reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_PARITY);
     }
 
     //set threshold
@@ -471,10 +471,10 @@ void uart_set_rts(unsigned char Enable, UART_RTSModeTypeDef Mode, unsigned char 
 void uart_set_rts_level(unsigned char Polarity)
 {
     if (Polarity) {
-    	reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_MANUAL_VAL;
+        reg_uart_ctrl2 |= FLD_UART_CTRL2_RTS_MANUAL_VAL;
     }
     else {
-    	reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_MANUAL_VAL);
+        reg_uart_ctrl2 &= (~FLD_UART_CTRL2_RTS_MANUAL_VAL);
     }
 }
 
@@ -489,23 +489,23 @@ void uart_set_cts(unsigned char Enable, unsigned char Select,UART_CtsPinDef pin)
 {
     if (Enable)
     {
-    	gpio_set_func(pin,AS_UART);//enable cts pin
-    	gpio_set_input_en(pin, 1);//enable input
-    	reg_uart_ctrl1|= FLD_UART_CTRL1_CTS_EN; //enable CTS function
+        gpio_set_func(pin,AS_UART);//enable cts pin
+        gpio_set_input_en(pin, 1);//enable input
+        reg_uart_ctrl1|= FLD_UART_CTRL1_CTS_EN; //enable CTS function
     }
     else
     {
-    	reg_uart_ctrl1  &= (~FLD_UART_CTRL1_CTS_EN); //disable CTS function
+        reg_uart_ctrl1  &= (~FLD_UART_CTRL1_CTS_EN); //disable CTS function
     }
 
     //Select Trigger Voltage
     if (Select)
     {
-    	reg_uart_ctrl1  |= FLD_UART_CTRL1_CTS_SELECT;
+        reg_uart_ctrl1  |= FLD_UART_CTRL1_CTS_SELECT;
     }
     else
     {
-    	reg_uart_ctrl1  &= (~FLD_UART_CTRL1_CTS_SELECT);
+        reg_uart_ctrl1  &= (~FLD_UART_CTRL1_CTS_SELECT);
     }
 }
 
@@ -519,18 +519,18 @@ void uart_set_cts(unsigned char Enable, unsigned char Select,UART_CtsPinDef pin)
 */
 void uart_gpio_set(UART_TxPinDef tx_pin,UART_RxPinDef rx_pin)
 {
-	//note: pullup setting must before uart gpio config, cause it will lead to ERR data to uart RX buffer(confirmed by sihui&sunpeng)
-	//PM_PIN_PULLUP_1M   PM_PIN_PULLUP_10K
-	gpio_setup_up_down_resistor(tx_pin, PM_PIN_PULLUP_10K);  //must, for stability and prevent from current leakage
-	gpio_setup_up_down_resistor(rx_pin, PM_PIN_PULLUP_10K);  //must  for stability and prevent from current leakage
+    //note: pullup setting must before uart gpio config, cause it will lead to ERR data to uart RX buffer(confirmed by sihui&sunpeng)
+    //PM_PIN_PULLUP_1M   PM_PIN_PULLUP_10K
+    gpio_setup_up_down_resistor(tx_pin, PM_PIN_PULLUP_10K);  //must, for stability and prevent from current leakage
+    gpio_setup_up_down_resistor(rx_pin, PM_PIN_PULLUP_10K);  //must  for stability and prevent from current leakage
 
 
-	gpio_set_func(tx_pin,AS_UART); // set tx pin
-	gpio_set_func(rx_pin,AS_UART); // set rx pin
+    gpio_set_func(tx_pin,AS_UART); // set tx pin
+    gpio_set_func(rx_pin,AS_UART); // set rx pin
 
 
-	gpio_set_input_en(tx_pin, 1);  //experiment shows that tx_pin should open input en(confirmed by qiuwei)
-	gpio_set_input_en(rx_pin, 1);  //
+    gpio_set_input_en(tx_pin, 1);  //experiment shows that tx_pin should open input en(confirmed by qiuwei)
+    gpio_set_input_en(rx_pin, 1);  //
 
 }
 /**
@@ -541,8 +541,8 @@ void uart_gpio_set(UART_TxPinDef tx_pin,UART_RxPinDef rx_pin)
 void uart_mask_error_irq_enable(void)
 {
 
-	reg_uart_rx_timeout1|= FLD_UART_MASK_ERR_IRQ;
-	reg_irq_mask |= FLD_IRQ_UART_EN;
+    reg_uart_rx_timeout1|= FLD_UART_MASK_ERR_IRQ;
+    reg_irq_mask |= FLD_IRQ_UART_EN;
 
 }
 

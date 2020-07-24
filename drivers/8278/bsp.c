@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     bsp.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "bsp.h"
 #include "clock.h"
@@ -39,28 +39,28 @@
 
 int LoadTblCmdSet(const TBLCMDSET * pt, int size)
 {
-	int l=0;
+    int l=0;
 
-	while (l<size) {
-		unsigned int  cadr = ((unsigned int)0x800000) | pt[l].ADR;
-		unsigned char cdat = pt[l].DAT;
-		unsigned char ccmd = pt[l].CMD;
-		unsigned char cvld =(ccmd & TCMD_UNDER_WR);
-		ccmd &= TCMD_MASK;
-		if (cvld) {
-			if (ccmd == TCMD_WRITE) {
-				write_reg8 (cadr, cdat);
-			}
-			else if (ccmd == TCMD_WAREG) {
-				analog_write (cadr, cdat);
-			}
-			else if (ccmd == TCMD_WAIT) {
-				sleep_us(pt[l].ADR*256 + cdat);
-			}
-		}
-		l++;
-	}
-	return size;
+    while (l<size) {
+        unsigned int  cadr = ((unsigned int)0x800000) | pt[l].ADR;
+        unsigned char cdat = pt[l].DAT;
+        unsigned char ccmd = pt[l].CMD;
+        unsigned char cvld =(ccmd & TCMD_UNDER_WR);
+        ccmd &= TCMD_MASK;
+        if (cvld) {
+            if (ccmd == TCMD_WRITE) {
+                write_reg8 (cadr, cdat);
+            }
+            else if (ccmd == TCMD_WAREG) {
+                analog_write (cadr, cdat);
+            }
+            else if (ccmd == TCMD_WAIT) {
+                sleep_us(pt[l].ADR*256 + cdat);
+            }
+        }
+        l++;
+    }
+    return size;
 
 }
 
@@ -74,16 +74,16 @@ int LoadTblCmdSet(const TBLCMDSET * pt, int size)
  */
 void sub_wr_ana(unsigned int addr, unsigned char value, unsigned char e, unsigned char s)
 {
-	unsigned char v, mask, tmp1, target, tmp2;
+    unsigned char v, mask, tmp1, target, tmp2;
 
-	v = analog_read(addr);
-	mask = BIT_MASK_LEN(e - s + 1);
-	tmp1 = value & mask;
+    v = analog_read(addr);
+    mask = BIT_MASK_LEN(e - s + 1);
+    tmp1 = value & mask;
 
-	tmp2 = v & (~BIT_RNG(s,e));
+    tmp2 = v & (~BIT_RNG(s,e));
 
-	target = (tmp1 << s) | tmp2;
-	analog_write(addr, target);
+    target = (tmp1 << s) | tmp2;
+    analog_write(addr, target);
 }
 
 /**
@@ -96,14 +96,14 @@ void sub_wr_ana(unsigned int addr, unsigned char value, unsigned char e, unsigne
  */
 void sub_wr(unsigned int addr, unsigned char value, unsigned char e, unsigned char s)
 {
-	unsigned char v, mask, tmp1, target, tmp2;
+    unsigned char v, mask, tmp1, target, tmp2;
 
-	v = read_reg8(addr);
-	mask = BIT_MASK_LEN(e - s + 1);
-	tmp1 = value & mask;
+    v = read_reg8(addr);
+    mask = BIT_MASK_LEN(e - s + 1);
+    tmp1 = value & mask;
 
-	tmp2 = v & (~BIT_RNG(s,e));
+    tmp2 = v & (~BIT_RNG(s,e));
 
-	target = (tmp1 << s) | tmp2;
-	write_reg8(addr, target);
+    target = (tmp1 << s) | tmp2;
+    write_reg8(addr, target);
 }

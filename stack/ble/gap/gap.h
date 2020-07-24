@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     gap.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma once
 
 #include "tl_common.h"
@@ -81,10 +81,10 @@
 
 
 typedef enum {
-	Gap_Role_Broadcaster  = 0,
-	Gap_Role_Observer     = 1,
-	Gap_Role_Peripheral   = 2,
-	Gap_Role_Central      = 3,
+    Gap_Role_Broadcaster  = 0,
+    Gap_Role_Observer     = 1,
+    Gap_Role_Peripheral   = 2,
+    Gap_Role_Central      = 3,
 }gap_role_t;
 
 
@@ -96,9 +96,9 @@ typedef enum {
 
 
 /******************************* User Interface  *****************************************/
-void 		blc_gap_peripheral_init(void);
+void         blc_gap_peripheral_init(void);
 
-void 		blc_gap_central_init(void);
+void         blc_gap_central_init(void);
 
 
 

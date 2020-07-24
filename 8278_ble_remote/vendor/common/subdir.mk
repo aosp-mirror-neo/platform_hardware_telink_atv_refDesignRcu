@@ -4,8 +4,6 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../vendor/common/adpcm_encode.c \
-../vendor/common/app_audio.c \
 ../vendor/common/blt_common.c \
 ../vendor/common/blt_fw_sign.c \
 ../vendor/common/blt_led.c \
@@ -13,8 +11,6 @@ C_SRCS += \
 ../vendor/common/flash_fw_check.c 
 
 OBJS += \
-./vendor/common/adpcm_encode.o \
-./vendor/common/app_audio.o \
 ./vendor/common/blt_common.o \
 ./vendor/common/blt_fw_sign.o \
 ./vendor/common/blt_led.o \

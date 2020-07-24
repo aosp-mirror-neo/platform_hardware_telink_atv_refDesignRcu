@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     blt_fw_signature.c
  *
  * @brief    for TLSR chips
@@ -20,9 +20,9 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
- *  limitations under the License.   
- *           
- *******************************************************************************************************/
+ *  limitations under the License.
+ *
+ *****************************************************************************/
 
 
 #include "tl_common.h"
@@ -34,18 +34,18 @@
 
 void blt_firmware_signature_check(void)
 {
-		unsigned int flash_mid;
-		unsigned char flash_uid[16];
-		unsigned char signature_enc_key[16];
-		int flag = flash_read_mid_uid_with_check(&flash_mid, flash_uid);
+        unsigned int flash_mid;
+        unsigned char flash_uid[16];
+        unsigned char signature_enc_key[16];
+        int flag = flash_read_mid_uid_with_check(&flash_mid, flash_uid);
 
-		if(flag==0){  //reading flash UID error
-			while(1);
-		}
+        if(flag==0){  //reading flash UID error
+            while(1);
+        }
 
-		firmware_encrypt_based_on_uid (flash_uid, signature_enc_key);
+        firmware_encrypt_based_on_uid (flash_uid, signature_enc_key);
 
-		if(memcmp(signature_enc_key, (u8*)(flash_sector_calibration + CALIB_OFFSET_FIRMWARE_SIGNKEY), 16)){  //signature not match
-			while(1);   //user can change the code here to stop firmware running
-		}
+        if(memcmp(signature_enc_key, (u8*)(flash_sector_calibration + CALIB_OFFSET_FIRMWARE_SIGNKEY), 16)){  //signature not match
+            while(1);   //user can change the code here to stop firmware running
+        }
 }

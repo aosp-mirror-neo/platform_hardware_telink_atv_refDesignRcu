@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     blt_fw_signature.h
  *
  * @brief    for TLSR chips
@@ -20,9 +20,9 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
- *  limitations under the License.   
- *           
- *******************************************************************************************************/
+ *  limitations under the License.
+ *
+ *****************************************************************************/
 
 #ifndef BLT_FW_SIGN_H_
 #define BLT_FW_SIGN_H_

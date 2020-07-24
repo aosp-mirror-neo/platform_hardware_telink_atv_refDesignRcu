@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     aes.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "aes.h"
 #include "bsp.h"
@@ -49,7 +49,7 @@ int aes_encrypt(unsigned char *Key, unsigned char *Data, unsigned char *Result)
 
     //set the key
     for (i = 0; i < 16; i++) {
-    	reg_aes_key(i) = Key[i];
+        reg_aes_key(i) = Key[i];
     }
 
     //feed the data
@@ -95,7 +95,7 @@ int aes_decrypt(unsigned char *Key, unsigned char *Data, unsigned char *Result)
 
     //set the key
     for (i = 0; i < 16; i++) {
-    	reg_aes_key(i) = Key[i];
+        reg_aes_key(i) = Key[i];
     }
 
     //feed the data
@@ -133,30 +133,30 @@ int aes_decrypt(unsigned char *Key, unsigned char *Data, unsigned char *Result)
  */
 int  aes_dma_encrypt(unsigned char *Key,unsigned long *Data,unsigned short DataSize, unsigned long *Result,unsigned short ResultSize)
 {
-	write_reg8(0xc10,((unsigned long) Result)&0xff);//set memory address low byte
-	write_reg8(0xc11, (((unsigned long)Result)>>8)&0xff);//set memory address high byte
-	reg_dma4_addrHi=0x04;
-	reg_dma4_size =  ResultSize/16;//set memory size
-	reg_dma4_mode = 0x01;
+    write_reg8(0xc10,((unsigned long) Result)&0xff);//set memory address low byte
+    write_reg8(0xc11, (((unsigned long)Result)>>8)&0xff);//set memory address high byte
+    reg_dma4_addrHi=0x04;
+    reg_dma4_size =  ResultSize/16;//set memory size
+    reg_dma4_mode = 0x01;
 
-	write_reg8(0xc14,((unsigned long)Data)&0xff);//set memory address low byte
-	write_reg8(0xc15, (((unsigned long)Data)>>8)&0xff);//set memory address high byte
-	reg_dma5_addrHi=0x04;
-	reg_dma5_size =DataSize/ 16;//set memory size
-	reg_dma5_mode = 0x00;
+    write_reg8(0xc14,((unsigned long)Data)&0xff);//set memory address low byte
+    write_reg8(0xc15, (((unsigned long)Data)>>8)&0xff);//set memory address high byte
+    reg_dma5_addrHi=0x04;
+    reg_dma5_size =DataSize/ 16;//set memory size
+    reg_dma5_mode = 0x00;
 
-	reg_aes_ctrl &= (~FLD_AES_CTRL_CODEC_TRIG);//trig encrypt operation
+    reg_aes_ctrl &= (~FLD_AES_CTRL_CODEC_TRIG);//trig encrypt operation
 
-	for (unsigned char i = 0; i < 16; i++) {
-		reg_aes_key(i) = Key[i];  //set the key
-	}
+    for (unsigned char i = 0; i < 16; i++) {
+        reg_aes_key(i) = Key[i];  //set the key
+    }
 
-	reg_dma_chn_en|=0x30;//enable aes dma channel
-	reg_dma_tx_rdy0|=(FLD_DMA_CHN_AES_CODE|FLD_DMA_CHN_AES_DECO);
+    reg_dma_chn_en|=0x30;//enable aes dma channel
+    reg_dma_tx_rdy0|=(FLD_DMA_CHN_AES_CODE|FLD_DMA_CHN_AES_DECO);
 
-	while (( reg_aes_ctrl & BIT(2)) == 0);
-	sleep_ms(2000);
-	return 0;
+    while (( reg_aes_ctrl & BIT(2)) == 0);
+    sleep_ms(2000);
+    return 0;
 }
 
 /**
@@ -172,29 +172,29 @@ int  aes_dma_encrypt(unsigned char *Key,unsigned long *Data,unsigned short DataS
  */
 int aes_dma_decrypt(unsigned char *Key,unsigned long *Data,unsigned short DataSize, unsigned long *Result,unsigned short ResultSize)
 {
-	write_reg8(0xc10,((unsigned long) Result)&0xff);//set memory address low byte
-	write_reg8(0xc11, (((unsigned long)Result)>>8)&0xff);//set memory address high byte
-	reg_dma4_addrHi=0x04;
-	reg_dma4_size =  ResultSize/16;//set memory size
-	reg_dma4_mode = 0x01;
+    write_reg8(0xc10,((unsigned long) Result)&0xff);//set memory address low byte
+    write_reg8(0xc11, (((unsigned long)Result)>>8)&0xff);//set memory address high byte
+    reg_dma4_addrHi=0x04;
+    reg_dma4_size =  ResultSize/16;//set memory size
+    reg_dma4_mode = 0x01;
 
-	write_reg8(0xc14,((unsigned long)Data)&0xff);//set memory address low byte
-	write_reg8(0xc15, (((unsigned long)Data)>>8)&0xff);//set memory address high byte
-	reg_dma5_addrHi=0x04;
-	reg_dma5_size =DataSize/ 16;//set memory size
-	reg_dma5_mode = 0x00;
+    write_reg8(0xc14,((unsigned long)Data)&0xff);//set memory address low byte
+    write_reg8(0xc15, (((unsigned long)Data)>>8)&0xff);//set memory address high byte
+    reg_dma5_addrHi=0x04;
+    reg_dma5_size =DataSize/ 16;//set memory size
+    reg_dma5_mode = 0x00;
 
-	reg_aes_ctrl |=FLD_AES_CTRL_CODEC_TRIG;
+    reg_aes_ctrl |=FLD_AES_CTRL_CODEC_TRIG;
 
-	for (unsigned char i = 0; i < 16; i++) {
-		reg_aes_key(i) = Key[i];  //set the key
-	}
+    for (unsigned char i = 0; i < 16; i++) {
+        reg_aes_key(i) = Key[i];  //set the key
+    }
 
-	reg_dma_chn_en|=0x30;//enable aes dma channel
-	reg_dma_tx_rdy0|=(FLD_DMA_CHN_AES_CODE|FLD_DMA_CHN_AES_DECO);
+    reg_dma_chn_en|=0x30;//enable aes dma channel
+    reg_dma_tx_rdy0|=(FLD_DMA_CHN_AES_CODE|FLD_DMA_CHN_AES_DECO);
 
-	while (( reg_aes_ctrl & BIT(2)) == 0);
-	sleep_us(2000000);
-	return 0;
+    while (( reg_aes_ctrl & BIT(2)) == 0);
+    sleep_us(2000000);
+    return 0;
 }
 

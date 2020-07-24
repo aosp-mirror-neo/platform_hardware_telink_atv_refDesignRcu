@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     irq.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 
@@ -34,9 +34,9 @@
  * @return     if return 1 is enable.else disable.
  */
 static inline unsigned char irq_enable(void){
-	unsigned char r = reg_irq_en;		// don't worry,  the compiler will optimize the return value if not used
-	reg_irq_en = 1;
-	return r;
+    unsigned char r = reg_irq_en;        // don't worry,  the compiler will optimize the return value if not used
+    reg_irq_en = 1;
+    return r;
 }
 
 /**
@@ -45,9 +45,9 @@ static inline unsigned char irq_enable(void){
  * @return     if return 0 is disable.else enable.
  */
 static inline unsigned char irq_disable(void){
-	unsigned char r = reg_irq_en;		// don't worry,  the compiler will optimize the return value if not used
-	reg_irq_en = 0;
-	return r;
+    unsigned char r = reg_irq_en;        // don't worry,  the compiler will optimize the return value if not used
+    reg_irq_en = 0;
+    return r;
 }
 
 /**
@@ -56,7 +56,7 @@ static inline unsigned char irq_disable(void){
  * @return     if return 1 is irg restore.
  */
 static inline void irq_restore(unsigned char en){
-	reg_irq_en = en;
+    reg_irq_en = en;
 }
 
 /**
@@ -67,7 +67,7 @@ static inline void irq_restore(unsigned char en){
 
 static inline void irq_enable_type(unsigned long msk)
 {
-	BM_SET(reg_irq_mask, msk);
+    BM_SET(reg_irq_mask, msk);
 }
 /**
  * @brief      This function servers to set IRQ mask.
@@ -75,7 +75,7 @@ static inline void irq_enable_type(unsigned long msk)
  * @return     none.
  */
 static inline void irq_set_mask(unsigned long msk){
-	BM_SET(reg_irq_mask, msk);
+    BM_SET(reg_irq_mask, msk);
 }
 
 /**
@@ -84,7 +84,7 @@ static inline void irq_set_mask(unsigned long msk){
  * @return     the value of IRQ register.
  */
 static inline unsigned long irq_get_mask(void){
-	return reg_irq_mask;
+    return reg_irq_mask;
 }
 
 /**
@@ -95,7 +95,7 @@ static inline unsigned long irq_get_mask(void){
 
 static inline void irq_disable_type(unsigned long msk)
 {
-	BM_CLR(reg_irq_mask, msk);
+    BM_CLR(reg_irq_mask, msk);
 }
 
 /**
@@ -104,7 +104,7 @@ static inline void irq_disable_type(unsigned long msk)
  * @return     IRQ source.
  */
 static inline unsigned long irq_get_src(){
-	return reg_irq_src;
+    return reg_irq_src;
 }
 
 /**
@@ -125,7 +125,7 @@ static inline void irq_clr_src2(unsigned long msk)
 
 static inline void irq_clr_src(void)
 {
-	reg_irq_src = 0xffffffff;
+    reg_irq_src = 0xffffffff;
 }
 
 /**

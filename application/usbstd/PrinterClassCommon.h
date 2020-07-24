@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     PrinterClassCommon.h
  *
  * @brief    for TLSR chips
@@ -21,38 +21,38 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma once
-	/* Includes: */
+    /* Includes: */
 #include "tl_common.h"
-	
-	/* Enable C linkage for C++ Compilers: */
-#if defined(__cplusplus)
-	extern "C" {
-#endif
-	
 
-#define PRNT_PORTSTATUS_NOTERROR	BIT(3)
-#define PRNT_PORTSTATUS_SELECT		BIT(4)
-#define PRNT_PORTSTATUS_PAPEREMPTY	BIT(5)
+    /* Enable C linkage for C++ Compilers: */
+#if defined(__cplusplus)
+    extern "C" {
+#endif
+
+
+#define PRNT_PORTSTATUS_NOTERROR    BIT(3)
+#define PRNT_PORTSTATUS_SELECT        BIT(4)
+#define PRNT_PORTSTATUS_PAPEREMPTY    BIT(5)
 
 enum PRNT_Descriptor_ClassSubclassProtocol_t
 {
-	PRNT_CSCP_PrinterClass = 0x07,
-	PRNT_CSCP_PrinterSubclass = 0x01,
-	PRNT_CSCP_BidirectionalProtocol = 0x02,
+    PRNT_CSCP_PrinterClass = 0x07,
+    PRNT_CSCP_PrinterSubclass = 0x01,
+    PRNT_CSCP_BidirectionalProtocol = 0x02,
 };
 
 enum PRNT_ClassRequests_t
 {
-	PRNT_REQ_GetDeviceID,
-	PRNT_REQ_GetPortStatus,
-	PRNT_REQ_SoftReset,
+    PRNT_REQ_GetDeviceID,
+    PRNT_REQ_GetPortStatus,
+    PRNT_REQ_SoftReset,
 };
 
 /* Disable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
-	}
+    }
 #endif
 

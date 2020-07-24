@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     lpc.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "lpc.h"
 /**
@@ -32,7 +32,7 @@
  */
 void lpc_power_down(void)
 {
-	analog_write(0x07,analog_read(0x07)|0x08);
+    analog_write(0x07,analog_read(0x07)|0x08);
 }
 /**
  * @brief This function provides power for low power comparator.
@@ -50,7 +50,7 @@ void lpc_power_on (void)
  */
 void lpc_set_input_chn(LPC_Input_Channel_TypeDef pin)
 {
-	 analog_write(0x0d,(analog_read(0x0d)&0xf8)|pin);
+     analog_write(0x0d,(analog_read(0x0d)&0xf8)|pin);
 }
 
 /**
@@ -63,13 +63,13 @@ void lpc_set_input_ref(LPC_Mode_TypeDef mode, LPC_Reference_TypeDef ref)
 {
     if(mode == LPC_NORMAL)
     {
-    	analog_write(0x0b,analog_read(0x0b)&0xf7);
-    	analog_write(0x0d,analog_read(0x0d)&0x7f);
+        analog_write(0x0b,analog_read(0x0b)&0xf7);
+        analog_write(0x0d,analog_read(0x0d)&0x7f);
     }
     else if (mode == LPC_LOWPOWER){
 
-    	analog_write(0x0b,analog_read(0x0b)|0x08);
-    	analog_write(0x0d,analog_read(0x0d)|0x80);
+        analog_write(0x0b,analog_read(0x0b)|0x08);
+        analog_write(0x0d,analog_read(0x0d)|0x80);
     }
 
     analog_write(0x0d,(analog_read(0x0d)&0x8f)|(ref<<4));
@@ -82,7 +82,7 @@ void lpc_set_input_ref(LPC_Mode_TypeDef mode, LPC_Reference_TypeDef ref)
  */
 void lpc_set_scaling_coeff(LPC_Scaling_TypeDef divider)
 {
-	analog_write(0x0b,(analog_read(0x0b)&0xcf)|(divider<<4));
+    analog_write(0x0b,(analog_read(0x0b)&0xcf)|(divider<<4));
 }
 
 

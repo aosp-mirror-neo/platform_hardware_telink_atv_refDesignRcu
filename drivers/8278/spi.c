@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     spi.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "spi.h"
 #include "register.h"
@@ -33,54 +33,54 @@
  * @param[in] PinGrp - the selected pin port
  * @return    none
  *  A3:5b7[0] set 1 as spi input,set 0 not as spi input ;5b7[4] set 1 as i2c input ,set 0 not as i2c input
- *	A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
- *	B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
- *	D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
- *	5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
- *	spi i2c mux sel:
- *	step1:close gpio func;
- *	step2:set 0x5a8-0x5af sel spii2c func;
- *	step3:set 5b6[7:4] to sel spi or i2c output;
- *	step4:set 5b7[7:0] to sel spi or i2c input;
- *	step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
+ *    A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
+ *    B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
+ *    D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
+ *    5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
+ *    spi i2c mux sel:
+ *    step1:close gpio func;
+ *    step2:set 0x5a8-0x5af sel spii2c func;
+ *    step3:set 5b6[7:4] to sel spi or i2c output;
+ *    step4:set 5b7[7:0] to sel spi or i2c input;
+ *    step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
  */
 
 
 void spi_master_gpio_set(SPI_GPIO_SclkTypeDef sclk_pin,SPI_GPIO_CsTypeDef cs_pin,SPI_GPIO_SdoTypeDef sdo_pin, SPI_GPIO_SdiTypeDef sdi_pin )
 {
 
-	if(sclk_pin == SPI_GPIO_SCL_A4 ||sdi_pin == SPI_GPIO_SDI_A3 ||sdo_pin == SPI_GPIO_SDO_A2){
+    if(sclk_pin == SPI_GPIO_SCL_A4 ||sdi_pin == SPI_GPIO_SDI_A3 ||sdo_pin == SPI_GPIO_SDO_A2){
 
-		reg_pin_i2c_spi_out_en |= (FLD_PIN_PAGROUP_SPI_EN);
-		if(sclk_pin == SPI_GPIO_SCL_A4){
+        reg_pin_i2c_spi_out_en |= (FLD_PIN_PAGROUP_SPI_EN);
+        if(sclk_pin == SPI_GPIO_SCL_A4){
 
-			reg_pin_i2c_spi_en |= (FLD_PIN_PA4_SPI_EN);
-			reg_pin_i2c_spi_en &= ~(FLD_PIN_PA4_I2C_EN);
-		}
-		if (sdi_pin == SPI_GPIO_SDI_A3){
+            reg_pin_i2c_spi_en |= (FLD_PIN_PA4_SPI_EN);
+            reg_pin_i2c_spi_en &= ~(FLD_PIN_PA4_I2C_EN);
+        }
+        if (sdi_pin == SPI_GPIO_SDI_A3){
 
-			reg_pin_i2c_spi_en |= (FLD_PIN_PA3_SPI_EN);
-			reg_pin_i2c_spi_en &= ~(FLD_PIN_PA3_I2C_EN);
-		}
-	}
+            reg_pin_i2c_spi_en |= (FLD_PIN_PA3_SPI_EN);
+            reg_pin_i2c_spi_en &= ~(FLD_PIN_PA3_I2C_EN);
+        }
+    }
 
    if(sdo_pin == SPI_GPIO_SDO_B7 || sdi_pin == SPI_GPIO_SDI_B6){
 
-		reg_pin_i2c_spi_out_en |= (FLD_PIN_PBGROUP_SPI_EN);
+        reg_pin_i2c_spi_out_en |= (FLD_PIN_PBGROUP_SPI_EN);
 
-		if(sdi_pin == SPI_GPIO_SDI_B6){
+        if(sdi_pin == SPI_GPIO_SDI_B6){
 
-			reg_pin_i2c_spi_en |= (FLD_PIN_PB6_SPI_EN);
-			reg_pin_i2c_spi_en &= ~(FLD_PIN_PB6_I2C_EN);
-		}
-	}
+            reg_pin_i2c_spi_en |= (FLD_PIN_PB6_SPI_EN);
+            reg_pin_i2c_spi_en &= ~(FLD_PIN_PB6_I2C_EN);
+        }
+    }
 
    reg_pin_i2c_spi_out_en |= (FLD_PIN_PDGROUP_SPI_EN);
 
    if(sclk_pin == SPI_GPIO_SCL_D7){
 
-	  reg_pin_i2c_spi_en |= (FLD_PIN_PD7_SPI_EN);
-	  reg_pin_i2c_spi_en &= ~(FLD_PIN_PD7_I2C_EN);
+      reg_pin_i2c_spi_en |= (FLD_PIN_PD7_SPI_EN);
+      reg_pin_i2c_spi_en &= ~(FLD_PIN_PD7_I2C_EN);
    }
 
    gpio_set_func(sclk_pin ,AS_SPI);
@@ -102,10 +102,10 @@ void spi_master_gpio_set(SPI_GPIO_SclkTypeDef sclk_pin,SPI_GPIO_CsTypeDef cs_pin
 
 void spi_masterCSpin_select(GPIO_PinTypeDef CSPin)
 {
-	gpio_set_func(CSPin,AS_GPIO);//enable GPIO function
-	gpio_set_input_en(CSPin,0); //disable input function
-	gpio_set_output_en(CSPin,1);//enable out put
-	gpio_write(CSPin,1);//output high level in idle state
+    gpio_set_func(CSPin,AS_GPIO);//enable GPIO function
+    gpio_set_input_en(CSPin,0); //disable input function
+    gpio_set_output_en(CSPin,1);//enable out put
+    gpio_write(CSPin,1);//output high level in idle state
 }
 
 /**
@@ -124,13 +124,13 @@ void spi_masterCSpin_select(GPIO_PinTypeDef CSPin)
  */
 void spi_master_init(unsigned char DivClock, SPI_ModeTypeDef Mode)
 {
-	reg_clk_en0 |= FLD_CLK0_SPI_EN;//enable spi clock
-	reg_spi_sp = 0;            //clear register(0x0a) value
-	reg_spi_sp|= DivClock;     //0x0a: bit0~bit6 set spi clock ; spi clock=system clock/((DivClock+1)*2)
-	reg_spi_sp|=FLD_SPI_ENABLE;//0x0a: bit7 enables spi function mode
-	reg_spi_ctrl|= FLD_SPI_MASTER_MODE_EN; //0x09: bit1 enables master mode
-	reg_spi_inv_clk	&= (~FLD_SPI_MODE_WORK_MODE); // clear spi working mode
-	reg_spi_inv_clk |= Mode;// select SPI mode,surpport four modes
+    reg_clk_en0 |= FLD_CLK0_SPI_EN;//enable spi clock
+    reg_spi_sp = 0;            //clear register(0x0a) value
+    reg_spi_sp|= DivClock;     //0x0a: bit0~bit6 set spi clock ; spi clock=system clock/((DivClock+1)*2)
+    reg_spi_sp|=FLD_SPI_ENABLE;//0x0a: bit7 enables spi function mode
+    reg_spi_ctrl|= FLD_SPI_MASTER_MODE_EN; //0x09: bit1 enables master mode
+    reg_spi_inv_clk    &= (~FLD_SPI_MODE_WORK_MODE); // clear spi working mode
+    reg_spi_inv_clk |= Mode;// select SPI mode,surpport four modes
 }
 
 
@@ -156,13 +156,13 @@ void spi_write(unsigned char *Cmd, int CmdLen, unsigned char *Data, int DataLen,
     /***write Cmd***/
     for (i = 0; i < CmdLen; i++) {
 
-    	reg_spi_data = Cmd[i];
+        reg_spi_data = Cmd[i];
         while(reg_spi_ctrl& FLD_SPI_BUSY); //wait writing finished
     }
 
     /***write Data***/
     for (i = 0; i < DataLen; i++) {
-    	reg_spi_data = Data[i];
+        reg_spi_data = Data[i];
         while(reg_spi_ctrl & FLD_SPI_BUSY); //wait writing finished
     }
     /***pull up CS***/
@@ -189,7 +189,7 @@ void spi_read(unsigned char *Cmd, int CmdLen, unsigned char *Data, int DataLen, 
 
     /***write cmd***/
     for (i = 0; i < CmdLen; i++) {
-    	reg_spi_data = Cmd[i];
+        reg_spi_data = Cmd[i];
         while(reg_spi_ctrl& FLD_SPI_BUSY );//wait writing finished
     }
 
@@ -202,10 +202,10 @@ void spi_read(unsigned char *Cmd, int CmdLen, unsigned char *Data, int DataLen, 
 
     /***read data***/
     for (i = 0; i < DataLen; i++) {
-    	if(i==(DataLen-1))
-    	{
-    	   reg_spi_ctrl &= ~FLD_SPI_RD;//when last byte,disable RD function.
-    	}
+        if(i==(DataLen-1))
+        {
+           reg_spi_ctrl &= ~FLD_SPI_RD;//when last byte,disable RD function.
+        }
         Data[i] = reg_spi_data; //take 8 clock cycles
         while(reg_spi_ctrl & FLD_SPI_BUSY ); //wait reading finished
     }
@@ -229,82 +229,82 @@ void spi_read(unsigned char *Cmd, int CmdLen, unsigned char *Data, int DataLen, 
  */
 void spi_slave_init(unsigned char DivClock, SPI_ModeTypeDef Mode)
 {
-	reg_clk_en0 |= FLD_CLK0_SPI_EN;//enable spi clock
-	reg_spi_sp = 0;            //clear register(0x0a) value
-	reg_spi_sp|= DivClock;     //0x0a: bit0~bit6 set spi clock ; spi clock=system clock/((DivClock+1)*2)
-	reg_spi_sp|=FLD_SPI_ENABLE;//0x0a: bit7 enables spi function mode
-	reg_spi_ctrl&= (~FLD_SPI_MASTER_MODE_EN ); //disable master mode
-	reg_spi_inv_clk &= (~FLD_SPI_MODE_WORK_MODE);
-	reg_spi_inv_clk|= Mode; //select SPI mode,surpport four modes
+    reg_clk_en0 |= FLD_CLK0_SPI_EN;//enable spi clock
+    reg_spi_sp = 0;            //clear register(0x0a) value
+    reg_spi_sp|= DivClock;     //0x0a: bit0~bit6 set spi clock ; spi clock=system clock/((DivClock+1)*2)
+    reg_spi_sp|=FLD_SPI_ENABLE;//0x0a: bit7 enables spi function mode
+    reg_spi_ctrl&= (~FLD_SPI_MASTER_MODE_EN ); //disable master mode
+    reg_spi_inv_clk &= (~FLD_SPI_MODE_WORK_MODE);
+    reg_spi_inv_clk|= Mode; //select SPI mode,surpport four modes
 }
 /**
  * @brief     This function selects a pin port for the SPI interface (slave mode)
  * @param[in] PinGrp - the selected pin port
  * @return    none
  *  A3:5b7[0] set 1 as spi input,set 0 not as spi input ;5b7[4] set 1 as i2c input ,set 0 not as i2c input
- *	A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
- *	B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
- *	D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
- *	5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
- *	spi i2c mux sel:
- *	step1:close gpio func;
- *	step2:set 0x5a8-0x5af sel spii2c func;
- *	step3:set 5b6[7:4] to sel spi or i2c output;
- *	step4:set 5b7[7:0] to sel spi or i2c input;
- *	step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
+ *    A4:5b7[1] set 1 as spi input,set 0 not as spi input ;5b7[5] set 1 as i2c input ,set 0 not as i3c input
+ *    B6:5b7[2] set 1 as spi input,set 0 not as spi input ;5b7[6] set 1 as i2c input ,set 0 not as i4c input
+ *    D7:5b7[3] set 1 as spi input,set 0 not as spi input ;5b7[7] set 1 as i2c input ,set 0 not as i5c input
+ *    5b6[7:4]  set spi or i2c output,5b6[5:4] PA spi sel, 5b6[6] PB spi sel,5b6[7] PD spi_sel
+ *    spi i2c mux sel:
+ *    step1:close gpio func;
+ *    step2:set 0x5a8-0x5af sel spii2c func;
+ *    step3:set 5b6[7:4] to sel spi or i2c output;
+ *    step4:set 5b7[7:0] to sel spi or i2c input;
+ *    step5 if use pd[6]as spi slave csn,need to open pd[2] gpio func,because pd[2]have high priority than pd[6]
  */
 void spi_slave_gpio_set(SPI_GPIO_SclkTypeDef sclk_pin,SPI_GPIO_CsTypeDef cs_pin,SPI_GPIO_SdoTypeDef sdo_pin, SPI_GPIO_SdiTypeDef sdi_pin)
 {
-	if(sclk_pin == SPI_GPIO_SCL_A4 ||sdi_pin == SPI_GPIO_SDI_A3 ||sdo_pin == SPI_GPIO_SDO_A2){
+    if(sclk_pin == SPI_GPIO_SCL_A4 ||sdi_pin == SPI_GPIO_SDI_A3 ||sdo_pin == SPI_GPIO_SDO_A2){
 
-			reg_pin_i2c_spi_out_en |= (FLD_PIN_PAGROUP_SPI_EN);
-			if(sclk_pin == SPI_GPIO_SCL_A4){
+            reg_pin_i2c_spi_out_en |= (FLD_PIN_PAGROUP_SPI_EN);
+            if(sclk_pin == SPI_GPIO_SCL_A4){
 
-				reg_pin_i2c_spi_en |= (FLD_PIN_PA4_SPI_EN);
-				reg_pin_i2c_spi_en &= ~(FLD_PIN_PA4_I2C_EN);
-			}
-			if (sdi_pin == SPI_GPIO_SDI_A3){
+                reg_pin_i2c_spi_en |= (FLD_PIN_PA4_SPI_EN);
+                reg_pin_i2c_spi_en &= ~(FLD_PIN_PA4_I2C_EN);
+            }
+            if (sdi_pin == SPI_GPIO_SDI_A3){
 
-				reg_pin_i2c_spi_en |= (FLD_PIN_PA3_SPI_EN);
-				reg_pin_i2c_spi_en &= ~(FLD_PIN_PA3_I2C_EN);
-			}
-		}
+                reg_pin_i2c_spi_en |= (FLD_PIN_PA3_SPI_EN);
+                reg_pin_i2c_spi_en &= ~(FLD_PIN_PA3_I2C_EN);
+            }
+        }
 
-	   if(sdo_pin == SPI_GPIO_SDO_B7 || sdi_pin == SPI_GPIO_SDI_B6){
+       if(sdo_pin == SPI_GPIO_SDO_B7 || sdi_pin == SPI_GPIO_SDI_B6){
 
-			reg_pin_i2c_spi_out_en |= (FLD_PIN_PBGROUP_SPI_EN);
+            reg_pin_i2c_spi_out_en |= (FLD_PIN_PBGROUP_SPI_EN);
 
-			if(sdi_pin == SPI_GPIO_SDI_B6){
+            if(sdi_pin == SPI_GPIO_SDI_B6){
 
-				reg_pin_i2c_spi_en |= (FLD_PIN_PB6_SPI_EN);
-				reg_pin_i2c_spi_en &= ~(FLD_PIN_PB6_I2C_EN);
-			}
-		}
+                reg_pin_i2c_spi_en |= (FLD_PIN_PB6_SPI_EN);
+                reg_pin_i2c_spi_en &= ~(FLD_PIN_PB6_I2C_EN);
+            }
+        }
 
-	   reg_pin_i2c_spi_out_en |= (FLD_PIN_PDGROUP_SPI_EN);
+       reg_pin_i2c_spi_out_en |= (FLD_PIN_PDGROUP_SPI_EN);
 
-	   if(sclk_pin == SPI_GPIO_SCL_D7){
+       if(sclk_pin == SPI_GPIO_SCL_D7){
 
-		  reg_pin_i2c_spi_en |= (FLD_PIN_PD7_SPI_EN);
-		  reg_pin_i2c_spi_en &= ~(FLD_PIN_PD7_I2C_EN);
-	   }
-	   gpio_set_func(sclk_pin ,AS_SPI);
-	   gpio_set_func(cs_pin   ,AS_SPI);
-	   gpio_set_func(sdo_pin  ,AS_SPI);
-	   gpio_set_func(sdi_pin  ,AS_SPI);
-	   gpio_set_input_en(sclk_pin, 1);
-	   gpio_set_input_en(cs_pin, 1);
-	   gpio_set_input_en(sdi_pin, 1);
+          reg_pin_i2c_spi_en |= (FLD_PIN_PD7_SPI_EN);
+          reg_pin_i2c_spi_en &= ~(FLD_PIN_PD7_I2C_EN);
+       }
+       gpio_set_func(sclk_pin ,AS_SPI);
+       gpio_set_func(cs_pin   ,AS_SPI);
+       gpio_set_func(sdo_pin  ,AS_SPI);
+       gpio_set_func(sdi_pin  ,AS_SPI);
+       gpio_set_input_en(sclk_pin, 1);
+       gpio_set_input_en(cs_pin, 1);
+       gpio_set_input_en(sdi_pin, 1);
 
 }
 
 
 /**
- * @brief 		This function use to set the share mode of SPI.
- * @param[in] 	none
- * @return 		none
+ * @brief         This function use to set the share mode of SPI.
+ * @param[in]     none
+ * @return         none
  */
 void spi_set_share_mode_en(void)
 {
-	reg_spi_ctrl |= FLD_SPI_SHARE_MODE; //0x09:bit[5] enable share mode
+    reg_spi_ctrl |= FLD_SPI_SHARE_MODE; //0x09:bit[5] enable share mode
 }

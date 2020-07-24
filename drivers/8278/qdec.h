@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     qdec.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 #pragma once
 
 #include "clock.h"
@@ -35,14 +35,14 @@
  */
 typedef enum
 {
-	PA2A,
-	PA3A,
-	PB6A,
-	PB7A,
-	PC2A,
-	PC3A,
-	PD6A,
-	PD7A,
+    PA2A,
+    PA3A,
+    PB6A,
+    PB7A,
+    PC2A,
+    PC3A,
+    PD6A,
+    PD7A,
 
 }QDEC_InputAchTypeDef;
 
@@ -51,14 +51,14 @@ typedef enum
  */
 typedef enum
 {
-	PA2B,
-	PA3B,
-	PB6B,
-	PB7B,
-	PC2B,
-	PC3B,
-	PD6B,
-	PD7B,
+    PA2B,
+    PA3B,
+    PB6B,
+    PB7B,
+    PC2B,
+    PC3B,
+    PD6B,
+    PD7B,
 }QDEC_InputBchTypeDef;
 
 
@@ -73,12 +73,12 @@ typedef enum
  */
 typedef enum
 {
-	COMMON_MODE,
-	DOUBLE_ACCURACY_MODE,
+    COMMON_MODE,
+    DOUBLE_ACCURACY_MODE,
 }QDEC_ModeTypeDef;
 
-#define rge_qdec_load 	0xd8
-#define reg_qdec_count 	0xd0
+#define rge_qdec_load  0xd8
+#define reg_qdec_count 0xd0
 #define reg_qdec_reset 0xd6
 
 /**

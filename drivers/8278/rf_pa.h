@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     rf_pa.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #ifndef BLT_PA_H_
 #define BLT_PA_H_
@@ -46,9 +46,9 @@
 
 
 
-#define PA_TYPE_OFF							0
-#define PA_TYPE_TX_ON						1
-#define PA_TYPE_RX_ON						2
+#define PA_TYPE_OFF                          0
+#define PA_TYPE_TX_ON                        1
+#define PA_TYPE_RX_ON                        2
 
 
 typedef void (*rf_pa_callback_t)(int type);

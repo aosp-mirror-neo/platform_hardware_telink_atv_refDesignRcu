@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     ll_conn_phy.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #ifndef LL_CONN_PHY_H_
 #define LL_CONN_PHY_H_
@@ -35,15 +35,15 @@
 /******************************* Macro & Enumeration variables for Stack, user can not use!!!!  ********************************/
 #if (LL_FEATURE_ENABLE_LE_2M_PHY | LL_FEATURE_ENABLE_LE_CODED_PHY)
 
-ll_conn_phy_t*	blt_ll_get_conn_phy_ptr(u16 connHandle);
+ll_conn_phy_t*    blt_ll_get_conn_phy_ptr(u16 connHandle);
 extern _attribute_aligned_(4) ll_conn_phy_t blt_conn_phy;
 
 
 typedef int (*ll_conn_phy_update_callback_t)(void);
 typedef int (*ll_conn_phy_switch_callback_t)(void);
 
-extern 	ll_conn_phy_update_callback_t	ll_conn_phy_update_cb;
-extern 	ll_conn_phy_switch_callback_t	ll_conn_phy_swicth_cb;
+extern     ll_conn_phy_update_callback_t    ll_conn_phy_update_cb;
+extern     ll_conn_phy_switch_callback_t    ll_conn_phy_swicth_cb;
 
 #endif
 
@@ -89,9 +89,9 @@ extern 	ll_conn_phy_switch_callback_t	ll_conn_phy_swicth_cb;
 
 /*******************************  Stack Interface, user can not use!!! *******************************************************/
 //2M/Coded PHY
-void 		blt_ll_sendPhyReq(void);
-int 		blt_ll_updateConnPhy(void);
-int 		blt_ll_switchConnPhy(void);
+void         blt_ll_sendPhyReq(void);
+int         blt_ll_updateConnPhy(void);
+int         blt_ll_switchConnPhy(void);
 
 
 

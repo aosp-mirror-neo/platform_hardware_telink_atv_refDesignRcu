@@ -1,5 +1,5 @@
-/********************************************************************************************************
- * @file     config.h 
+/******************************************************************************
+ * @file     config.h
  *
  * @brief    for TLSR chips
  *
@@ -20,20 +20,20 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
- *  limitations under the License.   
- *           
- *******************************************************************************************************/
+ *  limitations under the License.
+ *
+ *****************************************************************************/
 
 #pragma once
 
 
-#define	CHIP_TYPE_8255  	1
-#define	CHIP_TYPE_8258  	2
-#define	CHIP_TYPE_8278  	3
+#define    CHIP_TYPE_8255      1
+#define    CHIP_TYPE_8258      2
+#define    CHIP_TYPE_8278      3
 
 
 #ifndef CHIP_TYPE
-#define	CHIP_TYPE 			1000
+#define    CHIP_TYPE             1000
 #endif
 
 
@@ -41,18 +41,18 @@
 
 
 
-#define	MCU_CORE_8255 		1
-#define	MCU_CORE_8258 		2
-#define	MCU_CORE_8278 		3
+#define    MCU_CORE_8255         1
+#define    MCU_CORE_8258         2
+#define    MCU_CORE_8278         3
 
 #if(CHIP_TYPE == CHIP_TYPE_8255)
-	#define MCU_CORE_TYPE	MCU_CORE_8255
+    #define MCU_CORE_TYPE    MCU_CORE_8255
 #elif(CHIP_TYPE == CHIP_TYPE_8258)
-	#define MCU_CORE_TYPE	MCU_CORE_8258
+    #define MCU_CORE_TYPE    MCU_CORE_8258
 #elif(CHIP_TYPE == CHIP_TYPE_8278)
-	#define MCU_CORE_TYPE	MCU_CORE_8278
+    #define MCU_CORE_TYPE    MCU_CORE_8278
 #else
-	#define MCU_CORE_TYPE	1000
+    #define MCU_CORE_TYPE    1000
 #endif
 
 

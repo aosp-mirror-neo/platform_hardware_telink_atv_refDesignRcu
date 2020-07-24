@@ -14,7 +14,7 @@ OBJS += \
 %.o: ../%.S
 	@echo 'Building file: $<'
 	@echo 'Invoking: TC32 CC/Assembler'
-	tc32-elf-gcc -DMCU_STARTUP_8278_RET_32K -c -o"$@" "$<"
+	tc32-elf-gcc -DMCU_STARTUP_8271_RET_32K -c -o"$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

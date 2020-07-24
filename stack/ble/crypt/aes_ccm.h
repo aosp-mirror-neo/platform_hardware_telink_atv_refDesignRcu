@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     aes_ccm.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma  once
 
 #include <stack/ble/ll/ll.h>
@@ -30,10 +30,10 @@
 #define AES_BLOCK_SIZE     16
 
 
-//#define		SUCCESS			0
+//#define        SUCCESS            0
 enum {
     AES_SUCC = SUCCESS,
-    AES_NO_BUF,               
+    AES_NO_BUF,
     AES_FAIL,
 };
 
@@ -44,7 +44,7 @@ struct CCM_FLAGS_TAG {
             u8 L : 3;
             u8 M : 3;
             u8 aData :1;
-            u8 reserved :1;            
+            u8 reserved :1;
         } bf;
         u8 val;
     };
@@ -58,7 +58,7 @@ typedef struct {
         u8 A[AES_BLOCK_SIZE];
         u8 B[AES_BLOCK_SIZE];
     } bf;
-    
+
     u8 tmpResult[AES_BLOCK_SIZE];
     u8 newAstr[AES_BLOCK_SIZE];
 } aes_enc_t;
@@ -75,7 +75,7 @@ void aes_ecb_decryption(u8 *key, u8 *encrypted_data, u8 *decrypted_data);
 void aes_ll_encryption(u8 *key, u8 *plaintext, u8 *result);
 void aes_ll_ccm_encryption_init (u8 *ltk, u8 *skdm, u8 *skds, u8 *ivm, u8 *ivs, ble_crypt_para_t *pd);
 void aes_ll_ccm_encryption(u8 *pkt, int master, ble_crypt_para_t *pd);
-int aes_ll_ccm_decryption(u8 *pkt, int master, ble_crypt_para_t *pd);		//OK return 0
+int aes_ll_ccm_decryption(u8 *pkt, int master, ble_crypt_para_t *pd);        //OK return 0
 u8 aes_att_encryption_packet(u8 *key, u8 *iv, u8 *mic, u8 mic_len, u8 *ps, u8 len);
 u8 aes_att_decryption_packet(u8 *key, u8 *iv, u8 *mic, u8 mic_len, u8 *ps, u8 len);
 

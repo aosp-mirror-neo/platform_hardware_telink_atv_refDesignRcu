@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     hci_event.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 /*
  * hci_event.h
  *
@@ -40,36 +40,36 @@
  *  @brief  Definition for general HCI event packet
  */
 typedef struct {
-	hci_type_t type;
-	u8         eventCode;
-	u8         paraLen;
-	u8         parameters[1];
+    hci_type_t type;
+    u8         eventCode;
+    u8         paraLen;
+    u8         parameters[1];
 } hci_event_t;
 
 
 typedef struct {
-	u8         numHciCmds;
-	u8         opCode_OCF;
-	u8		   opCode_OGF;
-	u8         returnParas[1];
+    u8         numHciCmds;
+    u8         opCode_OCF;
+    u8           opCode_OGF;
+    u8         returnParas[1];
 } hci_cmdCompleteEvt_t;
 
 
 typedef struct {
-	u8         status;
-	u8         numHciCmds;
-	u8         opCode_OCF;
-	u8		   opCode_OGF;
+    u8         status;
+    u8         numHciCmds;
+    u8         opCode_OCF;
+    u8           opCode_OGF;
 } hci_cmdStatusEvt_t;
 
 
 
 typedef struct {
-	hci_type_t type;
-	u8         eventCode;
-	u8         paraLen;
-	u8         subEventCode;
-	u8         parameters[1];
+    hci_type_t type;
+    u8         eventCode;
+    u8         paraLen;
+    u8         subEventCode;
+    u8         parameters[1];
 } hci_le_metaEvt_t;
 
 
@@ -87,11 +87,11 @@ typedef struct {
  */
 // Advertise report event type
 typedef enum {
-	ADV_REPORT_EVENT_TYPE_ADV_IND 		= 0x00,
-	ADV_REPORT_EVENT_TYPE_DIRECT_IND 	= 0x01,
-	ADV_REPORT_EVENT_TYPE_SCAN_IND 		= 0x02,
-	ADV_REPORT_EVENT_TYPE_NONCONN_IND 	= 0x03,
-	ADV_REPORT_EVENT_TYPE_SCAN_RSP 		= 0x04,
+    ADV_REPORT_EVENT_TYPE_ADV_IND         = 0x00,
+    ADV_REPORT_EVENT_TYPE_DIRECT_IND     = 0x01,
+    ADV_REPORT_EVENT_TYPE_SCAN_IND         = 0x02,
+    ADV_REPORT_EVENT_TYPE_NONCONN_IND     = 0x03,
+    ADV_REPORT_EVENT_TYPE_SCAN_RSP         = 0x04,
 } advReportEventType_t;
 
 
@@ -99,51 +99,51 @@ typedef enum {
 
 
 typedef struct {
-	u8         status;
-	u16        connHandle;
-	u8         reason;
+    u8         status;
+    u16        connHandle;
+    u8         reason;
 } hci_disconnectionCompleteEvt_t;
 
 
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u16        connHandle;
-	u8         role;
-	u8         peerAddrType;
-	u8         peerAddr[BLE_ADDR_LEN];
-	u16        connInterval;
-	u16        slaveLatency;
-	u16        supervisionTimeout;
-	u8         masterClkAccuracy;
+    u8         subEventCode;
+    u8         status;
+    u16        connHandle;
+    u8         role;
+    u8         peerAddrType;
+    u8         peerAddr[BLE_ADDR_LEN];
+    u16        connInterval;
+    u16        slaveLatency;
+    u16        supervisionTimeout;
+    u8         masterClkAccuracy;
 } hci_le_connectionCompleteEvt_t;
 
 
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u16        connHandle;
-	u16        connInterval;
-	u16        connLatency;
-	u16        supervisionTimeout;
+    u8         subEventCode;
+    u8         status;
+    u16        connHandle;
+    u16        connInterval;
+    u16        connLatency;
+    u16        supervisionTimeout;
 } hci_le_connectionUpdateCompleteEvt_t;
 
 
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u16        connHandle;
-	u8		   feature[LL_FEATURE_SIZE];
+    u8         subEventCode;
+    u8         status;
+    u16        connHandle;
+    u8           feature[LL_FEATURE_SIZE];
 } hci_le_readRemoteFeaturesCompleteEvt_t;
 
 
 typedef struct {
-	u8         subEventCode;
-	u16        connHandle;  //no aligned, can not be used as pointer
-	u16  	   maxTxOct;
-	u16		   maxTxtime;
-	u16  	   maxRxOct;
-	u16		   maxRxtime;
+    u8         subEventCode;
+    u16        connHandle;  //no aligned, can not be used as pointer
+    u16         maxTxOct;
+    u16           maxTxtime;
+    u16         maxRxOct;
+    u16           maxRxtime;
 } hci_le_dataLengthChangeEvt_t;
 
 
@@ -151,18 +151,18 @@ typedef struct {
  *  @brief  Definition for HCI LE Read Local P-256 Public Key Complete event
  */
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u8         localP256Key[64];
+    u8         subEventCode;
+    u8         status;
+    u8         localP256Key[64];
 } hci_le_readLocalP256KeyCompleteEvt_t;
 
 /**
  *  @brief  Definition for HCI LE generate DHKey Complete event
  */
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u8         DHKey[32];
+    u8         subEventCode;
+    u8         status;
+    u8         DHKey[32];
 } hci_le_generateDHKeyCompleteEvt_t;
 
 
@@ -170,10 +170,10 @@ typedef struct {
  *  @brief  Definition for HCI long term key request event
  */
 typedef struct {
-	u8         subEventCode;
-	u16        connHandle;
-	u8         random[8];
-	u16        ediv;
+    u8         subEventCode;
+    u16        connHandle;
+    u8         random[8];
+    u16        ediv;
 } hci_le_longTermKeyRequestEvt_t;
 
 
@@ -181,17 +181,17 @@ typedef struct {
  *  @brief  Definition for HCI Encryption Change event
  */
 typedef struct {
-	u8         status;
-	u16        connHandle;
-	u8         encryption_enable;
+    u8         status;
+    u16        connHandle;
+    u8         encryption_enable;
 } hci_le_encryptEnableEvt_t;
 
 /**
  *  @brief  Definition for HCI Encryption Key Refresh Complete event
  */
 typedef struct {
-	u8         status;
-	u16        connHandle;
+    u8         status;
+    u16        connHandle;
 } hci_le_encryptKeyRefreshEvt_t;
 
 
@@ -204,11 +204,11 @@ typedef struct {
  *  @brief  Definition for HCI LE PHY Update Complete event
  */
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u16        connHandle;
-	u8 		   tx_phy;
-	u8		   rx_phy;
+    u8         subEventCode;
+    u8         status;
+    u16        connHandle;
+    u8            tx_phy;
+    u8           rx_phy;
 } hci_le_phyUpdateCompleteEvt_t;
 
 
@@ -216,7 +216,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Extended Advertising Report event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_extAdvReportEvt_t;
 
 
@@ -224,7 +224,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Periodic Advertising Sync Established Event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_PeriodicAdvSyncEstablishedEvt_t;
 
 
@@ -232,7 +232,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Periodic Advertising Report Event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_periodicAdvReportEvt_t;
 
 
@@ -240,7 +240,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Periodic Advertising Sync Lost Event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_periodicAdvSyncLostEvt_t;
 
 
@@ -248,7 +248,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Scan Timeout Event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_scanTimeoutEvt_t;
 
 
@@ -256,11 +256,11 @@ typedef struct {
  *  @brief  Definition for HCI LE Advertising Set Terminated Event
  */
 typedef struct {
-	u8         subEventCode;
-	u8         status;
-	u8         advHandle;
-	u16		   connHandle;
-	u8		   num_compExtAdvEvt;
+    u8         subEventCode;
+    u8         status;
+    u8         advHandle;
+    u16           connHandle;
+    u8           num_compExtAdvEvt;
 } hci_le_advSetTerminatedEvt_t;
 
 
@@ -268,7 +268,7 @@ typedef struct {
  *  @brief  Definition for HCI LE Scan Request Received Event
  */
 typedef struct {
-	//TODO
+    //TODO
 } hci_le_scanReqRcvdEvt_t;
 
 
@@ -276,9 +276,9 @@ typedef struct {
  *  @brief  Definition for HCI LE Channel Selection Algorithm Event
  */
 typedef struct {
-	u8         subEventCode;
-	u16        connHandle;
-	u8		   channel_selection_algotihm;
+    u8         subEventCode;
+    u16        connHandle;
+    u8           channel_selection_algotihm;
 } hci_le_chnSelectAlgorithmEvt_t;
 
 
@@ -297,7 +297,7 @@ void hci_cmdStatus_evt(u8 numHciCmds, u8 opCode_ocf, u8 opCode_ogf, u8 status, u
 void hci_le_connectionComplete_evt(u8 status, u16 connHandle, u8 role, u8 peerAddrType, u8 *peerAddr,
                                    u16 connInterval, u16 slaveLatency, u16 supervisionTimeout, u8 masterClkAccuracy);
 void hci_le_connectionUpdateComplete_evt(u8 status, u16 connHandle, u16 connInterval,
-        									u16 connLatency, u16 supervisionTimeout);
+                                            u16 connLatency, u16 supervisionTimeout);
 void hci_le_readRemoteFeaturesComplete_evt(u8 status, u16 connHandle, u8 * feature);
 
 void hci_le_chennel_selection_algorithm_evt(u16 connhandle, u8 channel_selection_alg);

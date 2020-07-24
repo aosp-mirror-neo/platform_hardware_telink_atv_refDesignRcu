@@ -23,6 +23,7 @@
    with password: telink123
 
    The current version of the library files are in folder "Google Ref RCU For ATV/Pro_Lib"
+   Please dowdload the most recently dated tgz file.
 
 2. EXtract the tgz file and copy the .a files into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
 
@@ -30,7 +31,7 @@
 ========== Instructions for building the SDK ==========
 
 1. cd into the "8278_ble_remote" directory under the SDK directory "Google_ATV_RCU_Reference_SDK".
-2. Type "make" to build the SDK or "make clean" to clean the project.
+2. Type "make" to build the SDK or "make clean" to clean the project. 
 
 
 ========== Instructions for installing the burning tool via 3 (power, SWS, ground) wires ==========

@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     usbkb.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma once
 #include <application/usbstd/HIDClassCommon.h>
 #include <application/usbstd/HIDReportData.h>
@@ -38,11 +38,11 @@ extern "C" {
 #endif
 
 
-#define DAT_TYPE_KB			1
-#define DAT_TYPE_MOUSE		2
+#define DAT_TYPE_KB            1
+#define DAT_TYPE_MOUSE         2
 
-#define USB_FIFO_NUM		4
-#define USB_FIFO_SIZE		8
+#define USB_FIFO_NUM           4
+#define USB_FIFO_SIZE          8
 
 extern u8 usb_fifo[USB_FIFO_NUM][USB_FIFO_SIZE];
 extern u8 usb_ff_rptr;

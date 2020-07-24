@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     qdec.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 #include "qdec.h"
 
 /**
@@ -33,8 +33,8 @@
  */
 void qdec_set_pin(QDEC_InputAchTypeDef channelA,QDEC_InputBchTypeDef channelB)
 {
-	write_reg8(reg_qdec_channel_a,channelA);
-	write_reg8(reg_qdec_channel_b,channelB);
+    write_reg8(reg_qdec_channel_a,channelA);
+    write_reg8(reg_qdec_channel_b,channelB);
 }
 
 /**
@@ -44,7 +44,7 @@ void qdec_set_pin(QDEC_InputAchTypeDef channelA,QDEC_InputBchTypeDef channelB)
  */
 void qdec_set_mode(QDEC_ModeTypeDef mode)
 {
-	write_reg8(reg_qdec_mode,(read_reg8(reg_qdec_mode)&0xfe)|mode);
+    write_reg8(reg_qdec_mode,(read_reg8(reg_qdec_mode)&0xfe)|mode);
 }
 
 /**
@@ -54,8 +54,8 @@ void qdec_set_mode(QDEC_ModeTypeDef mode)
  */
 void qdec_clk_en(void)
 {
-	rc_32k_cal();
-	BM_SET(reg_clk_en0,FLD_CLK0_QDEC_EN);
+    rc_32k_cal();
+    BM_SET(reg_clk_en0,FLD_CLK0_QDEC_EN);
 }
 
 volatile int total_count =0;
@@ -67,19 +67,19 @@ volatile int total_count =0;
  */
 unsigned char qdec_get_count_value(void)
 {
-	char tmp;
-	unsigned int pol = 0x100;
-	write_reg8(rge_qdec_load,0x01);
-	while(read_reg8(rge_qdec_load) & 0x01);
+    char tmp;
+    unsigned int pol = 0x100;
+    write_reg8(rge_qdec_load,0x01);
+    while(read_reg8(rge_qdec_load) & 0x01);
 
-	tmp = read_reg8(reg_qdec_count);
+    tmp = read_reg8(reg_qdec_count);
 
-	if((tmp >> 7) == 0x01)
-		total_count-= (pol -tmp);
-	else
-		total_count += read_reg8(reg_qdec_count);
+    if((tmp >> 7) == 0x01)
+        total_count-= (pol -tmp);
+    else
+        total_count += read_reg8(reg_qdec_count);
 
-	return tmp;
+    return tmp;
 }
 
 /**
@@ -89,7 +89,7 @@ unsigned char qdec_get_count_value(void)
  */
 void qdec_clear_conuter(void)
 {
-	write_reg8(reg_qdec_reset,read_reg8(reg_qdec_reset)&0xfe);
+    write_reg8(reg_qdec_reset,read_reg8(reg_qdec_reset)&0xfe);
 }
 
 /**
@@ -99,7 +99,7 @@ void qdec_clear_conuter(void)
  */
 void qdec_set_debouncing(char thrsh)
 {
-	write_reg8(reg_qdec_set,(read_reg8(reg_qdec_set)&0xf8)|(thrsh&0x07));
+    write_reg8(reg_qdec_set,(read_reg8(reg_qdec_set)&0xf8)|(thrsh&0x07));
 }
 
 

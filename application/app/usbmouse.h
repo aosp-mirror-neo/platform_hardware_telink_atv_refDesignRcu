@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     usbmouse.h
  *
  * @brief    for TLSR chips
@@ -21,8 +21,8 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *           
- *******************************************************************************************************/
+ *
+ *****************************************************************************/
 #pragma once
 
 
@@ -35,16 +35,16 @@
 
 /* Enable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
-	extern "C" {
+    extern "C" {
 #endif
 
 
 #define MOUSE_REPORT_DATA_LEN     (sizeof(mouse_data_t))
-#define MEDIA_REPORT_DATA_LEN		4
+#define MEDIA_REPORT_DATA_LEN        4
 int usbmouse_hid_report(u8 report_id, u8 *data, int cnt);
 
 
 /* Disable C linkage for C++ Compilers: */
 #if defined(__cplusplus)
-	}
+    }
 #endif

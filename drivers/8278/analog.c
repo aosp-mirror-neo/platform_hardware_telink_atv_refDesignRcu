@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     analog.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 
 #include "analog.h"
@@ -37,7 +37,7 @@
  * @return     none.
  */
 static inline void analog_wait(){
-	while(reg_ana_ctrl & FLD_ANA_BUSY){}
+    while(reg_ana_ctrl & FLD_ANA_BUSY){}
 }
 
 /**
@@ -46,15 +46,15 @@ static inline void analog_wait(){
  * @return     the result of read.
  */
 _attribute_ram_code_ unsigned char analog_read(unsigned char addr){
-	unsigned char r = irq_disable();
+    unsigned char r = irq_disable();
 
-	reg_ana_addr = addr;
-	reg_ana_ctrl = (FLD_ANA_START);
-	analog_wait();
-	unsigned char data = reg_ana_data;
-	reg_ana_ctrl = 0;
-	irq_restore(r);
-	return data;
+    reg_ana_addr = addr;
+    reg_ana_ctrl = (FLD_ANA_START);
+    analog_wait();
+    unsigned char data = reg_ana_data;
+    reg_ana_ctrl = 0;
+    irq_restore(r);
+    return data;
 }
 
 /**
@@ -64,14 +64,14 @@ _attribute_ram_code_ unsigned char analog_read(unsigned char addr){
  * @return     none.
  */
 _attribute_ram_code_ void analog_write(unsigned char addr, unsigned char v){
-	unsigned char r = irq_disable();
+    unsigned char r = irq_disable();
 
-	reg_ana_addr = addr;
-	reg_ana_data = v;
-	reg_ana_ctrl = (FLD_ANA_START | FLD_ANA_RW);
-	analog_wait();
-	reg_ana_ctrl = 0;
-	irq_restore(r);
+    reg_ana_addr = addr;
+    reg_ana_data = v;
+    reg_ana_ctrl = (FLD_ANA_START | FLD_ANA_RW);
+    analog_wait();
+    reg_ana_ctrl = 0;
+    irq_restore(r);
 }
 
 /**
@@ -82,20 +82,20 @@ _attribute_ram_code_ void analog_write(unsigned char addr, unsigned char v){
  * @return     none.
  */
 void analog_read_buff(unsigned char addr, unsigned char *buff, int len){
-	unsigned char r = irq_disable();
+    unsigned char r = irq_disable();
 
-	reg_ana_ctrl = 0;		// issue clock
-	reg_ana_addr = addr;
-	while(len--){
-		reg_ana_ctrl = FLD_ANA_CYC | FLD_ANA_START;
-		analog_wait();
+    reg_ana_ctrl = 0;        // issue clock
+    reg_ana_addr = addr;
+    while(len--){
+        reg_ana_ctrl = FLD_ANA_CYC | FLD_ANA_START;
+        analog_wait();
 
-		*buff++ = reg_ana_data;
+        *buff++ = reg_ana_data;
 
-	}
-	reg_ana_ctrl = 0; 		// finish
+    }
+    reg_ana_ctrl = 0;         // finish
 
-	irq_restore(r);
+    irq_restore(r);
 }
 
 /**
@@ -106,18 +106,18 @@ void analog_read_buff(unsigned char addr, unsigned char *buff, int len){
  * @return     none.
  */
 void analog_write_buff(unsigned char addr, unsigned char *buff, int len){
-	unsigned char r = irq_disable();
+    unsigned char r = irq_disable();
 
-	reg_ana_addr = addr;
-	while(len--){
-		reg_ana_data = *buff++;
+    reg_ana_addr = addr;
+    while(len--){
+        reg_ana_data = *buff++;
 
-		reg_ana_ctrl = FLD_ANA_CYC | FLD_ANA_START | FLD_ANA_RW; 	// multi write
-		analog_wait();
-	}
-	reg_ana_ctrl = 0; 		// finish
+        reg_ana_ctrl = FLD_ANA_CYC | FLD_ANA_START | FLD_ANA_RW;     // multi write
+        analog_wait();
+    }
+    reg_ana_ctrl = 0;         // finish
 
-	irq_restore(r);
+    irq_restore(r);
 }
 
 

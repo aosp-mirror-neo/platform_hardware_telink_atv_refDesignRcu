@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     uart.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "register.h"
 #include "gpio.h"
@@ -36,10 +36,10 @@
  *  @brief  Define mul bits
  */
 enum{
-	UART_BW_MUL1  = 0,
-	UART_BW_MUL2  = 1,
-	UART_BW_MUL3  = 2,
-	UART_BW_MUL4  = 3,
+    UART_BW_MUL1  = 0,
+    UART_BW_MUL2  = 1,
+    UART_BW_MUL3  = 2,
+    UART_BW_MUL4  = 3,
 };
 
 /**
@@ -73,12 +73,12 @@ typedef enum {
  */
 
 typedef enum{
-	UART_TX_PA2 = GPIO_PA2,
-	UART_TX_PB1 = GPIO_PB1,
-	UART_TX_PC2 = GPIO_PC2,
-	UART_TX_PD0 = GPIO_PD0,
-	UART_TX_PD3 = GPIO_PD3,
-	UART_TX_PD7 = GPIO_PD7,
+    UART_TX_PA2 = GPIO_PA2,
+    UART_TX_PB1 = GPIO_PB1,
+    UART_TX_PC2 = GPIO_PC2,
+    UART_TX_PD0 = GPIO_PD0,
+    UART_TX_PD3 = GPIO_PD3,
+    UART_TX_PD7 = GPIO_PD7,
 }UART_TxPinDef;
 
 /**
@@ -86,12 +86,12 @@ typedef enum{
  */
 
 typedef enum{
-	UART_RX_PA0 = GPIO_PA0,
-	UART_RX_PB0 = GPIO_PB0,
-	UART_RX_PB7 = GPIO_PB7,
-	UART_RX_PC3 = GPIO_PC3,
-	UART_RX_PC5 = GPIO_PC5,
-	UART_RX_PD6 = GPIO_PD6,
+    UART_RX_PA0 = GPIO_PA0,
+    UART_RX_PB0 = GPIO_PB0,
+    UART_RX_PB7 = GPIO_PB7,
+    UART_RX_PC3 = GPIO_PC3,
+    UART_RX_PC5 = GPIO_PC5,
+    UART_RX_PD6 = GPIO_PD6,
 }UART_RxPinDef;
 
 /**
@@ -99,10 +99,10 @@ typedef enum{
  */
 
 typedef enum{
-	UART_CTS_PA3 = GPIO_PA3,
-	UART_CTS_PB2 = GPIO_PB2,
-	UART_CTS_PC4 = GPIO_PC4,
-	UART_CTS_PD1 = GPIO_PD1,
+    UART_CTS_PA3 = GPIO_PA3,
+    UART_CTS_PB2 = GPIO_PB2,
+    UART_CTS_PC4 = GPIO_PC4,
+    UART_CTS_PD1 = GPIO_PD1,
 }UART_CtsPinDef;
 
 /**
@@ -110,10 +110,10 @@ typedef enum{
  */
 
 typedef enum{
-	UART_RTS_PA4 = GPIO_PA4,
-	UART_RTS_PB3 = GPIO_PB3,
-	UART_RTS_PB6 = GPIO_PB6,
-	UART_RTS_PC0 = GPIO_PC0,
+    UART_RTS_PA4 = GPIO_PA4,
+    UART_RTS_PB3 = GPIO_PB3,
+    UART_RTS_PB6 = GPIO_PB6,
+    UART_RTS_PC0 = GPIO_PC0,
 }UART_RtsPinDef;
 
 
@@ -136,33 +136,33 @@ static inline unsigned char uart_tx_is_busy(void)
  */
 static inline void uart_reset(void)
 {
-	reg_rst0 |= FLD_RST0_UART;
-	reg_rst0 &= (~FLD_RST0_UART);
+    reg_rst0 |= FLD_RST0_UART;
+    reg_rst0 &= (~FLD_RST0_UART);
 }
 
 
 /**
- * @brief      	This function initializes the UART module.
- * @param[in]  	g_uart_div  -  uart clock divider
- * @param[in]  	g_bwpc      -  bitwidth, should be set to larger than
+ * @brief          This function initializes the UART module.
+ * @param[in]      g_uart_div  -  uart clock divider
+ * @param[in]      g_bwpc      -  bitwidth, should be set to larger than
  *
- *  			sys_clk      baud rate   g_uart_div         g_bwpc
+ *              sys_clk      baud rate   g_uart_div         g_bwpc
  *
- *	  	  	  	16Mhz        9600          118   			 13
- *           	 	 	 	 19200         118     			 6
- *          	 	 	 	 115200         9       		 13
+ *              16Mhz        9600         118                13
+ *                          19200         118                 6
+ *                         115200           9                13
  *
- *	  	  	  	24Mhz        9600          249       		 9
- *           	 	 	 	 19200		   124               9
- *           	 	 	 	 115200         12    			 15
+ *              24Mhz        9600          249               9
+ *                          19200          124               9
+ *                         115200           12              15
  *
- *	  	  	  	32Mhz        9600          235       		 13
- *           	 	 	 	 19200		   235               6
- *           	 	 	 	 115200         17    			 13
+ *              32Mhz        9600          235              13
+ *                          19200          235               6
+ *                         115200           17              13
  *
- *	  	  	  	48Mhz        9600          499       		 9
- *           	 	 	 	 19200		   249               9
- *           	 	 	 	 115200         25    			 15
+ *              48Mhz        9600          499               9
+ *                          19200          249               9
+ *                         115200           25              15
  *
  * @param[in]  Parity      - selected parity type for UART interface
  * @param[in]  StopBit     - selected length of stop bit for UART interface
@@ -171,10 +171,10 @@ static inline void uart_reset(void)
 extern void uart_init(unsigned short g_uart_div, unsigned char g_bwpc, UART_ParityTypeDef Parity, UART_StopBitTypeDef StopBit);
 /**
  * @brief      This function initializes the UART module.
- * @param[in]  Baudrate  	- uart baud rate
+ * @param[in]  Baudrate      - uart baud rate
  * @param[in]  System_clock - clock of system
- * @param[in]  Parity      	- selected parity type for UART interface
- * @param[in]  StopBit     	- selected length of stop bit for UART interface
+ * @param[in]  Parity          - selected parity type for UART interface
+ * @param[in]  StopBit         - selected length of stop bit for UART interface
  * @return     none
  */
 extern void uart_init_baudrate(unsigned int Baudrate,unsigned int System_clock , UART_ParityTypeDef Parity, UART_StopBitTypeDef StopBit);
@@ -202,14 +202,14 @@ extern unsigned char uart_TxIndex;
  * @brief     uart send data function with not DMA method.
  *            variable uart_TxIndex,it must cycle the four registers 0x90 0x91 0x92 0x93 for the design of SOC.
  *            so we need variable to remember the index.
- *			  Before entering power-saving mode,you need to call this function in order to ensure that the data sent is completed
+ *              Before entering power-saving mode,you need to call this function in order to ensure that the data sent is completed
  * @param[in] uartData - the data to be send.
  * @return    none
  */
 extern void uart_ndma_send_byte(unsigned char uartData);
 /**
  * @brief     This function is used to set the 'uart_TxIndex' to 0.
- *			  After wakeup from power-saving mode, you must call this function before sending the data.
+ *              After wakeup from power-saving mode, you must call this function before sending the data.
  * @param[in] none.
  * @return    none.
  */

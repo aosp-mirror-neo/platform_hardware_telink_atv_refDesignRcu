@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     timer.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #ifndef TIMER_H_
 #define TIMER_H_
@@ -35,31 +35,31 @@
  * @brief   Type of Timer
  */
 typedef enum{
-	TIMER0		=0,
-	TIMER1		=1,
-	TIMER2		=2,
+    TIMER0        =0,
+    TIMER1        =1,
+    TIMER2        =2,
 }TIMER_TypeDef;
 
 /**
  * @brief   Mode of Timer
  */
 typedef enum{
-	TIMER_MODE_SYSCLK		=0,
-	TIMER_MODE_GPIO_TRIGGER	=1,
-	TIMER_MODE_GPIO_WIDTH	=2,
-	TIMER_MODE_TICK			=3,
+    TIMER_MODE_SYSCLK        =0,
+    TIMER_MODE_GPIO_TRIGGER    =1,
+    TIMER_MODE_GPIO_WIDTH    =2,
+    TIMER_MODE_TICK            =3,
 }TIMER_ModeTypeDef;
 
-#define	    sys_tick_per_us   				16
-#define		CLOCK_SYS_CLOCK_1250US			(1250 * sys_tick_per_us)
+#define        sys_tick_per_us                   16
+#define        CLOCK_SYS_CLOCK_1250US            (1250 * sys_tick_per_us)
 
 /**
  * @brief   system Timer : 16Mhz, Constant
  */
 enum{
-	CLOCK_16M_SYS_TIMER_CLK_1S  =  16*1000*1000,
-	CLOCK_16M_SYS_TIMER_CLK_1MS = 16*1000,
-	CLOCK_16M_SYS_TIMER_CLK_1US = 16,
+    CLOCK_16M_SYS_TIMER_CLK_1S  =  16*1000*1000,
+    CLOCK_16M_SYS_TIMER_CLK_1MS = 16*1000,
+    CLOCK_16M_SYS_TIMER_CLK_1US = 16,
 };
 
 /**
@@ -70,7 +70,7 @@ enum{
 
 static inline unsigned long clock_time(void)
 {
-	return reg_system_tick;
+    return reg_system_tick;
 }
 
 /**
@@ -80,9 +80,9 @@ static inline unsigned long clock_time(void)
  */
 static inline void systimer_set_capture_tick(unsigned long tick)
 {
-	//0x744 bit[2:0] is always 0, to ensure system timer can be trigger correctly, bit[2:0] of the setting tick should 
-	//set to 0 to match the value of 0x744
-	reg_system_tick_irq = (tick & (~((unsigned long)0x07)));
+    //0x744 bit[2:0] is always 0, to ensure system timer can be trigger correctly, bit[2:0] of the setting tick should
+    //set to 0 to match the value of 0x744
+    reg_system_tick_irq = (tick & (~((unsigned long)0x07)));
 }
 
 
@@ -94,10 +94,10 @@ static inline void systimer_set_capture_tick(unsigned long tick)
 
 extern void sleep_us(unsigned long us);
 
-#define ClockTime			clock_time
-#define WaitUs				sleep_us
-#define WaitMs(t)			sleep_us((t)*1000)
-#define sleep_ms(t)			sleep_us((t)*1000)
+#define ClockTime            clock_time
+#define WaitUs                sleep_us
+#define WaitMs(t)            sleep_us((t)*1000)
+#define sleep_ms(t)            sleep_us((t)*1000)
 
 /**
  * @brief     This function performs to calculation exceed us of the timer.
@@ -108,7 +108,7 @@ extern void sleep_us(unsigned long us);
 
 static inline unsigned int clock_time_exceed(unsigned int ref, unsigned int us)
 {
-	return ((unsigned int)(clock_time() - ref) > us * 16);
+    return ((unsigned int)(clock_time() - ref) > us * 16);
 }
 
 /**

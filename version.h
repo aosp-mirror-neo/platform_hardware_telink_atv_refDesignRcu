@@ -1,5 +1,5 @@
-/********************************************************************************************************
- * @file     adpcm_encode.h
+/******************************************************************************
+ * @file     version.h
  *
  * @brief    for TLSR chips
  *
@@ -20,25 +20,13 @@
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
- *  limitations under the License.   
- *           
- *******************************************************************************************************/
+ *  limitations under the License.
+ *
+ *****************************************************************************/
 
-#ifndef __ADPCM_ENCODE_H_
-#define __ADPCM_ENCODE_H_
+#ifndef VERSION_H_
+#define VERSION_H_
+                                        //-02-03.-00-00
+#define FW_VERSION                  0x01000000//0.0.3.2
 
-
-extern s16 audio_raw_buffer[];
-extern u16 gAdpcmEnSerialNum;
-
-
-void adpcm_encode_init(void);
-
-u8 *adpcm_encode_get_data(void);
-void adpcm_encode_inc_data(void);
-
-
-void adpcm_gol_encode_handler(u8 flag);
-
-
-#endif /* __AUDIO_ENCODE_H_ */
+#endif /* VERSION_H_ */

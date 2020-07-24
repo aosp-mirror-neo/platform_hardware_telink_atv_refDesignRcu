@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     watchdog.c
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #include "register.h"
 
@@ -34,10 +34,10 @@
  */
 void wd_set_interval_ms(unsigned int period_ms,unsigned long int tick_per_ms)
 {
-	static unsigned short tmp_period_ms = 0;
-	tmp_period_ms = (period_ms*tick_per_ms>>18);
-	reg_tmr2_tick = 0x00000000;    //reset tick register
-	reg_tmr_ctrl &= (~FLD_TMR_WD_CAPT);
-	reg_tmr_ctrl |= (tmp_period_ms<<9); //set the capture register
+    static unsigned short tmp_period_ms = 0;
+    tmp_period_ms = (period_ms*tick_per_ms>>18);
+    reg_tmr2_tick = 0x00000000;    //reset tick register
+    reg_tmr_ctrl &= (~FLD_TMR_WD_CAPT);
+    reg_tmr_ctrl |= (tmp_period_ms<<9); //set the capture register
 }
 

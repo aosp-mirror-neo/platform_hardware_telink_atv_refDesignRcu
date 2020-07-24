@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     dfifo.h
  *
  * @brief    for TLSR chips
@@ -22,9 +22,9 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
-#ifndef 	DFIFO_H
-#define 	DFIFO_H
+ *****************************************************************************/
+#ifndef     DFIFO_H
+#define     DFIFO_H
 
 #include "register.h"
 
@@ -36,7 +36,7 @@
  */
 static inline void dfifo_enable_dfifo2(void)
 {
-	reg_dfifo_mode |= FLD_AUD_DFIFO2_IN;
+    reg_dfifo_mode |= FLD_AUD_DFIFO2_IN;
 }
 
 /**
@@ -46,7 +46,7 @@ static inline void dfifo_enable_dfifo2(void)
  */
 static inline void dfifo_disable_dfifo2(void)
 {
-	reg_dfifo_mode &= ~FLD_AUD_DFIFO2_IN;
+    reg_dfifo_mode &= ~FLD_AUD_DFIFO2_IN;
 }
 
 /**
@@ -57,8 +57,8 @@ static inline void dfifo_disable_dfifo2(void)
  */
 static inline void dfifo_set_dfifo0(unsigned short* pbuff,unsigned int size_buff)
 {
-	reg_dfifo0_addr = (unsigned short)((unsigned int)pbuff);
-	reg_dfifo0_size = (size_buff>>4)-1;
+    reg_dfifo0_addr = (unsigned short)((unsigned int)pbuff);
+    reg_dfifo0_size = (size_buff>>4)-1;
 }
 
 /**
@@ -69,8 +69,8 @@ static inline void dfifo_set_dfifo0(unsigned short* pbuff,unsigned int size_buff
  */
 static inline void dfifo_set_dfifo1(unsigned short* pbuff,unsigned int size_buff)
 {
-	reg_dfifo1_addr = (unsigned short)((unsigned int)pbuff);
-	reg_dfifo1_size = (size_buff>>4)-1;
+    reg_dfifo1_addr = (unsigned short)((unsigned int)pbuff);
+    reg_dfifo1_size = (size_buff>>4)-1;
 }
 
 /**
@@ -81,8 +81,8 @@ static inline void dfifo_set_dfifo1(unsigned short* pbuff,unsigned int size_buff
  */
 static inline void dfifo_set_dfifo2(unsigned short* pbuff,unsigned int size_buff)
 {
-	reg_dfifo2_addr = (unsigned short)((unsigned int)pbuff);
-	reg_dfifo2_size = (size_buff>>4)-1;
+    reg_dfifo2_addr = (unsigned short)((unsigned int)pbuff);
+    reg_dfifo2_size = (size_buff>>4)-1;
 }
 
 /**
@@ -94,10 +94,10 @@ static inline void dfifo_set_dfifo2(unsigned short* pbuff,unsigned int size_buff
 static inline void adc_config_misc_channel_buf(unsigned short* pbuff,unsigned int size_buff)
 
 {
-	reg_dfifo_misc_chn_addr = (unsigned short)((unsigned int)pbuff);
-	reg_dfifo_misc_chn_size = (size_buff>>4)-1;
+    reg_dfifo_misc_chn_addr = (unsigned short)((unsigned int)pbuff);
+    reg_dfifo_misc_chn_size = (size_buff>>4)-1;
 
-	reg_dfifo2_wptr = 0;  //clear dfifo2 write pointer
+    reg_dfifo2_wptr = 0;  //clear dfifo2 write pointer
 }
 
 /**
@@ -109,8 +109,8 @@ static inline void adc_config_misc_channel_buf(unsigned short* pbuff,unsigned in
 
 static inline void audio_config_mic_buf(unsigned short* pbuff,unsigned int size_buff)
 {
-	reg_dfifo_audio_addr = (unsigned short)((unsigned int)pbuff);
-	reg_dfifo_audio_size = (size_buff>>4)-1;
+    reg_dfifo_audio_addr = (unsigned short)((unsigned int)pbuff);
+    reg_dfifo_audio_size = (size_buff>>4)-1;
 }
 
 #endif

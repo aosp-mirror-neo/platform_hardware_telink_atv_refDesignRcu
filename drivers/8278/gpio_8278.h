@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     gpio_8278.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 
@@ -32,59 +32,59 @@
 
 
 /**
- *  @brief  Define GPIO types. 
+ *  @brief  Define GPIO types.
  */
 
 typedef enum{
-		GPIO_GROUPA    = 0x000,
-		GPIO_GROUPB    = 0x100,
-		GPIO_GROUPC    = 0x200,
-		GPIO_GROUPD    = 0x300,
-		GPIO_GROUPE    = 0x400,
+        GPIO_GROUPA    = 0x000,
+        GPIO_GROUPB    = 0x100,
+        GPIO_GROUPC    = 0x200,
+        GPIO_GROUPD    = 0x300,
+        GPIO_GROUPE    = 0x400,
 
-	    GPIO_PA0 = GPIO_GROUPA | BIT(0),//Because the IO of A0 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version. 
-		GPIO_PA1 = GPIO_GROUPA | BIT(1),
-		GPIO_PA2 = GPIO_GROUPA | BIT(2),
-		GPIO_PA3 = GPIO_GROUPA | BIT(3),
-		GPIO_PA4 = GPIO_GROUPA | BIT(4),
-		GPIO_PA5 = GPIO_GROUPA | BIT(5), 	GPIO_DM=GPIO_PA5,
-		GPIO_PA6 = GPIO_GROUPA | BIT(6),  GPIO_DP=GPIO_PA6,
-		GPIO_PA7 = GPIO_GROUPA | BIT(7), 	GPIO_SWS=GPIO_PA7,
-		GPIOA_ALL = GPIO_GROUPA | 0x00ff,
+        GPIO_PA0 = GPIO_GROUPA | BIT(0),//Because the IO of A0 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version.
+        GPIO_PA1 = GPIO_GROUPA | BIT(1),
+        GPIO_PA2 = GPIO_GROUPA | BIT(2),
+        GPIO_PA3 = GPIO_GROUPA | BIT(3),
+        GPIO_PA4 = GPIO_GROUPA | BIT(4),
+        GPIO_PA5 = GPIO_GROUPA | BIT(5),     GPIO_DM=GPIO_PA5,
+        GPIO_PA6 = GPIO_GROUPA | BIT(6),  GPIO_DP=GPIO_PA6,
+        GPIO_PA7 = GPIO_GROUPA | BIT(7),     GPIO_SWS=GPIO_PA7,
+        GPIOA_ALL = GPIO_GROUPA | 0x00ff,
 
-		GPIO_PB0 = GPIO_GROUPB | BIT(0),
-		GPIO_PB1 = GPIO_GROUPB | BIT(1),
-		GPIO_PB2 = GPIO_GROUPB | BIT(2),
-		GPIO_PB3 = GPIO_GROUPB | BIT(3),
-		GPIO_PB4 = GPIO_GROUPB | BIT(4),
-		GPIO_PB5 = GPIO_GROUPB | BIT(5),
-		GPIO_PB6 = GPIO_GROUPB | BIT(6),
-		GPIO_PB7 = GPIO_GROUPB | BIT(7),
+        GPIO_PB0 = GPIO_GROUPB | BIT(0),
+        GPIO_PB1 = GPIO_GROUPB | BIT(1),
+        GPIO_PB2 = GPIO_GROUPB | BIT(2),
+        GPIO_PB3 = GPIO_GROUPB | BIT(3),
+        GPIO_PB4 = GPIO_GROUPB | BIT(4),
+        GPIO_PB5 = GPIO_GROUPB | BIT(5),
+        GPIO_PB6 = GPIO_GROUPB | BIT(6),
+        GPIO_PB7 = GPIO_GROUPB | BIT(7),
 
-		GPIO_PC0 = GPIO_GROUPC | BIT(0),
-		GPIO_PC1 = GPIO_GROUPC | BIT(1),
-		GPIO_PC2 = GPIO_GROUPC | BIT(2),
-		GPIO_PC3 = GPIO_GROUPC | BIT(3),
-		GPIO_PC4 = GPIO_GROUPC | BIT(4),
-		GPIO_PC5 = GPIO_GROUPC | BIT(5),
-		GPIO_PC6 = GPIO_GROUPC | BIT(6),
-		GPIO_PC7 = GPIO_GROUPC | BIT(7),
+        GPIO_PC0 = GPIO_GROUPC | BIT(0),
+        GPIO_PC1 = GPIO_GROUPC | BIT(1),
+        GPIO_PC2 = GPIO_GROUPC | BIT(2),
+        GPIO_PC3 = GPIO_GROUPC | BIT(3),
+        GPIO_PC4 = GPIO_GROUPC | BIT(4),
+        GPIO_PC5 = GPIO_GROUPC | BIT(5),
+        GPIO_PC6 = GPIO_GROUPC | BIT(6),
+        GPIO_PC7 = GPIO_GROUPC | BIT(7),
 
-		GPIO_PD0 = GPIO_GROUPD | BIT(0),//Because the IO of D0 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version. 
-		GPIO_PD1 = GPIO_GROUPD | BIT(1),//Because the IO of D1 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version. 
-		GPIO_PD2 = GPIO_GROUPD | BIT(2),
-		GPIO_PD3 = GPIO_GROUPD | BIT(3),
-		GPIO_PD4 = GPIO_GROUPD | BIT(4),
-		GPIO_PD5 = GPIO_GROUPD | BIT(5),
-		GPIO_PD6 = GPIO_GROUPD | BIT(6),
-		GPIO_PD7 = GPIO_GROUPD | BIT(7),//Because the IO of D7 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version. 
+        GPIO_PD0 = GPIO_GROUPD | BIT(0),//Because the IO of D0 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version.
+        GPIO_PD1 = GPIO_GROUPD | BIT(1),//Because the IO of D1 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version.
+        GPIO_PD2 = GPIO_GROUPD | BIT(2),
+        GPIO_PD3 = GPIO_GROUPD | BIT(3),
+        GPIO_PD4 = GPIO_GROUPD | BIT(4),
+        GPIO_PD5 = GPIO_GROUPD | BIT(5),
+        GPIO_PD6 = GPIO_GROUPD | BIT(6),
+        GPIO_PD7 = GPIO_GROUPD | BIT(7),//Because the IO of D7 has internal up, so its can't use for pull_down/pull_up function.This BUG will be fixed in next chip version.
 
-		GPIO_PE0 = GPIO_GROUPE | BIT(0),  GPIO_MSDO=GPIO_PE0,
-		GPIO_PE1 = GPIO_GROUPE | BIT(1),  GPIO_MCLK=GPIO_PE1,
-		GPIO_PE2 = GPIO_GROUPE | BIT(2),  GPIO_MSCN=GPIO_PE2,
-		GPIO_PE3 = GPIO_GROUPE | BIT(3),  GPIO_MSDI=GPIO_PE3,
+        GPIO_PE0 = GPIO_GROUPE | BIT(0),  GPIO_MSDO=GPIO_PE0,
+        GPIO_PE1 = GPIO_GROUPE | BIT(1),  GPIO_MCLK=GPIO_PE1,
+        GPIO_PE2 = GPIO_GROUPE | BIT(2),  GPIO_MSCN=GPIO_PE2,
+        GPIO_PE3 = GPIO_GROUPE | BIT(3),  GPIO_MSDI=GPIO_PE3,
 
-		GPIO_ALL = 0x500,
+        GPIO_ALL = 0x500,
 }GPIO_PinTypeDef;
 
 /**
@@ -92,39 +92,39 @@ typedef enum{
  */
 
 typedef enum{
-	AS_GPIO 	=  0,
-	AS_MSPI 	=  1,
-	AS_SWIRE	=  2,
-	AS_UART		=  3,
-	AS_I2C		=  4,
-	AS_SPI		=  5,
-	AS_I2S		=  6,
-	AS_AMIC		=  7,
-	AS_DMIC		=  8,
-	AS_SDM		=  9,
-	AS_USB		= 10,
-	AS_ADC		= 11,
-	AS_CMP		= 12,
-	AS_ATS		= 13,
+    AS_GPIO     =  0,
+    AS_MSPI     =  1,
+    AS_SWIRE    =  2,
+    AS_UART        =  3,
+    AS_I2C        =  4,
+    AS_SPI        =  5,
+    AS_I2S        =  6,
+    AS_AMIC        =  7,
+    AS_DMIC        =  8,
+    AS_SDM        =  9,
+    AS_USB        = 10,
+    AS_ADC        = 11,
+    AS_CMP        = 12,
+    AS_ATS        = 13,
 
-	AS_PWM0 	= 20,
-	AS_PWM1		= 21,
-	AS_PWM2 	= 22,
-	AS_PWM3		= 23,
-	AS_PWM4 	= 24,
-	AS_PWM5		= 25,
-	AS_PWM0_N	= 26,
-	AS_PWM1_N	= 27,
-	AS_PWM2_N	= 28,
-	AS_PWM3_N	= 29,
-	AS_PWM4_N	= 30,
-	AS_PWM5_N	= 31,
+    AS_PWM0     = 20,
+    AS_PWM1        = 21,
+    AS_PWM2     = 22,
+    AS_PWM3        = 23,
+    AS_PWM4     = 24,
+    AS_PWM5        = 25,
+    AS_PWM0_N    = 26,
+    AS_PWM1_N    = 27,
+    AS_PWM2_N    = 28,
+    AS_PWM3_N    = 29,
+    AS_PWM4_N    = 30,
+    AS_PWM5_N    = 31,
 }GPIO_FuncTypeDef;
 
 
 typedef enum{
-	Level_Low=0,
-	Level_High =1,
+    Level_Low=0,
+    Level_High =1,
 }GPIO_LevelTypeDef;
 
 
@@ -133,18 +133,18 @@ typedef enum{
  *  @brief  Define rising/falling types
  */
 typedef enum{
-	POL_RISING   = 0,  pol_rising = 0,
-	POL_FALLING  = 1,  pol_falling = 1,
+    POL_RISING   = 0,  pol_rising = 0,
+    POL_FALLING  = 1,  pol_falling = 1,
 }GPIO_PolTypeDef;
 
 /**
  *  @brief  Define pull up or down types
  */
 typedef enum {
-	PM_PIN_UP_DOWN_FLOAT    = 0,
-	PM_PIN_PULLUP_1M     	= 1,
-	PM_PIN_PULLDOWN_100K  	= 2,
-	PM_PIN_PULLUP_10K 		= 3,
+    PM_PIN_UP_DOWN_FLOAT    = 0,
+    PM_PIN_PULLUP_1M         = 1,
+    PM_PIN_PULLDOWN_100K      = 2,
+    PM_PIN_PULLUP_10K         = 3,
 }GPIO_PullTypeDef;
 
 
@@ -182,12 +182,12 @@ void gpio_set_func(GPIO_PinTypeDef pin, GPIO_FuncTypeDef func);
  */
 static inline void gpio_set_output_en(GPIO_PinTypeDef pin, unsigned int value)
 {
-	unsigned char	bit = pin & 0xff;
-	if(!value){
-		BM_SET(reg_gpio_oen(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_oen(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(!value){
+        BM_SET(reg_gpio_oen(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_oen(pin), bit);
+    }
 }
 
 /**
@@ -206,7 +206,7 @@ void gpio_set_input_en(GPIO_PinTypeDef pin, unsigned int value);
  */
 static inline int gpio_is_output_en(GPIO_PinTypeDef pin)
 {
-	return !BM_IS_SET(reg_gpio_oen(pin), pin & 0xff);
+    return !BM_IS_SET(reg_gpio_oen(pin), pin & 0xff);
 }
 
 /**
@@ -218,7 +218,7 @@ static inline int gpio_is_output_en(GPIO_PinTypeDef pin)
 
 static inline int gpio_is_input_en(GPIO_PinTypeDef pin)
 {
-	return BM_IS_SET(reg_gpio_ie(pin), pin & 0xff);
+    return BM_IS_SET(reg_gpio_ie(pin), pin & 0xff);
 }
 
 /**
@@ -229,12 +229,12 @@ static inline int gpio_is_input_en(GPIO_PinTypeDef pin)
  */
 static inline void gpio_write(GPIO_PinTypeDef pin, unsigned int value)
 {
-	unsigned char	bit = pin & 0xff;
-	if(value){
-		BM_SET(reg_gpio_out(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_out(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(value){
+        BM_SET(reg_gpio_out(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_out(pin), bit);
+    }
 }
 
 /**
@@ -244,7 +244,7 @@ static inline void gpio_write(GPIO_PinTypeDef pin, unsigned int value)
  */
 static inline unsigned int gpio_read(GPIO_PinTypeDef pin)
 {
-	return BM_IS_SET(reg_gpio_in(pin), pin & 0xff);
+    return BM_IS_SET(reg_gpio_in(pin), pin & 0xff);
 }
 /**
  * @brief     This function read a pin's cache from the buffer.
@@ -254,7 +254,7 @@ static inline unsigned int gpio_read(GPIO_PinTypeDef pin)
  */
 static inline unsigned int gpio_read_cache(GPIO_PinTypeDef pin, unsigned char *p)
 {
-	return p[pin>>8] & (pin & 0xff);
+    return p[pin>>8] & (pin & 0xff);
 }
 
 /**
@@ -264,10 +264,10 @@ static inline unsigned int gpio_read_cache(GPIO_PinTypeDef pin, unsigned char *p
  */
 static inline void gpio_read_all(unsigned char *p)
 {
-	p[0] = REG_ADDR8(0x580);
-	p[1] = REG_ADDR8(0x588);
-	p[2] = REG_ADDR8(0x590);
-	p[3] = REG_ADDR8(0x598);
+    p[0] = REG_ADDR8(0x580);
+    p[1] = REG_ADDR8(0x588);
+    p[2] = REG_ADDR8(0x590);
+    p[3] = REG_ADDR8(0x598);
 }
 
 /**
@@ -277,7 +277,7 @@ static inline void gpio_read_all(unsigned char *p)
  */
 static inline void gpio_toggle(GPIO_PinTypeDef pin)
 {
-	reg_gpio_out(pin) ^= (pin & 0xFF);
+    reg_gpio_out(pin) ^= (pin & 0xFF);
 }
 
 /**
@@ -312,12 +312,12 @@ void gpio_shutdown(GPIO_PinTypeDef pin);
  */
 static inline void gpio_set_interrupt_pol(GPIO_PinTypeDef pin, GPIO_PolTypeDef falling)
 {
-	unsigned char	bit = pin & 0xff;
-	if(falling){
-		BM_SET(reg_gpio_pol(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_pol(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(falling){
+        BM_SET(reg_gpio_pol(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_pol(pin), bit);
+    }
 }
 
 /**
@@ -328,18 +328,18 @@ static inline void gpio_set_interrupt_pol(GPIO_PinTypeDef pin, GPIO_PolTypeDef f
  */
 static inline void gpio_set_interrupt(GPIO_PinTypeDef pin, GPIO_PolTypeDef falling)
 {
-	unsigned char	bit = pin & 0xff;
-	BM_SET(reg_gpio_irq_wakeup_en(pin), bit);
+    unsigned char    bit = pin & 0xff;
+    BM_SET(reg_gpio_irq_wakeup_en(pin), bit);
 
-	reg_gpio_wakeup_irq |= FLD_GPIO_CORE_INTERRUPT_EN;
-	if(falling){
-		BM_SET(reg_gpio_pol(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_pol(pin), bit);
-	}
+    reg_gpio_wakeup_irq |= FLD_GPIO_CORE_INTERRUPT_EN;
+    if(falling){
+        BM_SET(reg_gpio_pol(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_pol(pin), bit);
+    }
 /*clear gpio interrupt sorce (after setting gpio polarity,before enable interrupt)to avoid unexpected interrupt. confirm by minghai*/
-	reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
-	reg_irq_mask |= FLD_IRQ_GPIO_EN;
+    reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
+    reg_irq_mask |= FLD_IRQ_GPIO_EN;
 }
 
 /**
@@ -350,13 +350,13 @@ static inline void gpio_set_interrupt(GPIO_PinTypeDef pin, GPIO_PolTypeDef falli
  */
 static inline void gpio_en_interrupt(GPIO_PinTypeDef pin, int en)   // reg_irq_mask: FLD_IRQ_GPIO_EN
 {
-	unsigned char	bit = pin & 0xff;
-	if(en){
-		BM_SET(reg_gpio_irq_wakeup_en(pin), bit);
-	}
-	else{
-		BM_CLR(reg_gpio_irq_wakeup_en(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(en){
+        BM_SET(reg_gpio_irq_wakeup_en(pin), bit);
+    }
+    else{
+        BM_CLR(reg_gpio_irq_wakeup_en(pin), bit);
+    }
 }
 
 /**
@@ -366,16 +366,16 @@ static inline void gpio_en_interrupt(GPIO_PinTypeDef pin, int en)   // reg_irq_m
  * @return    none
  */
 static inline void gpio_set_interrupt_risc0(GPIO_PinTypeDef pin, GPIO_PolTypeDef falling){
-	unsigned char	bit = pin & 0xff;
-	BM_SET(reg_gpio_irq_risc0_en(pin), bit);
-	if(falling){
-		BM_SET(reg_gpio_pol(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_pol(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    BM_SET(reg_gpio_irq_risc0_en(pin), bit);
+    if(falling){
+        BM_SET(reg_gpio_pol(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_pol(pin), bit);
+    }
 /*clear gpio interrupt sorce (after setting gpio polarity,before enable interrupt)to avoid unexpected interrupt. confirm by minghai*/
-	reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
-	reg_irq_mask |= FLD_IRQ_GPIO_RISC0_EN;
+    reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
+    reg_irq_mask |= FLD_IRQ_GPIO_RISC0_EN;
 }
 
 
@@ -387,13 +387,13 @@ static inline void gpio_set_interrupt_risc0(GPIO_PinTypeDef pin, GPIO_PolTypeDef
  */
 static inline void gpio_en_interrupt_risc0(GPIO_PinTypeDef pin, int en)  // reg_irq_mask: FLD_IRQ_GPIO_RISC0_EN
 {
-	unsigned char	bit = pin & 0xff;
-	if(en){
-		BM_SET(reg_gpio_irq_risc0_en(pin), bit);
-	}
-	else{
-		BM_CLR(reg_gpio_irq_risc0_en(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(en){
+        BM_SET(reg_gpio_irq_risc0_en(pin), bit);
+    }
+    else{
+        BM_CLR(reg_gpio_irq_risc0_en(pin), bit);
+    }
 }
 
 
@@ -405,17 +405,17 @@ static inline void gpio_en_interrupt_risc0(GPIO_PinTypeDef pin, int en)  // reg_
  */
 static inline void gpio_set_interrupt_risc1(GPIO_PinTypeDef pin, GPIO_PolTypeDef falling)
 {
-	unsigned char	bit = pin & 0xff;
-	BM_SET(reg_gpio_irq_risc1_en(pin), bit);
+    unsigned char    bit = pin & 0xff;
+    BM_SET(reg_gpio_irq_risc1_en(pin), bit);
 
-	if(falling){
-		BM_SET(reg_gpio_pol(pin), bit);
-	}else{
-		BM_CLR(reg_gpio_pol(pin), bit);
-	}
+    if(falling){
+        BM_SET(reg_gpio_pol(pin), bit);
+    }else{
+        BM_CLR(reg_gpio_pol(pin), bit);
+    }
 /*clear gpio interrupt sorce (after setting gpio polarity,before enable interrupt)to avoid unexpected interrupt. confirm by minghai*/
-	reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
-	reg_irq_mask |= FLD_IRQ_GPIO_RISC1_EN;
+    reg_irq_src |= FLD_IRQ_GPIO_EN|FLD_IRQ_GPIO_RISC0_EN|FLD_IRQ_GPIO_RISC1_EN;
+    reg_irq_mask |= FLD_IRQ_GPIO_RISC1_EN;
 }
 
 /**
@@ -426,13 +426,13 @@ static inline void gpio_set_interrupt_risc1(GPIO_PinTypeDef pin, GPIO_PolTypeDef
  */
 static inline void gpio_en_interrupt_risc1(GPIO_PinTypeDef pin, int en)  // reg_irq_mask: FLD_IRQ_GPIO_RISC1_EN
 {
-	unsigned char	bit = pin & 0xff;
-	if(en){
-		BM_SET(reg_gpio_irq_risc1_en(pin), bit);
-	}
-	else{
-		BM_CLR(reg_gpio_irq_risc1_en(pin), bit);
-	}
+    unsigned char    bit = pin & 0xff;
+    if(en){
+        BM_SET(reg_gpio_irq_risc1_en(pin), bit);
+    }
+    else{
+        BM_CLR(reg_gpio_irq_risc1_en(pin), bit);
+    }
 }
 
 /**
@@ -443,16 +443,16 @@ static inline void gpio_en_interrupt_risc1(GPIO_PinTypeDef pin, int en)  // reg_
  */
 static inline void usb_dp_pullup_en (int en)
 {
-	unsigned char dat = analog_read(0x0b);
-	if (en) {
-		dat = dat | BIT(7);
-	}
-	else
-	{
-		dat = dat & 0x7f ;
-	}
+    unsigned char dat = analog_read(0x0b);
+    if (en) {
+        dat = dat | BIT(7);
+    }
+    else
+    {
+        dat = dat & 0x7f ;
+    }
 
-	analog_write (0x0b, dat);
+    analog_write (0x0b, dat);
 }
 
 /**
@@ -462,14 +462,14 @@ static inline void usb_dp_pullup_en (int en)
  */
 static inline void usb_power_on(unsigned char en)
 {
-	if(en)
-	{
-		analog_write(0x34,analog_read(0x34)|0x02);
-	}
-	else
-	{
-		analog_write(0x34,analog_read(0x34)&0xfd);
-	}
+    if(en)
+    {
+        analog_write(0x34,analog_read(0x34)|0x02);
+    }
+    else
+    {
+        analog_write(0x34,analog_read(0x34)&0xfd);
+    }
 }
 /**
  * @brief      This function serves to set GPIO MUX function as DP and DM pin of USB
@@ -478,7 +478,7 @@ static inline void usb_power_on(unsigned char en)
  */
 static inline void usb_set_pin_en(void)
 {
-	gpio_set_func(GPIO_PA5, AS_USB);
-	gpio_set_func(GPIO_PA6, AS_USB);
-	usb_dp_pullup_en (1);
+    gpio_set_func(GPIO_PA5, AS_USB);
+    gpio_set_func(GPIO_PA6, AS_USB);
+    usb_dp_pullup_en (1);
 }

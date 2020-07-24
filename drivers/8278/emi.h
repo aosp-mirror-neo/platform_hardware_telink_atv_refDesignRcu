@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     emi.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 #ifndef EMI_H_
 #define EMI_H_
 
@@ -102,10 +102,10 @@ void rf_continue_mode_run(void);
  * @param   rf_mode - mode of RF.
  * @param   power_level - power level of RF.
  * @param   rf_chn - channel of RF.
- * @param 	pkt_type - The type of data sent
- * 					   0:random data
- * 					   1:0xf0
- * 					   2:0x55
+ * @param     pkt_type - The type of data sent
+ *                        0:random data
+ *                        1:0xf0
+ *                        2:0x55
  * @return  none.
  */
 void rf_emi_tx_continue_setup(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_level,signed char rf_chn,unsigned char pkt_type);
@@ -118,10 +118,10 @@ void rf_emi_tx_continue_setup(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_level
  * @param   rf_mode - mode of RF.
  * @param   power_level - power level of RF.
  * @param   rf_chn - channel of RF.
- * @param 	pkt_type - The type of data sent
- * 					   0:random data
- * 					   1:0xf0
- * 					   2:0x55
+ * @param     pkt_type - The type of data sent
+ *                        0:random data
+ *                        1:0xf0
+ *                        2:0x55
  * @return  none.
  */
 void rf_emi_tx_burst_setup(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_level,signed char rf_chn,unsigned char pkt_type);
@@ -131,10 +131,10 @@ void rf_emi_tx_burst_setup(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_level,si
  * @param   rf_mode - mode of RF.
  * @param   power_level - power level of RF.
  * @param   rf_chn - channel of RF.
- * @param 	pkt_type - The type of data sent
- * 					   0:random data
- * 					   1:0xf0
- * 					   2:0x55
+ * @param     pkt_type - The type of data sent
+ *                        0:random data
+ *                        1:0xf0
+ *                        2:0x55
  * @return  none.
  */
 void rf_emi_tx_brust_setup_ramp(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_level,signed char rf_chn,unsigned char pkt_type);
@@ -145,10 +145,10 @@ void rf_emi_tx_brust_setup_ramp(RF_ModeTypeDef rf_mode,RF_PowerTypeDef power_lev
 /**
  * @brief   This function serves to send packets in the burst mode with PA ramp up/down.
  * @param   rf_mode - mode of RF.
- * @param 	pkt_type - The type of data sent
- * 					   0:random data
- * 					   1:0xf0
- * 					   2:0x55
+ * @param     pkt_type - The type of data sent
+ *                        0:random data
+ *                        1:0xf0
+ *                        2:0x55
  * @return  none.
  */
 void rf_emi_tx_burst_loop_ramp(RF_ModeTypeDef rf_mode,unsigned char pkt_type);
@@ -156,10 +156,10 @@ void rf_emi_tx_burst_loop_ramp(RF_ModeTypeDef rf_mode,unsigned char pkt_type);
 /**
  * @brief   This function serves to send packets in the burst mode
  * @param   rf_mode - mode of RF.
- * @param 	pkt_type - The type of data sent
- * 					   0:random data
- * 					   1:0xf0
- * 					   2:0x55
+ * @param     pkt_type - The type of data sent
+ *                        0:random data
+ *                        1:0xf0
+ *                        2:0x55
  * @return  none.
  */
 void rf_emi_tx_burst_loop(RF_ModeTypeDef rf_mode,unsigned char pkt_type);

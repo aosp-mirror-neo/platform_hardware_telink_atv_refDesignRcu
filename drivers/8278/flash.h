@@ -1,4 +1,4 @@
-/********************************************************************************************************
+/******************************************************************************
  * @file     flash.h
  *
  * @brief    for TLSR chips
@@ -22,7 +22,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  *
- *******************************************************************************************************/
+ *****************************************************************************/
 
 #pragma once
 
@@ -32,33 +32,33 @@
  * @brief     flash command definition
  */
 enum{
-	FLASH_WRITE_STATUS_CMD		=	0x01,
-	FLASH_WRITE_CMD				=	0x02,
-	FLASH_READ_CMD				=	0x03,
-	FLASH_WRITE_DISABLE_CMD 	= 	0x04,
-	FLASH_READ_STATUS_CMD		=	0x05,
-	FLASH_WRITE_ENABLE_CMD 		= 	0x06,
-	FLASH_SECT_ERASE_CMD		=	0x20,
-	FLASH_GD_PUYA_READ_UID_CMD	=	0x4B,	//Flash Type = GD/PUYA
-	FLASH_32KBLK_ERASE_CMD		=	0x52,
-	FLASH_XTX_READ_UID_CMD		=	0x5A,	//Flash Type = XTX
-	FLASH_CHIP_ERASE_CMD		=	0x60,   //or 0xc7
-	FLASH_PAGE_ERASE_CMD		=	0x81,   //caution: only P25Q40L support this function
-	FLASH_64KBLK_ERASE_CMD		=	0xD8,
-	FLASH_POWER_DOWN			=	0xB9,
-	FLASH_POWER_DOWN_RELEASE	=	0xAB,
-	FLASH_GET_JEDEC_ID			=	0x9F,
+    FLASH_WRITE_STATUS_CMD        =    0x01,
+    FLASH_WRITE_CMD                =    0x02,
+    FLASH_READ_CMD                =    0x03,
+    FLASH_WRITE_DISABLE_CMD     =     0x04,
+    FLASH_READ_STATUS_CMD        =    0x05,
+    FLASH_WRITE_ENABLE_CMD         =     0x06,
+    FLASH_SECT_ERASE_CMD        =    0x20,
+    FLASH_GD_PUYA_READ_UID_CMD    =    0x4B,    //Flash Type = GD/PUYA
+    FLASH_32KBLK_ERASE_CMD        =    0x52,
+    FLASH_XTX_READ_UID_CMD        =    0x5A,    //Flash Type = XTX
+    FLASH_CHIP_ERASE_CMD        =    0x60,   //or 0xc7
+    FLASH_PAGE_ERASE_CMD        =    0x81,   //caution: only P25Q40L support this function
+    FLASH_64KBLK_ERASE_CMD        =    0xD8,
+    FLASH_POWER_DOWN            =    0xB9,
+    FLASH_POWER_DOWN_RELEASE    =    0xAB,
+    FLASH_GET_JEDEC_ID            =    0x9F,
 
 };
 
 /**
  * @brief     flash type definition
  */
- 
+
 typedef enum{
-	FLASH_TYPE_GD = 0 ,
-	FLASH_TYPE_XTX,
-	FLASH_TYPE_PUYA
+    FLASH_TYPE_GD = 0 ,
+    FLASH_TYPE_XTX,
+    FLASH_TYPE_PUYA
 }Flash_TypeDef;
 
 /**
@@ -159,23 +159,23 @@ unsigned char flash_write_status(unsigned char data);
 unsigned char flash_read_status(void);
 
 /**
- * @brief  	Deep Power Down mode to put the device in the lowest consumption mode
- * 			it can be used as an extra software protection mechanism,while the device
- * 			is not in active use,since in the mode,  all write,Program and Erase commands
- * 			are ignored,except the Release from Deep Power-Down and Read Device ID(RDI)
- * 			command.This release the device from this mode
+ * @brief      Deep Power Down mode to put the device in the lowest consumption mode
+ *             it can be used as an extra software protection mechanism,while the device
+ *             is not in active use,since in the mode,  all write,Program and Erase commands
+ *             are ignored,except the Release from Deep Power-Down and Read Device ID(RDI)
+ *             command.This release the device from this mode
  * @param[in] none
  * @return none.
  */
 void flash_deep_powerdown(void);
 
 /**
- * @brief		The Release from Power-Down or High Performance Mode/Device ID command is a
- * 				Multi-purpose command.it can be used to release the device from the power-Down
- * 				State or High Performance Mode or obtain the devices electronic identification
- * 				(ID)number.Release from Power-Down will take the time duration of tRES1 before
- * 				the device will resume normal operation and other command are accepted.The CS#
- * 				pin must remain high during the tRES1(8us) time duration.
+ * @brief        The Release from Power-Down or High Performance Mode/Device ID command is a
+ *                 Multi-purpose command.it can be used to release the device from the power-Down
+ *                 State or High Performance Mode or obtain the devices electronic identification
+ *                 (ID)number.Release from Power-Down will take the time duration of tRES1 before
+ *                 the device will resume normal operation and other command are accepted.The CS#
+ *                 pin must remain high during the tRES1(8us) time duration.
  * @param[in]   none
  * @return      none.
  */
@@ -184,7 +184,7 @@ void flash_release_deep_powerdown(void);
 
 
 /**
- * @brief	  This function serves to read UID of flash
+ * @brief      This function serves to read UID of flash
  * @param[in] idcmd - different flash vendor have different read-uid command
  *                    GD/PUYA:0x4B; XTX: 0x5A
  * @param[in] buf   - store UID of flash
@@ -192,7 +192,7 @@ void flash_release_deep_powerdown(void);
  */
 void flash_read_uid(unsigned char idcmd,unsigned char *buf);
 /**
- * @brief 		 This function serves to read flash mid and uid,and check the correctness of mid and uid.
+ * @brief        This function serves to read flash mid and uid,and check the correctness of mid and uid.
  * @param[out]   flash_mid - Flash Manufacturer ID
  * @param[out]   flash_uid - Flash Unique ID
  * @return       0:error 1:ok
