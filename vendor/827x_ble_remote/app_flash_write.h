@@ -33,6 +33,7 @@
 
 #define CCC_DATA_AREA                0x70000
 
+#define IR_FLASH_LENGTH              0x500  //(256*5)
 
 //ccc data flag
 #define FLAG_GOOGLE_RX_CCC                        BIT(0)

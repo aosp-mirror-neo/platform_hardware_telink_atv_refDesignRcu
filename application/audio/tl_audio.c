@@ -436,7 +436,7 @@ _attribute_ram_code_ void    proc_mic_encoder (void)
         s16 *ps = buffer_mic + buffer_mic_rptr;
         u8 *out = (u8 *)(buffer_mic_enc + (ADPCM_PACKET_LEN+3) * (buffer_mic_pkt_wptr & (TL_MIC_PACKET_BUFFER_NUM - 1)));
 
-#if     TL_NOISE_SUPPRESSION_ENABLEPRESSION_ENABLE
+#if     TL_NOISE_SUPPRESSION_ENABLE
         // for FIR adc sample data, only half part data are effective
         for (int i=0; i<TL_MIC_ADPCM_UNIT_SIZE*2; i++) {
             ps[i] = noise_suppression (ps[i]);

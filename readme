@@ -23,7 +23,7 @@
    with password: telink123
 
    The current version of the library files are in folder "Google Ref RCU For ATV/Pro_Lib"
-   Please dowdload the most recently dated tgz file.
+   Please download the most recently dated tgz file.
 
 2. EXtract the tgz file and copy the .a files into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
 

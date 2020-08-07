@@ -29,51 +29,41 @@
 
 #include "tl_common.h"
 
+#define APP_LED_GREEN          0
+#define APP_LED_RED            1
 
-
-#ifndef BLT_APP_LED_ENABLE
-#define BLT_APP_LED_ENABLE                0
-#endif
+#define APP_DEVICE_LED_COUNT   2
 
 
 //led management
 typedef struct{
-    unsigned short onTime_ms;
-    unsigned short offTime_ms;
-
-    unsigned char  repeatCount;  //0xff special for long on(offTime_ms=0)/long off(onTime_ms=0)
-    unsigned char  priority;     //0x00 < 0x01 < 0x02 < 0x04 < 0x08 < 0x10 < 0x20 < 0x40 < 0x80
+    u8 led;
+    u8 firston;
+    u16 onTime_ms;
+    u16 offTime_ms;
+	u8 repeatCount; 
+	u8  iskeepon;
 } led_cfg_t;
 
-typedef struct {
-    unsigned char  isOn;
-    unsigned char  polar;
-    unsigned char  repeatCount;
-    unsigned char  priority;
-
-
-    unsigned short onTime_ms;
-    unsigned short offTime_ms;
-
-    unsigned int gpio_led;
-    unsigned int startTick;
-}device_led_t;
-
-extern device_led_t device_led;
-
-#define  DEVICE_LED_BUSY    (device_led.repeatCount)
+typedef struct{
+    u8 isEnable;
+    u8 isOn;
+    u8 onLevel;
+    u8 isKeepOn;
+    u16 count;
+    u16 onTimer;
+    u16 offTimer;
+    u32 timer;
+    u32 gpio;
+}app_device_led_ctrl_t;
 
 extern void led_proc(void);
-extern void device_led_init(u32 gpio,u8 polarity);
+extern void device_led_init(void);
 int device_led_setup(led_cfg_t led_cfg);
 
-static inline void device_led_process(void)
+inline void device_led_process(void)
 {
-#if (BLT_APP_LED_ENABLE)
-    if(DEVICE_LED_BUSY){
-        led_proc();
-    }
-#endif
+    led_proc();
 }
 
 

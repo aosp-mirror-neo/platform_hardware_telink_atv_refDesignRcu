@@ -103,18 +103,16 @@ static u8 serviceChangeCCC[2] = {0,0};
 #if ((TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_HID) || (TL_AUDIO_MODE == TL_AUDIO_RCU_SBC_HID) || (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_HID_DONGLE_TO_STB) || (TL_AUDIO_MODE == TL_AUDIO_RCU_SBC_HID_DONGLE_TO_STB))//Dongle TO STB, STB decode
     static const gap_periConnectParams_t my_periConnParameters = {8, 8, 99, 400};
     static const u8 my_PnPtrs [] = {0x01, 0x5a, 0x1d, 0x80, 0xc0, 0x01, 0x00};
+	bmbk
 #else
     static const gap_periConnectParams_t my_periConnParameters = {9, 11, 0, 1000};
-    //static const u8 my_PnPtrs [] = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
-    static const u8 my_PnPtrs [] = {0x01, 0x45,0x75 , 0x21, 0x00, 0x10, 0x01};
-    static const u8 my_SysIDtrs [] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-    static const u8 my_ModelNumtrs [] = {'R', 'e', 'm', 'o', 't', 'e', 'B', '0','6'};
-    static const u8 my_SerialNumtrs [] = {'2', '0', '1', '9','0', '2', '2', '1'};
-    static const u8 my_FWRevtrs [] = {'V', '4', '.', '0'};
-    static const u8 my_HWRevtrs [] = {'W','N','F','1','5','0'};
-    static const u8 my_SWRevtrs [] = {'V', '1', '.', '0'};
-    static const u8 my_ManuNametrs [] = {'N','a','n','o','s','i','c'};
-    static const u8 my_IEEE11073trs [] = {0xFE, 0x00, 0x65,0x78, 0x70, 0x65, 0x72, 0x69, 0x6D, 0x65, 0x6E ,0x74, 0x61,0x6C};
+    static const u8 my_PnPtrs []       = {0x01, 0x45,0x75 , 0x21, 0x00, 0x10, 0x01};
+    static const u8 my_ModelNumtrs []  = {'R', 'e', 'm', 'o', 't', 'e', 'G', '1','0'};
+    static const u8 my_SerialNumtrs [] = {'2', '0', '1', '9','0', '8', '0', '7'};
+    static const u8 my_FWRevtrs []     = {'V','1','.','1','.','1'};
+    static const u8 my_HWRevtrs []     = {'V','1','.','0'};
+    static const u8 my_SWRevtrs []     = {'V','1','.','2'};
+    static const u8 my_ManuNametrs []  = {'G','O','O','G','L','E'};
 #endif
 //////////////////////// Battery /////////////////////////////////////////////////
 static const u16 my_batServiceUUID        = SERVICE_UUID_BATTERY;
@@ -300,7 +298,7 @@ static u16 extServiceUUID;
 
 /////////////////////////////////////////////////////////
 
-static const u8 my_OtaUUID[16]            = {TELINK_SPP_DATA_OTA};
+static const u8 my_OtaUUID[16]           = {TELINK_SPP_DATA_OTA};
 static const u8 my_OtaServiceUUID[16]    = TELINK_OTA_UUID_SERVICE;
 
 
@@ -348,12 +346,6 @@ static const u8 my_PnCharVal[5] = {
     U16_LO(CHARACTERISTIC_UUID_PNP_ID), U16_HI(CHARACTERISTIC_UUID_PNP_ID)
 };
 
-#if DEVICE_INFO
-static const u8 my_SystemIDCharVal[5] = {
-    CHAR_PROP_READ,
-    U16_LO(DeviceInformation_systemID_DP_H), U16_HI(DeviceInformation_systemID_DP_H),
-    U16_LO(CHARACTERISTIC_UUID_SYSTEM_ID), U16_HI(CHARACTERISTIC_UUID_SYSTEM_ID)
-};
 
 static const u8 my_ModelNumberCharVal[5] = {
     CHAR_PROP_READ,
@@ -391,13 +383,6 @@ static const u8 my_ManuNameCharVal[5] = {
     U16_LO(CHARACTERISTIC_UUID_MANU_NAME_STRING), U16_HI(CHARACTERISTIC_UUID_MANU_NAME_STRING)
 };
 
-static const u8 my_IEEE11073CharVal[5] = {
-    CHAR_PROP_READ,
-    U16_LO(DeviceInformation_IEEE11073_DP_H), U16_HI(DeviceInformation_IEEE11073_DP_H),
-    U16_LO(CHARACTERISTIC_UUID_IEEE_11073_CERT_LIST), U16_HI(CHARACTERISTIC_UUID_IEEE_11073_CERT_LIST)
-};
-
-#endif
 
 //// HID attribute values
 static const u8 my_hidProtocolModeCharVal[5] = {
@@ -537,7 +522,7 @@ static const u8 my_OtaCharVal[19] = {
 
 
 //u8 flash_count=0;
-extern void app_ir_fallback_process(u16 handle, u8* buf, u8 len);
+extern void ir_fallback_process(u16 handle, u8* buf, u8 len);
 int app_ir_callback(void *p)
 {
     u16 handle,i,len;
@@ -571,7 +556,7 @@ int app_ir_callback(void *p)
     for(i=0;i<len;i++)
         printf(" %x",pw->dat[i]);
 
-    app_ir_fallback_process(handle,pw->dat,len);
+    ir_fallback_process(handle,pw->dat,len);
     return 0;
 }
 
@@ -603,20 +588,11 @@ int app_ir_callback(void *p)
         // 000c - 000e  device Information Service
         //PnP ID
 
-#if !DEVICE_INFO
         {3,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_devServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_PnCharVal),(u8*)(&my_characterUUID), (u8*)(my_PnCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_PnPtrs),(u8*)(&my_PnPUUID), (u8*)(my_PnPtrs), 0},
-
-
-#else
-        {19,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_devServiceUUID), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof(my_PnCharVal),(u8*)(&my_characterUUID), (u8*)(my_PnCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof (my_PnPtrs),(u8*)(&my_PnPUUID), (u8*)(my_PnPtrs), 0},
-        //System ID
-        {0,ATT_PERMISSIONS_READ,2,sizeof(my_SystemIDCharVal),(u8*)(&my_characterUUID), (u8*)(my_SystemIDCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof (my_SysIDtrs),(u8*)(&my_SysIDUUID), (u8*)(my_SysIDtrs), 0},
-        //Model Number string
+        
+	    //Model Number string
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_ModelNumberCharVal),(u8*)(&my_characterUUID), (u8*)(my_ModelNumberCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_ModelNumtrs),(u8*)(&my_ModelNUMUUID), (u8*)(my_ModelNumtrs), 0},
 
@@ -635,15 +611,12 @@ int app_ir_callback(void *p)
         //software revision string
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_SWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_SWRevCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_SWRevtrs),(u8*)(&my_SWRevUUID), (u8*)(my_SWRevtrs), 0},
-
+        
         //manufacturer name string
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_ManuNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_ManuNameCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_ManuNametrs),(u8*)(&my_ManuNameUUID), (u8*)(my_ManuNametrs), 0},
 
-        //IEEE 11073-20601 Regulatory certification data list
-        {0,ATT_PERMISSIONS_READ,2,sizeof(my_IEEE11073CharVal),(u8*)(&my_characterUUID), (u8*)(my_IEEE11073CharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof (my_IEEE11073trs),(u8*)(&my_IEEE11073UUID), (u8*)(my_IEEE11073trs), 0},
-#endif
+
         /////////////////////////////////// 4. HID Service /////////////////////////////////////////////////////////
         // 000f
         //{27, ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_hidServiceUUID), 0},

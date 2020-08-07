@@ -42,22 +42,22 @@
 
 //////////////////// key type ///////////////////////
 #define IDLE_KEY                   0
-#define CONSUMER_KEY                  1
-#define KEYBOARD_KEY                  2
-#define IR_KEY                      3
+#define CONSUMER_KEY               1
+#define KEYBOARD_KEY               2
+#define IR_KEY                     3
 #define VOICE_KEY                  4
 
-_attribute_data_retention_    u8         key_type;
+_attribute_data_retention_    u8      key_type;
 _attribute_data_retention_    int     key_not_released;
 
 
-_attribute_data_retention_    u8         ota_is_working = 0;
+_attribute_data_retention_    u8       ota_is_working = 0;
 
 
 
 
 _attribute_data_retention_    int     ir_not_released;
-_attribute_data_retention_    u8         user_key_mode;
+_attribute_data_retention_    u8      user_key_mode;
 u8      ir_hw_initialed = 0;   //note: can not be retention variable
 _attribute_data_retention_ u8 repairing_flag = 0;
 
@@ -65,8 +65,10 @@ _attribute_data_retention_ u8 repairing_flag = 0;
 
 
 extern    u32     latest_user_event_tick;
+extern u8 lowbat;
 
 _attribute_data_retention_ u8 is_pairing_mode=0;
+_attribute_data_retention_ u8 is_adv_mode=0;
 
 static const u16 vk_consumer_map[16] = {
     G00GLE_MKEY_UP,
@@ -101,18 +103,22 @@ static const u16 vk_consumer_map[16] = {
         LED_SHINE_PAIRING, //6
         LED_SHINE_FACTORY_RESET, //7
         LED_SHINE_BUG_REPORT,    //8
+        LED_SHINE_LOWBAT,
+        LED_PAIR_ERROR
     };
 
     const led_cfg_t led_cfg[] = {
-            {1000,     0,      1,      0x00,  },    //power-on, 1s on
-            {100,      0 ,     0xff,   0x05,  },    //audio on, long on
-            {0,        100 ,   0xff,   0x02,  },    //audio off, long off
-            {500,      500 ,   2,      0x04,  },    //1Hz for 3 seconds
-            {100,      100 ,   3,      0x04,  },    //5Hz for 3 seconds
-            {250,      250 ,   200,    0x08,  },    //2Hz for 50 seconds
-            {250,      250 ,   0xfe,   0x08,  },    //2Hz
-            {250,      250 ,   4,      0x08,  },    //2Hz for 3 times
-            {100,      100 ,   5,      0x08,  },    //5Hz for 1 seconds
+            {APP_LED_GREEN,   1,   1000,     0,      1,      0,  },    //power-on, 1s on
+            {APP_LED_GREEN,   1,   100,      0 ,     0,      1,  },    //audio on, long on
+            {APP_LED_GREEN,   0,    0,       100 ,   0,      1,  },    //audio off, long off
+            {APP_LED_GREEN,   1,   500,      500 ,   2,      0,  },    //1Hz for 3 seconds
+            {APP_LED_GREEN,   1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
+            {APP_LED_GREEN,   1,   250,      250 ,   200,    0,  },    //2Hz for 50 seconds
+            {APP_LED_GREEN,   1,   250,      250 ,   0,      0,  },    //2Hz
+            {APP_LED_GREEN,   1,   250,      250 ,   4,      0,  },    //2Hz for 3 times
+            {APP_LED_GREEN,   1,   100,      100 ,   5,      0,  },    //5Hz for 1 seconds
+            {APP_LED_RED,     1,   100,      100 ,   5,      0,  },    //5Hz for 5 seconds
+            {APP_LED_RED,     1,   1000,     0,      3,      0,  },    //power-on, 1s on
 
     };
 
@@ -161,6 +167,7 @@ extern u32 keyScanLongPressTick;
 
 
 #if (BLE_REMOTE_OTA_ENABLE)
+    #include "app_ota.h"
     void app_enter_ota_mode(void)
     {
         ota_is_working = 1;
@@ -211,6 +218,39 @@ extern u32 keyScanLongPressTick;
             gpio_set_output_en(GPIO_LED, 0);
         #endif
     }
+
+    void google_ota_result(int result)
+	{
+       printf("google_ota_result\n");
+       u8 report_data[3];
+       report_data[0] = SLAVE_REPORT_CMD;
+       report_data[1] = TYPE_OTA_RESULT;
+       report_data[2] = (u8)result;
+
+       u16 i = 0;
+       while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
+       sleep_us(100);
+       i++;
+       }
+
+       i = 0;
+       while(bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN) &&  i < 2000){
+       sleep_us(100);
+       i++;
+       }
+
+       i = 0;
+       while(blc_ll_getTxFifoNumber() &&  i < 400){
+       sleep_us(10000);//printf("waiting TX fifo is empty\n"); //waiting TX fifo is empty
+       i++;
+	   if(result == 0)
+	   {   
+	       printf("ota_suc and write_ana\r\n");
+	       analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | OTA_FLG);
+		   printf("analog_read(USED_DEEP_ANA_REG)=%x\r\n",analog_read(USED_DEEP_ANA_REG));
+	   }
+    }
+}
 #endif
 
 
@@ -310,6 +350,18 @@ int app_special_key_delay_timer(void)
     return 0;
 }
 
+int app_ir_bugreport_key_delay_timer(void)
+{
+    printf("app_ir_bugreport_key_delay_timer\r\n");
+	printf("\r\nir_key_value=%x\r\n",(u8)SpecialKey);
+    key_type = IR_KEY;
+    if(!ir_not_released){
+        ir_dispatch(TYPE_IR_SEND, 0x88, (u8)SpecialKey);
+        ir_not_released = 1;
+    }
+	blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
+    return 0;
+}
 
 #if (STUCK_KEY_PROCESS_ENABLE)
      extern u32 stuckkey_keypresstimer;
@@ -374,7 +426,7 @@ u8 app_keycache(u8 keyindex)
         }
         return 1;
     }
-    else
+    else 
     {
         return 0;
     }
@@ -446,14 +498,26 @@ u8 app_is_navi_key(u8 data0,u8 data1)
     {
         if(data0 == navi_key_index[i])
             flag[0] = i;
-        if(data1 == navi_key_index[i])
-            flag[1] = i;
+        if(data1 == navi_key_index[i])	
+            flag[1] = i;		
     }
     if((flag[0]!=5) && (flag[1]!=5))
         return 1;
     return 0;
 }
 
+void app_release_hid_key(void)
+{
+    u8 key_buf[8] = {0,0,0,0,0,0,0,0};
+    u16 consumer_key[2]={0};
+
+    if(device_in_connection_state)
+    {
+	    bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+	    bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+    }
+	
+}
 void key_change_proc(void)
 {
 
@@ -478,8 +542,10 @@ void key_change_proc(void)
         {
             printf("pair start\r\n");
             blt_soft_timer_delete(app_special_key_delay_timer);
-            device_led_setup(led_cfg[LED_AUDIO_ON]);
-
+			if(lowbat == 0)
+			{
+			    device_led_setup(led_cfg[LED_AUDIO_ON]);
+			}
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 4000000;
             TwoKeyPressMode = APP_TWOKEYPRESS_PAIRING;
@@ -488,8 +554,11 @@ void key_change_proc(void)
         else if ( (key0 == 0x16 && key1 == 0xc0) || (key0 == 0xc0 && key1 == 0x16)) //Factory Reset Mode
         {
             printf("Factory Reset Mode start\r\n");
-            device_led_off();
-            device_led_setup(led_cfg[LED_AUDIO_ON]);
+            device_led_off(APP_LED_GREEN);
+            if(lowbat == 0)
+			{
+			    device_led_setup(led_cfg[LED_AUDIO_ON]);
+			}
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 4000000;
             TwoKeyPressMode = APP_TWOKEYPRESS_FACTORYRESET;
@@ -498,6 +567,7 @@ void key_change_proc(void)
         else if ( (key0 == 0x17 && key1 == 0x15) || (key0 == 0x15 && key1 == 0x07)) //Bug report
         {
             printf("bug report start\r\n");
+			blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
             device_led_setup(led_cfg[LED_AUDIO_ON]);
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 1000000;
@@ -558,9 +628,19 @@ void key_change_proc(void)
           //retime
           advertise_tick_retime();
 
-          #if (BLT_APP_LED_ENABLE)
-            device_led_setup(led_cfg[LED_SHINE_FAST]);
-          #endif
+		  if(lowbat == 0x55)
+		  {
+		      printf("low bat\r\n");
+			  device_led_setup(led_cfg[LED_SHINE_LOWBAT]);
+		  }
+		  else
+		  {
+		      if((is_pairing_mode == 0) && (is_adv_mode == 0))
+		      {
+		          printf("is_pairing_mode=%x,is_adv_mode=%x\r\n",is_pairing_mode,is_adv_mode);
+                  device_led_setup(led_cfg[LED_SHINE_FAST]);
+		      }
+		  }
           printf("key_id=%x\r\n",key0);
 
 #if (STUCK_KEY_PROCESS_ENABLE)
@@ -598,11 +678,10 @@ void key_change_proc(void)
           programming_key_set(0);
           if(device_in_connection_state)
           {
-
                 key_value = kb_map_ble[key0];
 
                 if(key_value >= 0xf0 ){
-
+    
                     key_type = CONSUMER_KEY;
                     consumer_key[0] = vk_consumer_map[key_value & 0x0f];
                     consumer_key[1] = 0;
@@ -610,7 +689,7 @@ void key_change_proc(void)
                     if((key0 == 0x07) || (key0 == 0x0a))
                     {
                          SpecialKey = consumer_key[0];
-                         blt_soft_timer_add(&app_special_key_delay_timer, 60000);
+                         blt_soft_timer_add(&app_special_key_delay_timer, 80000);
                          return;
                     }
                     bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
@@ -622,7 +701,7 @@ void key_change_proc(void)
                 else
                 {
                     printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
-
+ 
                     key_type = KEYBOARD_KEY;
                     key_buf[2] = key_value;
                     bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
@@ -637,8 +716,19 @@ void key_change_proc(void)
                 key_value = kb_map_ir[key0];
              if((key_value == IR_BACK) &&(is_pairing_mode == 0x55))
              {
-                 device_led_off();
+                 printf("back key, stop adv\r\n");
+                 device_led_off(APP_LED_GREEN);
                  bls_ll_setAdvEnable(0);
+				 is_pairing_mode = 0;
+				 is_adv_mode = 0;
+				 u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+                  printf("bond_number_1=%x\r\n",bond_number);
+             }
+			 if((key0 == 0x07) || (key0 == 0x15))
+             {
+                 SpecialKey = key_value;
+                 blt_soft_timer_add(&app_ir_bugreport_key_delay_timer, 80000);
+                 return;
              }
              printf("\r\nir_key_value=%x\r\n",key_value);
              key_type = IR_KEY;
@@ -750,16 +840,28 @@ void proc_keyboard (u8 e, u8 *p, int n)
         deepback_post_proc();
     }
 #endif
-
+    if((keyScanLongPressTick == 0) && (TwoKeyPressMode != APP_TWOKEYPRESS_NONE))
+    {
+        device_led_off(APP_LED_GREEN);
+		TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
+    }
     if(keyScanLongPressTick && clock_time_exceed(keyScanLongPressTick, LongPressTick))
     {
         keyScanLongPressTick = 0;
+		advertise_tick_retime();
+		
         if(TwoKeyPressMode == APP_TWOKEYPRESS_PAIRING)
         {
+            
             printf("trigger pair\r\n");
             printf("ir_send_ctrl.is_sending=%x",ir_send_ctrl.is_sending);
+			if(lowbat == 0x55)
+			{
+			    return;
+			}
             device_led_setup(led_cfg[LED_SHINE_PAIRING]);
             is_pairing_mode = 0x55;
+			is_adv_mode = 0x55;
             if( device_in_connection_state == 0)
             {
                 bls_ll_setAdvEnable(1);  //adv enable
@@ -774,6 +876,10 @@ void proc_keyboard (u8 e, u8 *p, int n)
         else if(TwoKeyPressMode == APP_TWOKEYPRESS_FACTORYRESET)
         {
             printf("Factory Reset Mode ongoning\r\n");
+			if(lowbat == 0x55)
+			{
+			    return;
+			}
             device_led_setup(led_cfg[LED_SHINE_FACTORY_RESET]);
             ir_table_init();
             if(device_in_connection_state)
@@ -787,6 +893,10 @@ void proc_keyboard (u8 e, u8 *p, int n)
                 if(bond_number)
                      bls_smp_param_deleteByIndex(0);
             }
+			ir_flash_factory();	
+			is_adv_mode = 0;
+			is_pairing_mode = 0;
+			app_enter_deep_timeset();
         }
         else if(TwoKeyPressMode == APP_TWOKEYPRESS_BUGREPORT)
         {
@@ -794,8 +904,11 @@ void proc_keyboard (u8 e, u8 *p, int n)
             device_led_setup(led_cfg[LED_SHINE_BUG_REPORT]);
             if(device_in_connection_state == 0)
             {
-                 ir_dispatch(TYPE_IR_SEND, 0x88, 0x96);
-                 ir_dispatch(TYPE_IR_RELEASE, 0, 0);  //release
+                key_type = IR_KEY;
+                if(!ir_not_released){
+                    ir_dispatch(TYPE_IR_SEND, 0x88, 0x96);
+                    ir_not_released = 1;
+                }
             }
             else
             {
@@ -805,7 +918,9 @@ void proc_keyboard (u8 e, u8 *p, int n)
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
+		TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
     }
+
     app_key_send_store();
 }
 #endif
@@ -818,8 +933,15 @@ extern u32    scan_pin_need;
 
 void app_pairing_led(void)
 {
+    is_adv_mode = 0x55;
     device_led_setup(led_cfg[LED_SHINE_PAIRING]);
 }
+
+void app_pairing_error(void)
+{
+    device_led_setup(led_cfg[LED_PAIR_ERROR]);
+}
+
 
 int gpio_test0(void)
 {
@@ -884,7 +1006,7 @@ void app_ui_init_normal(void)
 
 #if (BLT_APP_LED_ENABLE)
     printf("led on 1s\r\n");
-    device_led_init(GPIO_LED, LED_ON_LEVAL);  //LED initialization
+    device_led_init();  //LED initialization
     device_led_setup(led_cfg[LED_POWER_ON]);
 #endif
 
@@ -925,7 +1047,7 @@ void app_ui_init_deepRetn(void)
     #endif
 
 #if (BLT_APP_LED_ENABLE)
-    device_led_init(GPIO_LED, 1);  //LED initialization
+    device_led_init();  //LED initialization
 #endif
 
 #if (REMOTE_IR_ENABLE)

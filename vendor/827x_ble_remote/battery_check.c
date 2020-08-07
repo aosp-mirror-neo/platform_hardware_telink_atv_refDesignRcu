@@ -231,6 +231,8 @@ extern u8 my_batVal[1];
 extern int device_in_connection_state;
 
 _attribute_data_retention_ u8 bak_batpercent=0;
+_attribute_data_retention_ u8 lowbat=0;
+
 
 void battery_refresh(void)
 {
@@ -398,18 +400,16 @@ _attribute_ram_code_ int app_battery_power_check(u16 threshold_deep_vol_mv, u16 
     //           =  adc_result * Vref >>10
     batt_vol_mv  = (adc_result * adc_vref_cfg.adc_vref)>>10;
     battery_percent();
+	
     if((batt_vol_mv < threshold_deep_vol_mv + 200) && (batt_vol_mv > threshold_deep_vol_mv))
     {
-        #if (1 && BLT_APP_LED_ENABLE)  //led indicate
-            gpio_set_output_en(GPIO_LED2, 1);  //output enable
-            for(int k=0;k<3;k++){
-                gpio_write(GPIO_LED2, LED_ON_LEVAL);
-                sleep_us(200000);
-                gpio_write(GPIO_LED2, !LED_ON_LEVAL);
-                sleep_us(200000);
-            }
-        #endif
+	    lowbat = 0x55;
     }
+	else
+	{
+	    lowbat = 0;
+	}
+		
     if(batt_vol_mv < threshold_deep_vol_mv){
 
         u8 analog_used_deep_reg = analog_read(USED_DEEP_ANA_REG);

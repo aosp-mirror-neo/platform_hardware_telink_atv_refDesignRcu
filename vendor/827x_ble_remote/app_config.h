@@ -34,7 +34,9 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 
 
-//#define APP_DURATION_ADV    20
+#define IR_DATA_SECT_1_ADDR          0x71000
+#define IR_DATA_SECT_2_ADDR          0x72000
+
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////
@@ -65,7 +67,7 @@ extern "C" {
 #define CONN_DEEP_FLG                         BIT(1) //if 1: conn deep, 0: adv deep
 #define IR_MODE_DEEP_FLG                      BIT(2) //if 1: IR mode, 0: BLE mode
 #define LOW_BATT_SUSPEND_FLG                  BIT(3) //if 1 : low battery, < 1.8v
-
+#define OTA_FLG                               BIT(4) //if 1: OTA SUCCESS
 
 #if (BATT_CHECK_ENABLE)
 #if 0//(__PROJECT_8278_BLE_REMOTE__)
@@ -381,9 +383,6 @@ typedef enum
     DeviceInformation_PS_H,                 //UUID: 2800,     VALUE: uuid 180A
     DeviceInformation_pnpID_CD_H,           //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_pnpID_DP_H,           //UUID: 2A50,     VALUE: PnPtrs
-#if(DEVICE_INFO)
-    DeviceInformation_systemID_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_systemID_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
 
     DeviceInformation_modelNUM_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_modelNUM_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
@@ -403,9 +402,6 @@ typedef enum
     DeviceInformation_manuNAME_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_manuNAME_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
 
-    DeviceInformation_IEEE11073_CD_H,       //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_IEEE11073_DP_H,       //UUID: 2A50,     VALUE: PnPtrs
-#endif
     //// HID ////
     /**********************************************************************************************/
     HID_PS_H,                               //UUID: 2800,     VALUE: uuid 1812
@@ -528,7 +524,7 @@ typedef enum
     //ir
     IR_PS_H,                                //UUID: 2800,     VALUE: telink audio service uuid
     IR_PROG_OUT_CONTROL_CD_H,               //UUID: 2800,     VALUE: telink audio service uui
-    IR_PROG_OUT_CONTROL_H,
+    IR_PROG_OUT_CONTROL_H, 
     IR_KEY_ID_CD_H,
     IR_KEY_ID_H,
     IR_CODE_CD_H,

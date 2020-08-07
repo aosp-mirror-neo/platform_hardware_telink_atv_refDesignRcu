@@ -34,11 +34,11 @@
 #endif
 
 
-#define     MAX_TIMER_NUM                            3  //timer max number
+#define     MAX_TIMER_NUM                            5  //timer max number
 
 
-#define     MAINLOOP_ENTRY                            0
-#define     CALLBACK_ENTRY                            1
+#define     MAINLOOP_ENTRY                           0
+#define     CALLBACK_ENTRY                           1
 
 
 
@@ -46,11 +46,11 @@
 #define        TIME_COMPARE_SMALL(t1,t2)   ( (u32)((t2) - (t1)) < BIT(30)  )
 
 // if t1 > t2 return 1
-#define        TIME_COMPARE_BIG(t1,t2)   ( (u32)((t1) - (t2)) < BIT(30)  )
+#define        TIME_COMPARE_BIG(t1,t2)     ( (u32)((t1) - (t2)) < BIT(30)  )
 
 
 #define        BLT_TIMER_SAFE_MARGIN_PRE      (CLOCK_16M_SYS_TIMER_CLK_1US<<7)  //128 us
-#define        BLT_TIMER_SAFE_MARGIN_POST      (CLOCK_16M_SYS_TIMER_CLK_1S<<2)   // 4S
+#define        BLT_TIMER_SAFE_MARGIN_POST     (CLOCK_16M_SYS_TIMER_CLK_1S<<2)   // 4S
 static int inline blt_is_timer_expired(u32 t, u32 now) {
     return ((u32)(now + BLT_TIMER_SAFE_MARGIN_PRE - t) < BLT_TIMER_SAFE_MARGIN_POST);
 }
@@ -88,9 +88,9 @@ int     blt_soft_timer_delete(blt_timer_callback_t func);
 
 
 //////////////////////// SOFT TIMER MANAGEMENT  INTERFACE ///////////////////////////////////
-void    blt_soft_timer_init(void);
-void    blt_soft_timer_process(int type);
-int     blt_soft_timer_delete_by_index(u8 index);
+void     blt_soft_timer_init(void);
+void     blt_soft_timer_process(int type);
+int      blt_soft_timer_delete_by_index(u8 index);
 
 
 int is_timer_expired(blt_timer_callback_t *e);

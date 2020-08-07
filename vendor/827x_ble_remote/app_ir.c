@@ -46,11 +46,13 @@ int     blt_soft_timer_delete(blt_timer_callback_t func)
 #endif
 
 #define PROGRAMMING_TIMEOUT 30000000
+#define FLASH_ERASE_TIMEOUT 600000
+
 #define INVALID_KEY_ID      0xFF00
 #define MAX_CODE_LENGTH     160
 #define MAX_KEY_COUNT       5
 
-#define KEY_IDX_NULL        MAX_KEY_COUNT
+#define KEY_IDX_NULL        0xff
 
 typedef struct{
     u16 key_id;                 //Key ID, comes from ATV
@@ -104,6 +106,9 @@ const key_button_pair_t key_button_map[MAX_KEY_COUNT] = {
 static _attribute_data_retention_ ir_app_parm_t  ir_app_parm={0};
 
 static _attribute_data_retention_ key_code_t ir_table[MAX_KEY_COUNT]={{0},{0},{0},{0},{0}};
+
+_attribute_data_retention_ u8 ir_flash_sector=0;
+
 void ir_test_init(void)
 {
 
@@ -124,7 +129,21 @@ u8 is_programming_key_send(void)
         return 0;
 }
 
-u8 get_button_idx_from_key_id(u16 key_id)
+u8 ir_get_button_idx_from_button(u8 button)
+{
+    u8 i;
+    for(i = 0; i < MAX_KEY_COUNT; i++)
+    {
+        if (key_button_map[i].button == button)
+        {
+
+            return key_button_map[i].button_idx;
+        }
+    }
+    return KEY_IDX_NULL;
+}
+
+u8 ir_get_button_idx_from_key_id(u16 key_id)
 {
     u8 i;
     for(i = 0; i < MAX_KEY_COUNT; i++)
@@ -138,10 +157,10 @@ u8 get_button_idx_from_key_id(u16 key_id)
     return KEY_IDX_NULL;
 }
 
-key_code_t* get_key_code_from_keyid_idx(u8 key_idx)
+key_code_t* ir_get_key_code_from_keyid_idx(u8 key_idx)
 {
     u8 i;
-    for(i = 0; i < ir_app_parm.ir_programming.programmed_key_count; i++)
+    for(i = 0; i < MAX_KEY_COUNT; i++)
     {
         if (ir_table[i].key_id == key_idx)
         {
@@ -152,11 +171,11 @@ key_code_t* get_key_code_from_keyid_idx(u8 key_idx)
     return NULL;
 }
 
-u8 get_ir_suppress_index_from_keyid_idx(u8 key_idx)
+u8 ir_get_suppress_index_from_keyid_idx(u8 key_idx)
 {
     u8 i;
     printf("ir_app_parm.ir_programming.programmed_key_count=%x\r\n",ir_app_parm.ir_programming.programmed_key_count);
-    for(i = 0; i < ir_app_parm.ir_programming.programmed_key_count; i++)
+    for(i = 0; i < MAX_KEY_COUNT; i++)
     {
         if (ir_table[i].key_id == key_idx)
         {
@@ -209,7 +228,7 @@ u8 ir_is_button_fallback_override(u8 button_idx)
 u8 ir_key_is_suppress(u8 key_idx)
 {
     u8 index;
-    index = get_ir_suppress_index_from_keyid_idx(key_idx);
+    index = ir_get_suppress_index_from_keyid_idx(key_idx);
     if (index == KEY_IDX_NULL) return KEY_IDX_NULL;
     if(ir_app_parm.ir_suppress[index])
         return true;
@@ -262,7 +281,7 @@ void ir_fallback_get_protocol_configure(unsigned char* p_duty_cycle, unsigned sh
     *p_repeat_delay = ir_app_parm.ir_repeat_delay.repeat_delay;
 }
 
-void send_key_code_through_app_ir(key_code_t* p_key_code)
+void ir_send_key_code(key_code_t* p_key_code)
 {
     u8* code = p_key_code->code;
     u16 sequence_length,sequence_length2,length;    //4 bytes per sequence
@@ -370,7 +389,7 @@ int ir_fallback_send(u8 key_down)
     if(key_down)
     {
         printf("key down\r\n");
-        send_key_code_through_app_ir(p_key_code);
+        ir_send_key_code(p_key_code);
     }
 
     if (ir_app_parm.ir_programming.key_notification_flag && device_in_connection_state)
@@ -408,7 +427,7 @@ u8 ir_fallback_send_key_code(u8 button_idx, u8 key_down)
     u8 last_key_send = ir_app_parm.current_programming_key_send;
     u32 current_time;
     u32 time;
-    key_code_t* p_key_code = get_key_code_from_keyid_idx(button_idx);
+    key_code_t* p_key_code = ir_get_key_code_from_keyid_idx(button_idx);
     u8* code = ir_table[ir_app_parm.current_programming_key_send].code;
 
     u8 type = code[0];
@@ -448,15 +467,79 @@ u8 ir_fallback_send_key_code(u8 button_idx, u8 key_down)
     return true;
 }
 
+void ir_flash_save(u32 addr,u32 len)
+{
+    u32 flash_addr;
+	u8 i,buf;
+	
+	flash_addr = IR_DATA_SECT_1_ADDR + ir_flash_sector*0x1000 + addr;
+	
+	flash_read_page(flash_addr, 1, &buf);
+	if(buf != 0xff) 
+	{
+		return;
+	}
+    printf("flash_addr=%x\r\n",flash_addr);
+    for(i=0;i<len/16;i++)
+    {
+        flash_write_page(flash_addr+i*16,16,(((u8*)(&ir_table[ir_app_parm.ir_programming.programmed_key_count]))+i*16));
+    }
+    if(len%16)
+        flash_write_page(flash_addr+i*16,len-i*16,(((u8*)(&ir_table[ir_app_parm.ir_programming.programmed_key_count]))+i*16));
+	printf("ir_flash_save addr=%x\r\n",addr);
+}
+
+
+int ir_flash_erase_timeoutcb(void)
+{
+    printf("ir_flash_erase_timeoutcb\r\n");
+
+	if(bls_ll_requestConnBrxEventDisable() > 120)
+	{
+	    printf("flash erase \r\n");
+		bls_ll_disableConnBrxEvent();
+	    if(ir_flash_sector)
+	        flash_erase_sector(IR_DATA_SECT_1_ADDR);
+		else
+			flash_erase_sector(IR_DATA_SECT_2_ADDR);
+		bls_ll_restoreConnBrxEvent();
+		if(ir_app_parm.ir_programming.programmed_key_count>=2)
+        {
+   	        if(ir_flash_sector)
+   		        ir_flash_sector = 0;
+   		    else
+   			    ir_flash_sector = 1;
+      	}
+		printf("flash erase succ\r\n");
+		blt_soft_timer_delete(ir_flash_erase_timeoutcb);
+	}
+    
+    return 0;
+}
+
+void ir_flash_erase(void)
+{
+	blt_soft_timer_add(&ir_flash_erase_timeoutcb, FLASH_ERASE_TIMEOUT);	
+}
+
+void ir_flash_factory(void)
+{
+    printf("ir_flash_factory\r\n");
+	flash_erase_sector(IR_DATA_SECT_1_ADDR);
+    flash_erase_sector(IR_DATA_SECT_2_ADDR);
+}
+
 u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
 {
     u8 button_index=0;
+	u32 flash_addr_pos,len;
 
-    button_index = get_button_idx_from_key_id(key_id);
+    button_index = ir_get_button_idx_from_key_id(key_id);
     if (button_index == KEY_IDX_NULL)
     {
         return false;
     }
+	flash_addr_pos += button_index*256;
     if ((ir_app_parm.ir_programming.programmed_key_count < MAX_KEY_COUNT)
         && (code_size <= MAX_CODE_LENGTH))
     {
@@ -470,6 +553,8 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
             ir_table[ir_app_parm.ir_programming.programmed_key_count].code_size);
         printf("ir_table[programmed_key_count].button_idx=%x \r\n",\
             ir_table[ir_app_parm.ir_programming.programmed_key_count].button_idx);
+		len = code_size + 5;
+		ir_flash_save(flash_addr_pos,len);
         ir_app_parm.ir_programming.programmed_key_count++;
     }
 
@@ -481,7 +566,7 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
     return true;
 }
 
-void app_ir_fallback_process(u16 handle, u8* buf, u8 len)
+void ir_fallback_process(u16 handle, u8* buf, u8 len)
 {
     u8 index;
     if (handle < ATV_IR_SERVICE_IDX || handle > ATV_IR_KEY_EVENT_CCCD_IDX)
@@ -521,6 +606,9 @@ void app_ir_fallback_process(u16 handle, u8* buf, u8 len)
                 else
                 {
                     printf("ir table programming end\r\n");
+					ir_flash_erase();
+					printf("ir_flash_sector=%x\r\n",ir_flash_sector);
+					
                     if (ir_app_parm.programming_timer)
                     {
                         blt_soft_timer_delete(ir_programming_timeoutcb);
@@ -580,7 +668,7 @@ void app_ir_fallback_process(u16 handle, u8* buf, u8 len)
                 ir_app_parm.ir_programming.current_programming_key_id = buf[0];
                 ir_app_parm.ir_programming.current_programming_key_id <<= 8;
                 ir_app_parm.ir_programming.current_programming_key_id |= buf[1];
-                index = get_ir_suppress_index_from_keyid_idx(ir_app_parm.ir_programming.current_programming_key_id);
+                index = ir_get_suppress_index_from_keyid_idx(ir_app_parm.ir_programming.current_programming_key_id);
                 if(ir_app_parm.ir_suppress[index])
                 {
                     ir_app_parm.ir_suppress[index] = 0;
@@ -608,6 +696,60 @@ void app_ir_fallback_process(u16 handle, u8* buf, u8 len)
         break;
     }
 }
+
+void ir_flash_check(u32 addr)
+{
+    u8 button_index=0,i;
+	u16 code_size=0;
+	u8 buf[256];
+
+	for(i=0;i<MAX_KEY_COUNT;i++)
+	{
+	    flash_read_page(addr+i*256, 256, buf);
+	    button_index = ir_get_button_idx_from_button(buf[0]);
+	    if (button_index == KEY_IDX_NULL)
+	    {
+		    break;
+	    }
+		code_size = *(u16*)&buf[2];
+
+	    ir_table[button_index].key_id = *(u16*)buf;
+        ir_table[button_index].code_size =  code_size;
+        ir_table[button_index].button_idx = button_index;
+        memcpy(ir_table[button_index].code, &buf[5], code_size);
+		printf("button =%x \r\n",button_index);
+		for(u8 k=0;k<code_size;k++ )
+        {
+            printf(" %x",ir_table[button_index].code[k]);
+        }
+		printf("\r\n");
+
+	}
+}
+
+void ir_param_init(void)
+{
+    u8 sect;
+	u32 addr;
+
+    flash_read_page(IR_DATA_SECT_2_ADDR, 1, &sect);
+	if(sect == 0xff) 
+	{
+	    ir_flash_sector = 0;
+	}
+	else
+	{
+	    ir_flash_sector = 1;
+	}
+	addr = IR_DATA_SECT_1_ADDR + ir_flash_sector*0x1000;
+	printf("app_ir_param_init addr=%x\r\n",addr);
+	ir_flash_check(addr);
+	if(ir_flash_sector)
+		ir_flash_sector = 0;
+	else
+		ir_flash_sector = 1;
+}
+
 
 
 

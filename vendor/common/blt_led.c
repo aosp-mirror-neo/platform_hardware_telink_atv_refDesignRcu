@@ -36,104 +36,116 @@
 
 
 
-device_led_t device_led;
+app_device_led_ctrl_t gAppDeviceLedCtrl[APP_DEVICE_LED_COUNT];
 
-
-void device_led_off(void)
+static void device_led_config(u8 led, u8 onLevel, u32 gpio)
 {
-   	device_led_on_off(0);
-   	device_led.repeatCount = 0;
-    device_led.priority = 0;
+    if(led >= APP_DEVICE_LED_COUNT) return;
+
+    gpio_set_func(gpio,  AS_GPIO);
+    gpio_set_input_en(gpio, 0);
+    gpio_set_output_en(gpio, 1);
+
+    gAppDeviceLedCtrl[led].isEnable = false;
+    gAppDeviceLedCtrl[led].isOn = false;
+    gAppDeviceLedCtrl[led].onLevel = onLevel;
+    gAppDeviceLedCtrl[led].gpio = gpio;
+    gpio_write(gAppDeviceLedCtrl[led].gpio, !gAppDeviceLedCtrl[led].onLevel);
 }
-void device_led_on_off(u8 on)
+
+void device_led_on(u8 led)
 {
-    gpio_write( device_led.gpio_led, on^device_led.polar );
-    gpio_set_output_en(device_led.gpio_led, on);
-    device_led.isOn = on;
+    if(led >= APP_DEVICE_LED_COUNT) return;
+    gAppDeviceLedCtrl[led].isEnable = false;
+    gAppDeviceLedCtrl[led].isOn = true;
+    gpio_write(gAppDeviceLedCtrl[led].gpio, gAppDeviceLedCtrl[led].onLevel);
 }
 
+void device_led_off(u8 led)
+{
+    if(led >= APP_DEVICE_LED_COUNT) return;
+    gAppDeviceLedCtrl[led].isEnable = false;
+    gAppDeviceLedCtrl[led].isOn = false;
+    gpio_write(gAppDeviceLedCtrl[led].gpio, !gAppDeviceLedCtrl[led].onLevel);
+}
 
+void device_led_init(void){  
+	device_led_config(APP_LED_GREEN, 1,  GPIO_LED);
+    device_led_config(APP_LED_RED, 1, GPIO_LED2);
+}
 
-void device_led_init(u32 gpio,u8 polarity){  //polarity: 1 for high led on, 0 for low led on
-
-#if (BLT_APP_LED_ENABLE)
-    device_led.gpio_led = gpio;
-    device_led.polar = !polarity;
-    gpio_write( gpio, !polarity );
-#endif
+int device_led_busy(void)
+{
+    u8 j=0;
+    for(u8 i=0;i<APP_DEVICE_LED_COUNT;i++)
+    {
+        if(gAppDeviceLedCtrl[i].count != 0)
+		    j++;
+			
+    }
+    if(j) return 1;
+	else  return 0;
 }
 
 int device_led_setup(led_cfg_t led_cfg)
 {
-#if (BLT_APP_LED_ENABLE)
-    if( device_led.repeatCount &&  device_led.priority >= led_cfg.priority){
-        return 0; //new led event priority not higher than the not ongoing one
-    }
-    else{
-        device_led.onTime_ms = led_cfg.onTime_ms;
-        device_led.offTime_ms = led_cfg.offTime_ms;
-        device_led.repeatCount = led_cfg.repeatCount;
-        device_led.priority = led_cfg.priority;
+    u8 led = led_cfg.led;
 
-        if(led_cfg.repeatCount == 0xff){ //for long on/long off
-            device_led.repeatCount = 0;
-        }
-        else if(led_cfg.repeatCount == 0xfe)  //for toggle
-        {
-        }
-        else{ //process one of on/off Time is zero situation
-            if(!device_led.onTime_ms){  //onTime is zero
-                device_led.offTime_ms *= device_led.repeatCount;
-                device_led.repeatCount = 1;
-            }
-            else if(!device_led.offTime_ms){
-                device_led.onTime_ms *= device_led.repeatCount;
-                device_led.repeatCount = 1;
-            }
-        }
-
-        device_led.startTick = clock_time();
-        device_led_on_off(device_led.onTime_ms ? 1 : 0);
-
-        return 1;
-    }
-#endif
+    if(led >= APP_DEVICE_LED_COUNT) return;
+	device_led_off(led);
+	if(led_cfg.firston)
+	{
+	    device_led_on(led);
+	}
+	if((led_cfg.repeatCount == 0) && !led_cfg.firston)
+	{
+	    if(led_cfg.offTime_ms == 0)
+	    {
+	        device_led_on(led);
+	    }
+	}
+    gAppDeviceLedCtrl[led].isEnable = true;
+    gAppDeviceLedCtrl[led].isKeepOn = led_cfg.iskeepon;
+    gAppDeviceLedCtrl[led].count = led_cfg.repeatCount;
+    gAppDeviceLedCtrl[led].onTimer = led_cfg.onTime_ms;
+    gAppDeviceLedCtrl[led].offTimer = led_cfg.offTime_ms;
+    gAppDeviceLedCtrl[led].timer = (clock_time()-led_cfg.onTime_ms) | 1;
 }
-
 
 void led_proc(void)
 {
-#if (BLT_APP_LED_ENABLE)
-    if(device_led.isOn){
-        if(clock_time_exceed(device_led.startTick,device_led.onTime_ms*1000)){
-            device_led_on_off(0);
-            if(device_led.offTime_ms){ //offTime not zero
-                device_led.startTick += device_led.onTime_ms*CLOCK_16M_SYS_TIMER_CLK_1MS;
+    int i;
+
+    for(i=0; i<APP_DEVICE_LED_COUNT; i++){
+        if(!gAppDeviceLedCtrl[i].isEnable) continue;
+        if(gAppDeviceLedCtrl[i].isOn 
+            && clock_time_exceed(gAppDeviceLedCtrl[i].timer, gAppDeviceLedCtrl[i].onTimer*1000)) {
+            gAppDeviceLedCtrl[i].timer = clock_time() | 1;
+            if(gAppDeviceLedCtrl[i].offTimer != 0){
+                gAppDeviceLedCtrl[i].isOn = false;
+                gpio_write(gAppDeviceLedCtrl[i].gpio, !gAppDeviceLedCtrl[i].onLevel);
             }
-            else{
-                device_led.repeatCount = 0;
-            }
-        }
-    }
-    else{
-        if(clock_time_exceed(device_led.startTick,device_led.offTime_ms*1000)){
-            //printf("device_led.repeatCount_0=%x\r\n",device_led.repeatCount);
-            if(device_led.repeatCount == 0xfe)
-            {
-                device_led_on_off(1);
-                device_led.startTick += device_led.offTime_ms*CLOCK_16M_SYS_TIMER_CLK_1MS;
-            }
-            else
-            {
-                if(--device_led.repeatCount){
-                    //printf("device_led.repeatCount_1=%x\r\n",device_led.repeatCount);
-                    device_led_on_off(1);
-                    device_led.startTick += device_led.offTime_ms*CLOCK_16M_SYS_TIMER_CLK_1MS;
+            if(gAppDeviceLedCtrl[i].count != 0){
+                gAppDeviceLedCtrl[i].count--;
+                if(gAppDeviceLedCtrl[i].count != 0) continue;
+                if(!gAppDeviceLedCtrl[i].isKeepOn){
+                    gpio_write(gAppDeviceLedCtrl[i].gpio, !gAppDeviceLedCtrl[i].onLevel);
+                    gAppDeviceLedCtrl[i].isOn = false;
+                }else{
+                    gpio_write(gAppDeviceLedCtrl[i].gpio, gAppDeviceLedCtrl[i].onLevel);
+                    gAppDeviceLedCtrl[i].isOn = true;
                 }
+                gAppDeviceLedCtrl[i].isEnable = false;
+                return ;
             }
+		}
+        if(!gAppDeviceLedCtrl[i].isOn && gAppDeviceLedCtrl[i].onTimer != 0
+            && clock_time_exceed(gAppDeviceLedCtrl[i].timer, gAppDeviceLedCtrl[i].offTimer*1000)){
+            gAppDeviceLedCtrl[i].timer = clock_time() | 1;
+            gAppDeviceLedCtrl[i].isOn = true;
+            gpio_write(gAppDeviceLedCtrl[i].gpio, gAppDeviceLedCtrl[i].onLevel);
         }
     }
-#endif
 }
 
 
