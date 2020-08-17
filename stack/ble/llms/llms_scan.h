@@ -30,7 +30,7 @@
 
 /********************* Macro & Enumeration & Structure Definition for Stack, user can not use!!!!  **********************/
 
-#define              BLMS_SCAN_SLOT                                      32  //32*0.625 = 20mS
+#define            BLMS_SCAN_SLOT                                      32  //32*0.625 = 20mS
 #define            BLMS_SCAN_INTERVL                                ( BLMS_SCAN_SLOT * CLOCK_16M_SYS_TIMER_CLK_625US)
 
 

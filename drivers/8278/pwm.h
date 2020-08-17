@@ -58,8 +58,8 @@ typedef enum{
  * pwm interrupt source
  */
 typedef enum{
-    PWM_IRQ_PWM0_PNUM =                    BIT(0),
-    PWM_IRQ_PWM0_IR_DMA_FIFO_DONE =        BIT(1),
+    PWM_IRQ_PWM0_PNUM =                 BIT(0),
+    PWM_IRQ_PWM0_IR_DMA_FIFO_DONE =     BIT(1),
     PWM_IRQ_PWM0_FRAME =                BIT(2),
     PWM_IRQ_PWM1_FRAME =                BIT(3),
     PWM_IRQ_PWM2_FRAME =                BIT(4),

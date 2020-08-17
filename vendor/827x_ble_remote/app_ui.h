@@ -38,8 +38,11 @@ void proc_keyboard (u8 e, u8 *p, int n);
 
 
 #if (BLE_REMOTE_OTA_ENABLE)
-    void app_enter_ota_mode(void);
-    void app_debug_ota_result(int result);
+    //void app_debug_ota_result(int result);
+    void app_ota_ver_check(void);
+    void app_ota_signature();
+    void app_enter_ota_mode(void *data);
+    void app_ota_result(int result);
 #endif
     int att_ccc_control(void* p);
 
@@ -54,8 +57,10 @@ extern    u8      ota_is_working;
 extern    int     lowBatt_alarmFlag;
 
 
-
-
+extern void app_pairing_led(void);
+extern void app_pairing_error(void);
+extern u8 app_repairing(void);
+extern void app_release_hid_key(void);
 
 
 

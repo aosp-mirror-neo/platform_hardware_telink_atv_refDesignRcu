@@ -50,7 +50,7 @@ typedef struct {
 typedef struct {
     u8         numHciCmds;
     u8         opCode_OCF;
-    u8           opCode_OGF;
+    u8         opCode_OGF;
     u8         returnParas[1];
 } hci_cmdCompleteEvt_t;
 
@@ -59,7 +59,7 @@ typedef struct {
     u8         status;
     u8         numHciCmds;
     u8         opCode_OCF;
-    u8           opCode_OGF;
+    u8         opCode_OGF;
 } hci_cmdStatusEvt_t;
 
 
@@ -87,11 +87,11 @@ typedef struct {
  */
 // Advertise report event type
 typedef enum {
-    ADV_REPORT_EVENT_TYPE_ADV_IND         = 0x00,
+    ADV_REPORT_EVENT_TYPE_ADV_IND        = 0x00,
     ADV_REPORT_EVENT_TYPE_DIRECT_IND     = 0x01,
-    ADV_REPORT_EVENT_TYPE_SCAN_IND         = 0x02,
-    ADV_REPORT_EVENT_TYPE_NONCONN_IND     = 0x03,
-    ADV_REPORT_EVENT_TYPE_SCAN_RSP         = 0x04,
+    ADV_REPORT_EVENT_TYPE_SCAN_IND       = 0x02,
+    ADV_REPORT_EVENT_TYPE_NONCONN_IND    = 0x03,
+    ADV_REPORT_EVENT_TYPE_SCAN_RSP       = 0x04,
 } advReportEventType_t;
 
 
@@ -133,17 +133,17 @@ typedef struct {
     u8         subEventCode;
     u8         status;
     u16        connHandle;
-    u8           feature[LL_FEATURE_SIZE];
+    u8         feature[LL_FEATURE_SIZE];
 } hci_le_readRemoteFeaturesCompleteEvt_t;
 
 
 typedef struct {
     u8         subEventCode;
     u16        connHandle;  //no aligned, can not be used as pointer
-    u16         maxTxOct;
-    u16           maxTxtime;
-    u16         maxRxOct;
-    u16           maxRxtime;
+    u16        maxTxOct;
+    u16        maxTxtime;
+    u16        maxRxOct;
+    u16        maxRxtime;
 } hci_le_dataLengthChangeEvt_t;
 
 
@@ -207,8 +207,8 @@ typedef struct {
     u8         subEventCode;
     u8         status;
     u16        connHandle;
-    u8            tx_phy;
-    u8           rx_phy;
+    u8         tx_phy;
+    u8         rx_phy;
 } hci_le_phyUpdateCompleteEvt_t;
 
 
@@ -259,8 +259,8 @@ typedef struct {
     u8         subEventCode;
     u8         status;
     u8         advHandle;
-    u16           connHandle;
-    u8           num_compExtAdvEvt;
+    u16        connHandle;
+    u8         num_compExtAdvEvt;
 } hci_le_advSetTerminatedEvt_t;
 
 
@@ -278,7 +278,7 @@ typedef struct {
 typedef struct {
     u8         subEventCode;
     u16        connHandle;
-    u8           channel_selection_algotihm;
+    u8         channel_selection_algotihm;
 } hci_le_chnSelectAlgorithmEvt_t;
 
 

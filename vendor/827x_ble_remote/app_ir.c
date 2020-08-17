@@ -33,7 +33,6 @@
 #include "../../stack/ble/attr/att.h"
 
 
-
 #if(BLT_TEST_SOFT_TIMER_ENABLE == 0)
 int blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us)
 {
@@ -175,10 +174,12 @@ u8 ir_get_suppress_index_from_keyid_idx(u8 key_idx)
 {
     u8 i;
     printf("ir_app_parm.ir_programming.programmed_key_count=%x\r\n",ir_app_parm.ir_programming.programmed_key_count);
+    if(ir_table[0].key_id == 0) return KEY_IDX_NULL;
     for(i = 0; i < MAX_KEY_COUNT; i++)
     {
         if (ir_table[i].key_id == key_idx)
         {
+            printf("tset i=%x\r\n",i);
             return i;
         }
     }
@@ -381,11 +382,16 @@ void ir_send_key_code(key_code_t* p_key_code)
     ir_send_specil(ir_app_parm.carrier_frequency,ir_app_parm.duty_cycle);
 }
 
+extern void app_ota_status(u8 status);
 int ir_fallback_send(u8 key_down)
 {
     key_code_t* p_key_code = &ir_table[ir_app_parm.current_programming_key_send];
     u16 key_id;
 
+    if(key_down)
+        app_ota_status(0);
+	else
+		app_ota_status(1);
     if(key_down)
     {
         printf("key down\r\n");
@@ -489,7 +495,9 @@ void ir_flash_save(u32 addr,u32 len)
 	printf("ir_flash_save addr=%x\r\n",addr);
 }
 
-
+extern int bls_ll_requestConnBrxEventDisable(void);
+extern void  bls_ll_disableConnBrxEvent(void);
+extern void  bls_ll_restoreConnBrxEvent(void);
 int ir_flash_erase_timeoutcb(void)
 {
     printf("ir_flash_erase_timeoutcb\r\n");
@@ -532,7 +540,7 @@ void ir_flash_factory(void)
 u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
 {
     u8 button_index=0;
-	u32 flash_addr_pos,len;
+	u32 flash_addr_pos=0,len;
 
     button_index = ir_get_button_idx_from_key_id(key_id);
     if (button_index == KEY_IDX_NULL)
@@ -702,6 +710,7 @@ void ir_flash_check(u32 addr)
     u8 button_index=0,i;
 	u16 code_size=0;
 	u8 buf[256];
+	u16 key_id=0;
 
 	for(i=0;i<MAX_KEY_COUNT;i++)
 	{
@@ -712,8 +721,8 @@ void ir_flash_check(u32 addr)
 		    break;
 	    }
 		code_size = *(u16*)&buf[2];
-
-	    ir_table[button_index].key_id = *(u16*)buf;
+		key_id  = buf[0]|(buf[1]<<8);
+	    ir_table[button_index].key_id = key_id;
         ir_table[button_index].code_size =  code_size;
         ir_table[button_index].button_idx = button_index;
         memcpy(ir_table[button_index].code, &buf[5], code_size);
@@ -723,7 +732,6 @@ void ir_flash_check(u32 addr)
             printf(" %x",ir_table[button_index].code[k]);
         }
 		printf("\r\n");
-
 	}
 }
 

@@ -39,13 +39,13 @@
 /********************* Macro & Enumeration variables for Stack, user can not use!!!!  **********************/
 #define PHY_USED_AUXPTR_LE_1M                                    0
 #define PHY_USED_AUXPTR_LE_2M                                    1
-#define PHY_USED_AUXPTR_LE_CODED                                2
+#define PHY_USED_AUXPTR_LE_CODED                                 2
 
 
 
 typedef struct{
     u8    llid;
-    u8  rf_len;
+    u8    rf_len;
     u8    opcode;
     u8    tx_phys;
     u8    rx_phys;
@@ -54,12 +54,12 @@ typedef struct{
 
 typedef struct{
     u8    llid;
-    u8  rf_len;
+    u8    rf_len;
     u8    opcode;
     u8    m_to_s_phy;
     u8    s_to_m_phy;
-    u8     instant0;
-    u8     instant1;
+    u8    instant0;
+    u8    instant1;
 }rf_pkt_ll_phy_update_ind_t;   //phy_req, phy_rsp
 
 
@@ -73,7 +73,7 @@ typedef enum{
 
 typedef struct {
     u8    dft_tx_prefer_phys;
-    u8     dft_rx_prefer_phys;
+    u8    dft_rx_prefer_phys;
     u8    dft_prefer_phy;
     u8    dft_CI;
 
@@ -102,13 +102,13 @@ typedef struct {
 
     #if 0
         u8    tx_prefer_phys;        //phy set
-        u8     rx_prefer_phys;
-        u8  tx_next_phys;
-        u8     rx_next_phys;
+        u8    rx_prefer_phys;
+        u8    tx_next_phys;
+        u8    rx_next_phys;
 
         u8    cur_tx_phy;        //phy using
         u8    cur_rx_phy;
-        u16 rsvd;
+        u16   rsvd;
     #endif
 
 }ll_conn_phy_t;
@@ -121,8 +121,8 @@ extern ll_get_conn_phy_ptr_callback_t  ll_get_conn_phy_ptr_cb;
 
 
 extern u8   tx_settle_adv[4];
-extern u8    tx_settle_slave[4];
-extern u8    tx_settle_master[4];
+extern u8   tx_settle_slave[4];
+extern u8   tx_settle_master[4];
 
 
 /******************************* Macro & Enumeration variables for User ************************************/
@@ -130,21 +130,21 @@ extern u8    tx_settle_master[4];
 typedef enum {
     BLE_PHY_1M             = 0x01,
     BLE_PHY_2M             = 0x02,
-    BLE_PHY_CODED         = 0x03,
+    BLE_PHY_CODED          = 0x03,
 } le_phy_type_t;
 
 typedef enum {
     PHY_PREFER_1M         = BIT(0),
-    PHY_PREFER_2M        = BIT(1),
-    PHY_PREFER_CODED     = BIT(2),
+    PHY_PREFER_2M         = BIT(1),
+    PHY_PREFER_CODED      = BIT(2),
 } le_phy_prefer_type_t;
 
 
 
 typedef enum {
     PHY_TRX_PREFER        = 0,                    //has      preference among TX & RX PHYs
-    PHY_TX_NO_PREFER     = BIT(0),               //has no preference among TX PHYs
-    PHY_RX_NO_PREFER     = BIT(1),                //has no preference among RX PHYs
+    PHY_TX_NO_PREFER      = BIT(0),               //has no preference among TX PHYs
+    PHY_RX_NO_PREFER      = BIT(1),                //has no preference among RX PHYs
     PHY_TRX_NO_PREFER     = (BIT(0) | BIT(1)),    //has no preference among TX & RX PHYs
 } le_phy_prefer_mask_t;
 
@@ -155,8 +155,8 @@ typedef enum {
 
 typedef enum {
     CODED_PHY_PREFER_NONE     = 0,
-    CODED_PHY_PREFER_S2        = 1,
-    CODED_PHY_PREFER_S8     = 2,
+    CODED_PHY_PREFER_S2       = 1,
+    CODED_PHY_PREFER_S8       = 2,
 } le_ci_prefer_t;   //le coding indication prefer
 
 

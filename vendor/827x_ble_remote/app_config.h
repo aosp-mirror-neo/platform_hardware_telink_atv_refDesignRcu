@@ -34,8 +34,8 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 
 
-#define IR_DATA_SECT_1_ADDR          0x71000
-#define IR_DATA_SECT_2_ADDR          0x72000
+#define IR_DATA_SECT_1_ADDR                   0x71000
+#define IR_DATA_SECT_2_ADDR                   0x72000
 
 
 
@@ -61,9 +61,15 @@ extern "C" {
 
 #define AUDIO_TRANS_USE_2M_PHY_ENABLE         0
 
+
+#define REMOTE_G10                            1
+#define REMOTE_G20                            2
+
+#define RCU_TYPE                              REMOTE_G10
+
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                     DEEP_ANA_REG0 //u8,can save 8 bit info when deep
-#define    LOW_BATT_FLG                       BIT(0) //if 1: low battery
+#define LOW_BATT_FLG                          BIT(0) //if 1: low battery
 #define CONN_DEEP_FLG                         BIT(1) //if 1: conn deep, 0: adv deep
 #define IR_MODE_DEEP_FLG                      BIT(2) //if 1: IR mode, 0: BLE mode
 #define LOW_BATT_SUSPEND_FLG                  BIT(3) //if 1 : low battery, < 1.8v
@@ -88,10 +94,10 @@ extern "C" {
 //////////////////// LED CONFIG (RCU board)///////////////////////////
 #if (BLT_APP_LED_ENABLE)
     #define LED_ON_LEVAL                      1             //gpio output high voltage to turn on led
-    #define    GPIO_LED                       GPIO_PD6
+    #define GPIO_LED                          GPIO_PD6
     #define PD6_FUNC                          AS_GPIO
 
-    #define    GPIO_LED2                      GPIO_PD5
+    #define GPIO_LED2                         GPIO_PD5
     #define PD5_FUNC                          AS_GPIO
     #define PD5_OUTPUT_ENABLE                 1
     #define PD5_INPUT_ENABLE                  0
@@ -133,209 +139,209 @@ extern "C" {
 #endif
 
 //PB3 IRout 100K pulldown when  IR not working,  when IR begin, disable this 100K pulldown
-#define    PULL_WAKEUP_SRC_PB3                PM_PIN_PULLDOWN_100K
+#define PULL_WAKEUP_SRC_PB3                   PM_PIN_PULLDOWN_100K
 
 
 
 //////////////////////////// KEYSCAN/MIC  GPIO //////////////////////////////////
-#define    MATRIX_ROW_PULL                    PM_PIN_PULLDOWN_100K
-#define    MATRIX_COL_PULL                    PM_PIN_PULLUP_10K
+#define MATRIX_ROW_PULL                       PM_PIN_PULLDOWN_100K
+#define MATRIX_COL_PULL                       PM_PIN_PULLUP_10K
 
-#define    KB_LINE_HIGH_VALID                 0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
-#define    DEEPBACK_FAST_KEYSCAN_ENABLE       0   //proc fast scan when deepsleep back trigged by key press, in case key loss
-#define    LONG_PRESS_KEY_POWER_OPTIMIZE      1   //lower power when pressing key without release
+#define KB_LINE_HIGH_VALID                    0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+#define DEEPBACK_FAST_KEYSCAN_ENABLE          0   //proc fast scan when deepsleep back trigged by key press, in case key loss
+#define LONG_PRESS_KEY_POWER_OPTIMIZE         1   //lower power when pressing key without release
 
 //stuck key
-#define    STUCK_KEY_PROCESS_ENABLE           1
-#define    STUCK_KEY_ENTERDEEP_TIME           30  //in s
+#define STUCK_KEY_PROCESS_ENABLE              1
+#define STUCK_KEY_ENTERDEEP_TIME              30  //in s
 
 //repeat key
-#define    KB_REPEAT_KEY_ENABLE               0
-#define    KB_REPEAT_KEY_INTERVAL_MS          200
-#define    KB_REPEAT_KEY_NUM                  1
-#define    KB_MAP_REPEAT                      {VK_1, }
+#define KB_REPEAT_KEY_ENABLE                  0
+#define KB_REPEAT_KEY_INTERVAL_MS             200
+#define KB_REPEAT_KEY_NUM                     1
+#define KB_MAP_REPEAT                         {VK_1, }
 
 
-#define         CR_VOL_UP                0x80
-#define         CR_VOL_DN                0x81
+#define CR_VOL_UP                             0x80
+#define CR_VOL_DN                             0x81
 
-#define         CR_NETFLIX               0x6C
-#define         CR_YOUTUBE               0x6D
-#define         CR_DISNEY                0x6E
-#define         CR_HBOMAX                0x6F
+#define CR_NETFLIX                            0x78
+#define CR_YOUTUBE                            0x77
+#define CR_DISNEY                             0x79
+#define CR_HBOMAX                             0x7a
 
-#define         CR_UP                    0xf0
-#define         CR_DN                    0xf1
-#define         CR_LEFT                  0xf2
-#define         CR_RIGHT                 0xf3
-#define         CR_CENTER                0xf4
-#define         CR_HOME                  0xf5
-#define         CR_BACK                  0xf6
-#define         CR_POWER                 0xf7
-#define         CR_VOL_MUTE              0xf8
-#define         CR_CHN_UP                0xf9
-#define         CR_CHN_DN                0xfa
-#define         CR_GUIDE                 0xfb
-#define         CR_BOOKMARK              0xfc
-#define         CR_ASSIST                0xfd
-#define         CR_INPUT                 0xfe
-#define         CR_DASHBOARD             0xff
+#define CR_UP                                 0xf0
+#define CR_DN                                 0xf1
+#define CR_LEFT                               0xf2
+#define CR_RIGHT                              0xf3
+#define CR_CENTER                             0xf4
+#define CR_HOME                               0xf5
+#define CR_BACK                               0xf6
+#define CR_POWER                              0xf7
+#define CR_VOL_MUTE                           0xf8
+#define CR_CHN_UP                             0xf9
+#define CR_CHN_DN                             0xfa
+#define CR_GUIDE                              0xfb
+#define CR_BOOKMARK                           0xfc
+#define CR_ASSIST                             0xfd
+#define CR_INPUT                              0xfe
+#define CR_DASHBOARD                          0xff
 
 
 
 //special key
-#define         VOICE                    0xc0
-#define         KEY_MODE_SWITCH          0xc1
-#define         PHY_TEST                 0xc2
-#define         VOICE_PTT                0xc3
-#define         VOICE_HTT                0xc4
-#define         VOICE_ON_REQ             0xc5
-#define         AES_TEST                 0xc6
+#define VOICE                                 0xc0
+#define KEY_MODE_SWITCH                       0xc1
+#define PHY_TEST                              0xc2
+#define VOICE_PTT                             0xc3
+#define VOICE_HTT                             0xc4
+#define VOICE_ON_REQ                          0xc5
+#define AES_TEST                              0xc6
 
 
 
-#define         IR_VK_0            0x0A
-#define         IR_VK_1            0x01
-#define         IR_VK_2            0x02
-#define         IR_VK_3            0x03
-#define         IR_VK_4            0x04
-#define         IR_VK_5            0x05
-#define         IR_VK_6            0x06
-#define         IR_VK_7            0x07
-#define         IR_VK_8            0x08
-#define         IR_VK_9            0x09
+#define IR_VK_0                               0x0A
+#define IR_VK_1                               0x01
+#define IR_VK_2                               0x02
+#define IR_VK_3                               0x03
+#define IR_VK_4                               0x04
+#define IR_VK_5                               0x05
+#define IR_VK_6                               0x06
+#define IR_VK_7                               0x07
+#define IR_VK_8                               0x08
+#define IR_VK_9                               0x09
 
-#define         IR_UP              0x15
-#define         IR_DN              0x16
-#define         IR_LEFT            0x17
-#define         IR_RIGHT           0x18
-#define         IR_CENTER          0x19
-
-
-#define         IR_POWER           0x21
-#define         IR_HOME            0x47
-#define         IR_BACK            0x48
-#define         IR_VOL_UP          0x23
-#define         IR_VOL_DN          0x24
-#define         IR_CHN_UP          0x33
-#define         IR_CHN_DN          0x34
-#define         IR_ASSIST          0x46
-#define         IR_YOUTUBE         0x64
-#define         IR_NETFLIX         0x63
-#define         IR_DISNEY          0x67
-#define         IR_HBOMAX          0x68
-#define         IR_GUIDE           0x32
-#define         IR_BOOKMARK        0x74
-#define         IR_INPUT           0x60
-#define         IR_MUTE            0x25
-#define         IR_DASHBOARD       0X71
+#define IR_UP                                 0x15
+#define IR_DN                                 0x16
+#define IR_LEFT                               0x17
+#define IR_RIGHT                              0x18
+#define IR_CENTER                             0x19
 
 
-#define         T_VK_CH_UP         0xd0
-#define         T_VK_CH_DN         0xd1
+#define IR_POWER                              0x21
+#define IR_HOME                               0x47
+#define IR_BACK                               0x48
+#define IR_VOL_UP                             0x23
+#define IR_VOL_DN                             0x24
+#define IR_CHN_UP                             0x33
+#define IR_CHN_DN                             0x34
+#define IR_ASSIST                             0x46
+#define IR_YOUTUBE                            0x64
+#define IR_NETFLIX                            0x63
+#define IR_DISNEY                             0x67
+#define IR_HBOMAX                             0x68
+#define IR_GUIDE                              0x32
+#define IR_BOOKMARK                           0x74
+#define IR_INPUT                              0x60
+#define IR_MUTE                               0x25
+#define IR_DASHBOARD                          0X0F
 
 
-#define        KB_MAP_NORMAL    {\
-                {0,          1,             2},\
-                {3,          4,             5},\
-                {6,          7,             8},\
-                {VOICE,      10,            11},\
-                {12,         13,            14},\
-                {15,         16,            17},\
-                {18,         19,            20},\
-                {21,         22,            23},}
+#define T_VK_CH_UP                            0xd0
+#define T_VK_CH_DN                            0xd1
 
 
-#define        KB_MAP_BLE    {\
-                CR_POWER,      CR_RIGHT,       CR_CHN_DN,    \
-                CR_INPUT,      CR_DN,          CR_VOL_DN,    \
-                CR_BOOKMARK,   CR_BACK,        CR_YOUTUBE,    \
-                CR_ASSIST,     CR_HOME,        CR_NETFLIX,    \
-                CR_DASHBOARD,  CR_GUIDE,       CR_DISNEY,    \
-                CR_UP,         CR_CHN_UP,      CR_HBOMAX,    \
-                CR_LEFT,       CR_VOL_UP,      VK_NONE,    \
-                CR_CENTER,     CR_VOL_MUTE,    VK_NONE,    }
+#define KB_MAP_NORMAL {\
+                        {0,          1,             2}, \
+                        {3,          4,             5}, \
+                        {6,          7,             8}, \
+                        {VOICE,      10,            11},\
+                        {12,         13,            14},\
+                        {15,         16,            17},\
+                        {18,         19,            20},\
+                        {21,         22,            23},}
 
 
-#define        KB_MAP_IR    {\
-                IR_POWER,      IR_RIGHT,       IR_CHN_DN,    \
-                IR_INPUT,      IR_DN,          IR_VOL_DN,    \
-                IR_BOOKMARK,   IR_BACK,        IR_YOUTUBE,    \
-                IR_ASSIST,     IR_HOME,        IR_NETFLIX,    \
-                IR_DASHBOARD,  IR_GUIDE,       IR_DISNEY,    \
-                IR_UP,         IR_CHN_UP,      IR_HBOMAX,    \
-                IR_LEFT,       IR_VOL_UP,      VK_NONE,    \
-                IR_CENTER,     IR_MUTE,        VK_NONE,    }
+#define KB_MAP_BLE    {\
+                        CR_POWER,      CR_RIGHT,       CR_CHN_DN,    \
+                        CR_INPUT,      CR_DN,          CR_VOL_DN,    \
+                        CR_BOOKMARK,   CR_BACK,        CR_YOUTUBE,   \
+                        CR_ASSIST,     CR_HOME,        CR_NETFLIX,   \
+                        CR_DASHBOARD,  CR_GUIDE,       CR_DISNEY,    \
+                        CR_UP,         CR_CHN_UP,      CR_HBOMAX,    \
+                        CR_LEFT,       CR_VOL_UP,      VK_NONE,      \
+                        CR_CENTER,     CR_VOL_MUTE,    VK_NONE,    }
+
+
+#define KB_MAP_IR     {\
+                        IR_POWER,      IR_RIGHT,       IR_CHN_DN,    \
+                        IR_INPUT,      IR_DN,          IR_VOL_DN,    \
+                        IR_BOOKMARK,   IR_BACK,        IR_YOUTUBE,   \
+                        IR_ASSIST,     IR_HOME,        IR_NETFLIX,   \
+                        IR_DASHBOARD,  IR_GUIDE,       IR_DISNEY,    \
+                        IR_UP,         IR_CHN_UP,      IR_HBOMAX,    \
+                        IR_LEFT,       IR_VOL_UP,      VK_NONE,      \
+                        IR_CENTER,     IR_MUTE,        VK_NONE,    }
 
 
 
 
 //////////////////// KEY CONFIG (RCU board) ///////////////////////////
-#define    KB_DRIVE_PINS  {GPIO_PD2, GPIO_PD3, GPIO_PD4}
-#define    KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
+#define KB_DRIVE_PINS  {GPIO_PD2, GPIO_PD3, GPIO_PD4}
+#define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
 
 //drive pin as gpio
 
-#define    PD2_FUNC                AS_GPIO
-#define    PD3_FUNC                AS_GPIO
-#define    PD4_FUNC                AS_GPIO
+#define PD2_FUNC                              AS_GPIO
+#define PD3_FUNC                              AS_GPIO
+#define PD4_FUNC                              AS_GPIO
 
 
 //drive pin need 100K pulldown
-#define    PULL_WAKEUP_SRC_PD2        MATRIX_ROW_PULL
-#define    PULL_WAKEUP_SRC_PD3        MATRIX_ROW_PULL
-#define    PULL_WAKEUP_SRC_PD4        MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PD2                   MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PD3                   MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PD4                   MATRIX_ROW_PULL
 
 
 //drive pin open input to read gpio wakeup level
-#define    PD2_INPUT_ENABLE        1
-#define    PD3_INPUT_ENABLE        1
-#define    PD4_INPUT_ENABLE        1
+#define PD2_INPUT_ENABLE                      1
+#define PD3_INPUT_ENABLE                      1
+#define PD4_INPUT_ENABLE                      1
 
 
 //scan pin as gpio
-#define    PA1_FUNC                AS_GPIO
-#define    PA2_FUNC                AS_GPIO
-#define    PA3_FUNC                AS_GPIO
-#define    PA4_FUNC                AS_GPIO
-#define    PA5_FUNC                AS_GPIO
-#define    PA6_FUNC                AS_GPIO
-#define    PB5_FUNC                AS_GPIO
-#define    PB6_FUNC                AS_GPIO
+#define PA1_FUNC                              AS_GPIO
+#define PA2_FUNC                              AS_GPIO
+#define PA3_FUNC                              AS_GPIO
+#define PA4_FUNC                              AS_GPIO
+#define PA5_FUNC                              AS_GPIO
+#define PA6_FUNC                              AS_GPIO
+#define PB5_FUNC                              AS_GPIO
+#define PB6_FUNC                              AS_GPIO
 
 
 //scan  pin need 10K pullup
-#define    PULL_WAKEUP_SRC_PA1        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PA2        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PA3        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PA4        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PA5        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PA6        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PB5        MATRIX_COL_PULL
-#define    PULL_WAKEUP_SRC_PB6        MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA1                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA2                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA3                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA4                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA5                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PA6                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PB5                   MATRIX_COL_PULL
+#define PULL_WAKEUP_SRC_PB6                   MATRIX_COL_PULL
 
 
 
 //scan pin open input to read gpio level
-#define PA1_INPUT_ENABLE        1
-#define PA2_INPUT_ENABLE        1
-#define PA3_INPUT_ENABLE        1
-#define PA4_INPUT_ENABLE        1
-#define PA5_INPUT_ENABLE        1
-#define PA6_INPUT_ENABLE        1
-#define PB5_INPUT_ENABLE        1
-#define PB6_INPUT_ENABLE        1
+#define PA1_INPUT_ENABLE                      1
+#define PA2_INPUT_ENABLE                      1
+#define PA3_INPUT_ENABLE                      1
+#define PA4_INPUT_ENABLE                      1
+#define PA5_INPUT_ENABLE                      1
+#define PA6_INPUT_ENABLE                      1
+#define PB5_INPUT_ENABLE                      1
+#define PB6_INPUT_ENABLE                      1
 
 
 
-#define        KB_MAP_NUM        KB_MAP_NORMAL
-#define        KB_MAP_FN         KB_MAP_NORMAL
+#define KB_MAP_NUM                            KB_MAP_NORMAL
+#define KB_MAP_FN                             KB_MAP_NORMAL
 
 /////////////////// Clock  /////////////////////////////////
 #if (TL_AUDIO_MODE & (TL_AUDIO_MASK_SBC_MODE | TL_AUDIO_MASK_MSBC_MODE))
-#define CLOCK_SYS_CLOCK_HZ      32000000
+#define CLOCK_SYS_CLOCK_HZ                    32000000
 #else
-#define CLOCK_SYS_CLOCK_HZ      16000000
+#define CLOCK_SYS_CLOCK_HZ                    16000000
 #endif
 enum{
     CLOCK_SYS_CLOCK_1S = CLOCK_SYS_CLOCK_HZ,
@@ -346,8 +352,8 @@ enum{
 
 
 /////////////////// watchdog  //////////////////////////////
-#define MODULE_WATCHDOG_ENABLE        0
-#define WATCHDOG_INIT_TIMEOUT        500  //ms
+#define MODULE_WATCHDOG_ENABLE                0
+#define WATCHDOG_INIT_TIMEOUT                 500  //ms
 
 
 
@@ -393,11 +399,11 @@ typedef enum
     DeviceInformation_firmwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_firmwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
 
-    DeviceInformation_hardwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_hardwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
-
     DeviceInformation_softwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_softwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
+
+    DeviceInformation_hardwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
+    DeviceInformation_hardwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
 
     DeviceInformation_manuNAME_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_manuNAME_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
@@ -542,52 +548,52 @@ typedef enum
 
 
 
-#define DEBUG_GPIO_ENABLE                            0
+#define DEBUG_GPIO_ENABLE                     0
 
 #if(DEBUG_GPIO_ENABLE)
     //define debug GPIO here according to your hardware
 
-    #define GPIO_CHN0                            GPIO_PB4
-    #define GPIO_CHN1                            GPIO_PB5
-    #define GPIO_CHN2                            GPIO_PB6
-    #define GPIO_CHN3                            //GPIO_PC2  // PC2/PC3 may used for external crystal input
-    #define GPIO_CHN4                            //GPIO_PC3  // PC2/PC3 may used for external crystal input
-    #define GPIO_CHN5                            GPIO_PB0
-    #define GPIO_CHN6                            GPIO_PB1
+    #define GPIO_CHN0                         GPIO_PB4
+    #define GPIO_CHN1                         GPIO_PB5
+    #define GPIO_CHN2                         GPIO_PB6
+    #define GPIO_CHN3                         //GPIO_PC2  // PC2/PC3 may used for external crystal input
+    #define GPIO_CHN4                         //GPIO_PC3  // PC2/PC3 may used for external crystal input
+    #define GPIO_CHN5                         GPIO_PB0
+    #define GPIO_CHN6                         GPIO_PB1
 
 
-    #define PB4_OUTPUT_ENABLE                    1
-    #define PB5_OUTPUT_ENABLE                    1
-    #define PB6_OUTPUT_ENABLE                    1
-    //#define PC2_OUTPUT_ENABLE                  1
-    //#define PC3_OUTPUT_ENABLE                  1
-    #define PB0_OUTPUT_ENABLE                    1
-    #define PB1_OUTPUT_ENABLE                    1
+    #define PB4_OUTPUT_ENABLE                 1
+    #define PB5_OUTPUT_ENABLE                 1
+    #define PB6_OUTPUT_ENABLE                 1
+    //#define PC2_OUTPUT_ENABLE               1
+    //#define PC3_OUTPUT_ENABLE               1
+    #define PB0_OUTPUT_ENABLE                 1
+    #define PB1_OUTPUT_ENABLE                 1
 
 
 
 
-    #define DBG_CHN0_LOW         gpio_write(GPIO_CHN0, 0)
-    #define DBG_CHN0_HIGH        gpio_write(GPIO_CHN0, 1)
-    #define DBG_CHN0_TOGGLE      gpio_toggle(GPIO_CHN0)
-    #define DBG_CHN1_LOW         gpio_write(GPIO_CHN1, 0)
-    #define DBG_CHN1_HIGH        gpio_write(GPIO_CHN1, 1)
-    #define DBG_CHN1_TOGGLE      gpio_toggle(GPIO_CHN1)
-    #define DBG_CHN2_LOW         gpio_write(GPIO_CHN2, 0)
-    #define DBG_CHN2_HIGH        gpio_write(GPIO_CHN2, 1)
-    #define DBG_CHN2_TOGGLE      gpio_toggle(GPIO_CHN2)
-    #define DBG_CHN3_LOW         //gpio_write(GPIO_CHN3, 0)
-    #define DBG_CHN3_HIGH        //gpio_write(GPIO_CHN3, 1)
-    #define DBG_CHN3_TOGGLE      //gpio_toggle(GPIO_CHN3)
-    #define DBG_CHN4_LOW         //gpio_write(GPIO_CHN4, 0)
-    #define DBG_CHN4_HIGH        //gpio_write(GPIO_CHN4, 1)
-    #define DBG_CHN4_TOGGLE      //gpio_toggle(GPIO_CHN4)
-    #define DBG_CHN5_LOW         gpio_write(GPIO_CHN5, 0)
-    #define DBG_CHN5_HIGH        gpio_write(GPIO_CHN5, 1)
-    #define DBG_CHN5_TOGGLE      gpio_toggle(GPIO_CHN5)
-    #define DBG_CHN6_LOW         gpio_write(GPIO_CHN6, 0)
-    #define DBG_CHN6_HIGH        gpio_write(GPIO_CHN6, 1)
-    #define DBG_CHN6_TOGGLE      gpio_toggle(GPIO_CHN6)
+    #define DBG_CHN0_LOW                      gpio_write(GPIO_CHN0, 0)
+    #define DBG_CHN0_HIGH                     gpio_write(GPIO_CHN0, 1)
+    #define DBG_CHN0_TOGGLE                   gpio_toggle(GPIO_CHN0)
+    #define DBG_CHN1_LOW                      gpio_write(GPIO_CHN1, 0)
+    #define DBG_CHN1_HIGH                     gpio_write(GPIO_CHN1, 1)
+    #define DBG_CHN1_TOGGLE                   gpio_toggle(GPIO_CHN1)
+    #define DBG_CHN2_LOW                      gpio_write(GPIO_CHN2, 0)
+    #define DBG_CHN2_HIGH                     gpio_write(GPIO_CHN2, 1)
+    #define DBG_CHN2_TOGGLE                   gpio_toggle(GPIO_CHN2)
+    #define DBG_CHN3_LOW                      //gpio_write(GPIO_CHN3, 0)
+    #define DBG_CHN3_HIGH                     //gpio_write(GPIO_CHN3, 1)
+    #define DBG_CHN3_TOGGLE                   //gpio_toggle(GPIO_CHN3)
+    #define DBG_CHN4_LOW                      //gpio_write(GPIO_CHN4, 0)
+    #define DBG_CHN4_HIGH                     //gpio_write(GPIO_CHN4, 1)
+    #define DBG_CHN4_TOGGLE                   //gpio_toggle(GPIO_CHN4)
+    #define DBG_CHN5_LOW                      gpio_write(GPIO_CHN5, 0)
+    #define DBG_CHN5_HIGH                     gpio_write(GPIO_CHN5, 1)
+    #define DBG_CHN5_TOGGLE                   gpio_toggle(GPIO_CHN5)
+    #define DBG_CHN6_LOW                      gpio_write(GPIO_CHN6, 0)
+    #define DBG_CHN6_HIGH                     gpio_write(GPIO_CHN6, 1)
+    #define DBG_CHN6_TOGGLE                   gpio_toggle(GPIO_CHN6)
 #else
     #define DBG_CHN0_LOW
     #define DBG_CHN0_HIGH
@@ -619,44 +625,21 @@ typedef enum
 
 
 
-#define BLE_PHYTEST_MODE                        PHYTEST_MODE_DISABLE
+#define BLE_PHYTEST_MODE                      PHYTEST_MODE_DISABLE
 
-#define UART_PRINT_DEBUG_ENABLE                 1
+#define UART_PRINT_DEBUG_ENABLE               1
 
 #if (UART_PRINT_DEBUG_ENABLE)
 
     //the baud rate should not bigger than 1M(system timer clock is constant 16M)
-    #define PRINT_BAUD_RATE                                 1000000
-    #define DEBUG_INFO_TX_PIN                               GPIO_PB1
-    #define PULL_WAKEUP_SRC_PB1                             PM_PIN_PULLUP_10K
-    #define PB1_OUTPUT_ENABLE                               1
-    #define PB1_DATA_OUT                                    1 //must
+    #define PRINT_BAUD_RATE                   1000000
+    #define DEBUG_INFO_TX_PIN                 GPIO_PB1
+    #define PULL_WAKEUP_SRC_PB1               PM_PIN_PULLUP_10K
+    #define PB1_OUTPUT_ENABLE                 1
+    #define PB1_DATA_OUT                      1 //must
     #include "application/print/u_printf.h"
 #endif
 
-/*
-//Telink board
-#define PA5_OUTPUT_ENABLE                                 0
-#define PA5_INPUT_ENABLE                                  1
-
-#define PA6_OUTPUT_ENABLE                                 0
-#define PA6_INPUT_ENABLE                                  1
-
-#define PB4_OUTPUT_ENABLE                                 0
-#define PB4_INPUT_ENABLE                                  1
-
-#define PB5_OUTPUT_ENABLE                                 0
-#define PB5_INPUT_ENABLE                                  1
-
-#define PB6_OUTPUT_ENABLE                                 0
-#define PB6_INPUT_ENABLE                                  1
-
-#define PD0_OUTPUT_ENABLE                                 0
-#define PD0_INPUT_ENABLE                                  1
-
-#define PD1_OUTPUT_ENABLE                                 0
-#define PD1_INPUT_ENABLE                                  1
-*/
 
 #include "../common/default_config.h"
 

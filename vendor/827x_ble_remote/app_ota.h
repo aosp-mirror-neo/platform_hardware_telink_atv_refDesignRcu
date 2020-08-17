@@ -59,10 +59,20 @@ typedef enum{
      OTA_START        = BIT(3),
 }OTA_CtlFlagDef;
 
+typedef void (*ota_signatureCb_t)(void);
+typedef void (*ota_FWdecryptionCb_t)(void *data);
+typedef void (*ota_newStartCb_t)(void *data);
 
 void google_ota_pause();
 void google_ota_continue();
+
+void bls_ota_registerotaSignatureCmdCb(ota_signatureCb_t cb);
+void bls_ota_registerotaFWdecryptionCb(ota_FWdecryptionCb_t cb);
+void bls_ota_registerotaNewStartCb(ota_newStartCb_t cb);
+
 void google_ota_result(int result);
 int google_ota_write(void * p);
+
+extern u8  ota_ctl_flag;
 
 #endif /* APP_OTA_H_ */

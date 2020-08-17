@@ -41,49 +41,49 @@
 ////////////////// Power Management ///////////////////////
 #define            SUSPEND_DISABLE                0
 #define            SUSPEND_ADV                    BIT(0)
-#define            SUSPEND_CONN                BIT(1)
+#define            SUSPEND_CONN                   BIT(1)
 #define            DEEPSLEEP_RETENTION_ADV        BIT(2)
-#define            DEEPSLEEP_RETENTION_CONN    BIT(3)
-#define            MCU_STALL                    BIT(6)
+#define            DEEPSLEEP_RETENTION_CONN       BIT(3)
+#define            MCU_STALL                      BIT(6)
 
 
 
 
 
 typedef struct {
-    u8        suspend_mask;
-    u8        wakeup_src;
-    u8        conn_no_suspend;
-    u8         timer_wakeup;
+    u8      suspend_mask;
+    u8      wakeup_src;
+    u8      conn_no_suspend;
+    u8      timer_wakeup;
 
-    u8        latency_off;
-    u8        no_latency;
+    u8      latency_off;
+    u8      no_latency;
     u16     latency_en;
 
-    u16        sys_latency;
+    u16     sys_latency;
     u16     user_latency;
-    u16        valid_latency;
+    u16     valid_latency;
     u16     latency_use;
 
     u32     deepRet_advThresTick;
     u32     deepRet_connThresTick;
     u32     deepRet_earlyWakeupTick;
 
-    u8         deepRt_en;
-    u8        deepRet_type;
-    u8        appWakeup_en;
-    u8        appWakeup_flg;
+    u8      deepRt_en;
+    u8      deepRet_type;
+    u8      appWakeup_en;
+    u8      appWakeup_flg;
 
-    u8        appWakeup_loop_noLatency;
-    u8         timing_miss;
+    u8      appWakeup_loop_noLatency;
+    u8      timing_miss;
     u8      timing_synced;
-    u8         rsvd;
+    u8      rsvd;
 
     u32     appWakeup_tick;
 
     u32     current_wakeup_tick; //The system wake-up tick of the actual transfer of the cpu_sleep_wakeup function.
 
-    u16        pm_border_flag;
+    u16     pm_border_flag;
     u16     rsvd1;
 
 }st_ll_pm_t;
@@ -103,10 +103,10 @@ typedef     void (*pm_appWakeupLowPower_callback_t)(int);
 void         blc_ll_initPowerManagement_module(void);
 
 
-void        bls_pm_setSuspendMask (u8 mask);
-u8             bls_pm_getSuspendMask (void);
+void         bls_pm_setSuspendMask (u8 mask);
+u8           bls_pm_getSuspendMask (void);
 void         bls_pm_setWakeupSource(u8 source);
-u32         bls_pm_getSystemWakeupTick(void);
+u32          bls_pm_getSystemWakeupTick(void);
 
 void         bls_pm_setManualLatency(u16 latency); //manual set latency to save power
 

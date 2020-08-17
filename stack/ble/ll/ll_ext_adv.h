@@ -112,8 +112,8 @@ typedef struct{
     u8 rxAddr :1;
 
     u8  rf_len;
-    u8    advA[6];            //address
-    u8    data[31];            //0-31 byte
+    u8  advA[6];            //address
+    u8  data[31];            //0-31 byte
 }rf_pkt_pri_adv_t;
 #define MAX_LENGTH_PRIMARY_ADV_PKT                44   //sizeof(rf_pkt_pri_adv_t) = 43
 
@@ -139,10 +139,10 @@ typedef struct{
 //NOTE: this data structure must 4 bytes aligned
 typedef struct
 {
-    u8        adv_handle;
+    u8         adv_handle;
     u8         extAdv_en;
     u8         adv_chn_mask;
-    u8        adv_chn_num;
+    u8         adv_chn_num;
 
     u8         own_addr_type;
     u8         peer_addr_type;
@@ -152,18 +152,18 @@ typedef struct
 
     u8         max_ext_adv_evt;
     u8         run_ext_adv_evt;
-    u8        unfinish_advData;
-    u8        unfinish_scanRsp;
+    u8         unfinish_advData;
+    u8         unfinish_scanRsp;
 
 
-    u8        adv_filterPolicy;
+    u8         adv_filterPolicy;
     u8         scan_req_noti_en;
     u8         coding_ind;                    //s2 or s8
-    u8        param_update_flag;
+    u8         param_update_flag;
 
 
-    u8        with_aux_adv_ind;   //ADV_EXT_IND  with AUX_ADV_IND
-    u8        with_aux_chain_ind;
+    u8         with_aux_adv_ind;   //ADV_EXT_IND  with AUX_ADV_IND
+    u8         with_aux_chain_ind;
     u8         rand_adr_flg;
     u8         adv_sid;
 
@@ -173,20 +173,20 @@ typedef struct
 
     u16     adv_did;     // BIT<11:0>
     u16     evt_props;
-    u16        advInt_use;
-    u16        send_dataLen;
+    u16     advInt_use;
+    u16     send_dataLen;
     u16     maxLen_advData;            //for each ADV sets, this value can be different to save SRAM
     u16     curLen_advData;
     u16     maxLen_scanRsp;            //for each ADV sets, this value can be different to save SRAM
     u16     curLen_scanRsp;
 
-    u16        send_dataLenBackup;
-    u16        rsvd_16_1;
+    u16     send_dataLenBackup;
+    u16     rsvd_16_1;
 
 
     u32     adv_duration_tick;
     u32     adv_begin_tick;                //24
-    u32        adv_event_tick;
+    u32     adv_event_tick;
 
     u8*        dat_extAdv;
     u8*        dat_scanRsp;                //Scan response data.
@@ -221,13 +221,13 @@ typedef struct
 
 typedef struct
 {
-    u8         maxNum_advSets;
+    u8        maxNum_advSets;
     u8        useNum_advSets;
     u8        last_advSet;
     u8        last_advHand;
 
 
-    u8        T_SCAN_RSP_INTVL;
+    u8         T_SCAN_RSP_INTVL;
     u8         custom_aux_chn;
     u8         T_AUX_RSP_INTVL; //settle aux_scan_rsp/aux_conn_rsp's IFS 150s
     u8         rsvd3;
@@ -270,8 +270,8 @@ ble_sts_t     blc_ll_setExtAdvParam(  u8 advHandle,                      adv_eve
                                     adv_fp_type_t advFilterPolicy,  tx_power_t adv_tx_pow,            le_phy_type_t pri_adv_phy,     u8 sec_adv_max_skip,
                                     le_phy_type_t sec_adv_phy,          u8 adv_sid,                     u8 scan_req_noti_en);
 ble_sts_t    blc_ll_setExtAdvData    (u8 advHandle, data_oper_t operation, data_fragm_t fragment_prefer, u8 adv_dataLen,     u8 *advdata);
-ble_sts_t     blc_ll_setExtScanRspData(u8 advHandle, data_oper_t operation, data_fragm_t fragment_prefer, u8 scanRsp_dataLen, u8 *scanRspData);
-ble_sts_t     blc_ll_setExtAdvEnable_1(u32 extAdv_en, u8 sets_num, u8 advHandle,      u16 duration,       u8 max_extAdvEvt);
+ble_sts_t    blc_ll_setExtScanRspData(u8 advHandle, data_oper_t operation, data_fragm_t fragment_prefer, u8 scanRsp_dataLen, u8 *scanRspData);
+ble_sts_t    blc_ll_setExtAdvEnable_1(u32 extAdv_en, u8 sets_num, u8 advHandle,      u16 duration,       u8 max_extAdvEvt);
 ble_sts_t    blc_ll_setExtAdvEnable_n(u32 extAdv_en, u8 sets_num, u8 *pData);
 
 
@@ -292,23 +292,23 @@ ble_sts_t     blc_hci_le_setExtAdvParam( hci_le_setExtAdvParam_cmdParam_t *para,
 ble_sts_t     blc_hci_le_setExtAdvEnable(u8 extAdv_en, u8 sets_num, u8 *pData);
 
 u16           blc_ll_readMaxAdvDataLength(void);
-u8              blc_ll_readNumberOfSupportedAdvSets(void);
+u8            blc_ll_readNumberOfSupportedAdvSets(void);
 
 
 int          blt_ext_adv_proc(void);
 int          blt_send_adv2(void);
-int         blt_send_legacy_adv(void);
-int         blt_send_extend_adv(void);
+int          blt_send_legacy_adv(void);
+int          blt_send_extend_adv(void);
 void         blt_send_extend_no_aux_adv(void);
-int         blt_send_aux_adv(void);
+int          blt_send_aux_adv(void);
 ble_sts_t    blt_ll_clearAdvSets(void);
 void         blt_clearAdvSetsParam(ll_ext_adv_t        *pEadv);
-u8            blt_ll_searchExistingAdvSet(u8 advHandle);
-u8             blt_ll_searchAvailableAdvSet(u8 advHandle);
-void        blt_ll_updateAdvState(void);
-ble_sts_t   blt_ll_enableExtAdv(int adv_en);
+u8           blt_ll_searchExistingAdvSet(u8 advHandle);
+u8           blt_ll_searchAvailableAdvSet(u8 advHandle);
+void         blt_ll_updateAdvState(void);
+ble_sts_t    blt_ll_enableExtAdv(int adv_en);
 void         blt_ll_procAuxConnectReq(u8 * prx);
 int          blt_ll_updateAdvPacket(void);
-void        blt_ll_reset_ext_adv(void);
+void         blt_ll_reset_ext_adv(void);
 
 #endif /* LL_ADV_EXT_H_ */

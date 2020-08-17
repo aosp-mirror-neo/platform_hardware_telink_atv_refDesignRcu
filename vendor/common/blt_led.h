@@ -59,8 +59,10 @@ typedef struct{
 
 extern void led_proc(void);
 extern void device_led_init(void);
-int device_led_setup(led_cfg_t led_cfg);
-
+extern int device_led_busy(void);
+extern void device_led_setup(led_cfg_t led_cfg);
+extern void device_led_off(u8 led);
+extern void device_led_on(u8 led);
 inline void device_led_process(void)
 {
     led_proc();

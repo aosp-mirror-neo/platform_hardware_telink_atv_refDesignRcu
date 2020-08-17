@@ -40,7 +40,7 @@
 #define         ADV_MAX_DATA_LEN                    31
 
 
-#define            BLS_FLAG_ADV_IN_SLAVE_MODE            BIT(6)
+#define         BLS_FLAG_ADV_IN_SLAVE_MODE          BIT(6)
 
 #define         BLC_FLAG_STK_ADV                    BIT(24)
 
@@ -56,15 +56,15 @@ typedef struct {
     u8        adv_chn_mask;
     u8        adv_duration_en;
     u8        adv_type;
-    u8         adv_filterPolicy;
+    u8        adv_filterPolicy;
 
     u8        T_SCAN_RSP_INTVL;
-    u8      own_addr_type;     //own_addr_type
+    u8        own_addr_type;     //own_addr_type
     u8        rsvd;
     u8        advInt_rand;
 
-    u16        advInt_min;
-    u16     advInt_max;
+    u16       advInt_min;
+    u16       advInt_max;
 
     u32        adv_interval;     // system tick
     u32        adv_duration_us;
@@ -100,8 +100,8 @@ void         blc_ll_initAdvertising_module(u8 *public_adr);;
 
 
 ble_sts_t    bls_ll_setAdvData(u8 *data, u8 len);
-ble_sts_t     bls_ll_setScanRspData(u8 *data, u8 len);
-ble_sts_t   bls_ll_setAdvEnable(int adv_enable);
+ble_sts_t    bls_ll_setScanRspData(u8 *data, u8 len);
+ble_sts_t    bls_ll_setAdvEnable(int adv_enable);
 
 u8             blt_set_adv_direct_init_addrtype(u8* cmdPara);
 
@@ -122,7 +122,7 @@ void         blc_ll_setAdvCustomedChannel (u8 chn0, u8 chn1, u8 chn2);
 
 ble_sts_t   blc_ll_addAdvertisingInConnSlaveRole(void);
 ble_sts_t   blc_ll_removeAdvertisingFromConnSLaveRole(void);
-ble_sts_t     blc_ll_setAdvParamInConnSlaveRole( u8           *adv_data,  u8              advData_len, u8 *scanRsp_data,               u8 scanRspData_len,
+ble_sts_t   blc_ll_setAdvParamInConnSlaveRole( u8           *adv_data,  u8              advData_len, u8 *scanRsp_data,               u8 scanRspData_len,
                                                adv_type_t  advType,   own_addr_type_t ownAddrType, adv_chn_map_t adv_channelMap, adv_fp_type_t advFilterPolicy);
 
 
@@ -136,7 +136,7 @@ ble_sts_t     bls_hci_le_setAdvParam(adv_para_t *para);
 ble_sts_t     bls_hci_le_readChannelMap(u16 connHandle, u8 *returnChannelMap);
 
 
-ble_sts_t   bls_ll_setAdvType(u8 advType);
+ble_sts_t     bls_ll_setAdvType(u8 advType);
 ble_sts_t     blt_set_adv_addrtype(u8* cmdPara);
 
 static inline u8     blt_ll_getOwnAddrType(void)

@@ -350,6 +350,20 @@ void google_voice_v0p4(rf_packet_att_data_t *pw){
                 //printf("Opus(future),current sdk do Not support\n");
             default:
             {
+                printf("only support 8k voice\n");
+                printf("default ADPCM, 8khz/16bit\n");
+
+                google_voice_codec_used = CODEC_USED_8K; //8k
+                google_voice_packet_length = VOICE_V0P4_ADPCM_PACKET_LEN ; // 2 is just for 4*n
+                google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM_UNIT_SIZE*2;  //512.
+
+
+                app_audio_send_index = 0;
+
+                sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_START;
+                bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 1);
+
+                google_mic_enable();
                 //err parameter
                 //printf("default\n");
 //                sendBuff[0] = ATV_MIC_CHAR_CTL_MIC_OPEN_ERROR;
@@ -457,7 +471,7 @@ void google_voice_v1p0(rf_packet_att_data_t *pw){
                     break;
                 }
             }
-            //SEND AUDIO銆�START
+            //SEND AUDIO START
 
             audio_start_reason = REASON_MICOPEN;
             google_voice_codec_used = CODEC_USED_16K;
@@ -556,7 +570,7 @@ void google_cmd_v0p4_proc(){
 
         if(ret == BLE_SUCCESS){
             google_voice_ctl &= ~FLAG_AUDIO_CLOSE;
-            google_voice_ctl = 0;    //need test
+            google_voice_ctl = 0;
             ui_enable_mic(0);
         }
     }
@@ -834,6 +848,13 @@ void google_voice_data_notify_v1p0_proc(){
             need_buffer_count = 1;
         }
 
+        app_audio_sync_serial ++;
+        if(app_audio_sync_serial >= 20){
+            app_audio_sync_serial = 0;
+            send_sync_cmd_flag = 4;
+            need_buffer_count = 1;
+        }
+
         if(google_voice_ctl & FLAG_GOOGLE_AUDIO_FIRST_SYNC){
             printf("FLAG_GOOGLE_AUDIO_FIRST_SYNC\n");
             google_voice_ctl &= ~FLAG_GOOGLE_AUDIO_FIRST_SYNC;
@@ -841,6 +862,7 @@ void google_voice_data_notify_v1p0_proc(){
             //need_buffer_count = 1;
             previous_sampling_rate = U16_LO(CODEC_USED_16K);    //default sampling rate:16k
             previous_seq_no = 0xffff;
+            app_audio_sync_serial = 0;
             printf("start rate:0x%x",current_sampling_rate);
         }
 

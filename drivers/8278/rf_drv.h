@@ -37,8 +37,8 @@
  *  @brief  Define RF mode
  */
 typedef enum {
-    RF_MODE_BLE_2M =            BIT(0),
-    RF_MODE_BLE_1M =             BIT(1),
+    RF_MODE_BLE_2M         =    BIT(0),
+    RF_MODE_BLE_1M         =    BIT(1),
     RF_MODE_BLE_1M_NO_PN   =    BIT(2),
     RF_MODE_ZIGBEE_250K    =    BIT(3),
     RF_MODE_LR_S2_500K     =    BIT(4),
@@ -49,8 +49,8 @@ typedef enum {
     RF_MODE_PRIVATE_2M     =    BIT(9),
     RF_MODE_ANT            =    BIT(10),
     RF_MODE_BLE_2M_NO_PN   =    BIT(11),
-    RF_MODE_HYBEE_1M          =    BIT(12),
-    RF_MODE_HYBEE_2M          =    BIT(13),
+    RF_MODE_HYBEE_1M       =    BIT(12),
+    RF_MODE_HYBEE_2M       =    BIT(13),
     RF_MODE_HYBEE_500K     =    BIT(14),
 } RF_ModeTypeDef;
 
@@ -60,9 +60,9 @@ typedef enum {
  */
 
 typedef enum {
-    RF_MODE_TX = 0,
-    RF_MODE_RX = 1,
-    RF_MODE_AUTO=2
+    RF_MODE_TX   = 0,
+    RF_MODE_RX   = 1,
+    RF_MODE_AUTO = 2
 } RF_StatusTypeDef;
 
 
@@ -95,9 +95,9 @@ typedef enum {
      RF_POWER_P11p26dBm = 63, //  11.26 dbm
      RF_POWER_P11p09dBm = 61, //  11.09 dbm
      RF_POWER_P10p83dBm = 58, //  10.83 dbm
-     RF_POWER_P10p62dBm  = 56, //  10.62 dbm
-     RF_POWER_P10p30dBm  = 53, //  10.30 dbm
-     RF_POWER_P10p05dBm  = 51, // 10.05 dbm
+     RF_POWER_P10p62dBm = 56, //  10.62 dbm
+     RF_POWER_P10p30dBm = 53, //  10.30 dbm
+     RF_POWER_P10p05dBm = 51, // 10.05 dbm
      RF_POWER_P9p79dBm  = 49, //   9.79 dbm
      RF_POWER_P9p54dBm  = 47, //   9.54 dbm
      RF_POWER_P9p23dBm  = 45, //   9.23 dbm
@@ -173,24 +173,24 @@ extern const RF_PowerTypeDef rf_power_Level_list[60];
 #if            RF_FAST_MODE_2M
     #if            RF_LONG_PACKET_EN
         #define        RF_PACKET_LENGTH_OK(p)        (p[0] == p[12]+13)
-        #define        RF_PACKET_CRC_OK(p)            ((p[p[0]+3] & 0x51) == 0x40)
+        #define        RF_PACKET_CRC_OK(p)           ((p[p[0]+3] & 0x51) == 0x40)
     #else
         #define        RF_PACKET_LENGTH_OK(p)        (p[0] == (p[12]&0x3f)+15)
-        #define        RF_PACKET_CRC_OK(p)            ((p[p[0]+3] & 0x51) == 0x40)
+        #define        RF_PACKET_CRC_OK(p)           ((p[p[0]+3] & 0x51) == 0x40)
     #endif
 #elif        RF_FAST_MODE_1M
     #define        RF_BLE_PACKET_LENGTH_OK(p)                ( *((unsigned int*)p) == p[5]+13)                //dma_len must 4 byte aligned
-    #define        RF_BLE_PACKET_CRC_OK(p)                    ((p[*((unsigned int*)p) + 3] & 0x01) == 0x0)
+    #define        RF_BLE_PACKET_CRC_OK(p)                   ((p[*((unsigned int*)p) + 3] & 0x01) == 0x0)
 
     #if (1) // support RF RX/TX MAX data Length: 251byte
         #define        RF_PACKET_LENGTH_OK(p)                (MAKE_U16(p[1], p[0]) == p[5]+13)
-        #define        RF_PACKET_CRC_OK(p)                    ((p[MAKE_U16(p[1], p[0])+3] & 0x01) == 0x0)
+        #define        RF_PACKET_CRC_OK(p)                   ((p[MAKE_U16(p[1], p[0])+3] & 0x01) == 0x0)
     #else
         #define        RF_PACKET_LENGTH_OK(p)                (p[0] == p[5]+13)
-        #define        RF_PACKET_CRC_OK(p)                    ((p[p[0]+3] & 0x01) == 0x0)
+        #define        RF_PACKET_CRC_OK(p)                   ((p[p[0]+3] & 0x01) == 0x0)
     #endif
 #else
-#define        RF_PACKET_LENGTH_OK(p)        (p[0] == p[12]+13)
+#define        RF_PACKET_LENGTH_OK(p)         (p[0] == p[12]+13)
 #define        RF_PACKET_CRC_OK(p)            ((p[p[0]+3] & 0x51) == 0x10)
 #endif
 
@@ -200,16 +200,16 @@ extern const RF_PowerTypeDef rf_power_Level_list[60];
 
 #if (RF_FAST_MODE_2M)
     #define            RF_FAST_MODE            1
-    #define            RF_TRX_MODE                0x80
-    #define            RF_TRX_OFF                0x44        //f02
+    #define            RF_TRX_MODE             0x80
+    #define            RF_TRX_OFF              0x44        //f02
 #elif (RF_FAST_MODE_1M)
     #define            RF_FAST_MODE            1
-    #define            RF_TRX_MODE                0x80
-    #define            RF_TRX_OFF                0x45        //f02
+    #define            RF_TRX_MODE             0x80
+    #define            RF_TRX_OFF              0x45        //f02
 #else
     #define            RF_FAST_MODE            0
-    #define            RF_TRX_MODE                0xe0
-    #define            RF_TRX_OFF                0x45        //f02
+    #define            RF_TRX_MODE             0xe0
+    #define            RF_TRX_OFF              0x45        //f02
 #endif
 
 
@@ -217,17 +217,17 @@ extern const RF_PowerTypeDef rf_power_Level_list[60];
 #define    RF_ZIGBEE_PACKET_LENGTH_OK(p)                (p[0]  == p[4]+9)
 #define    RF_ZIGBEE_PACKET_CRC_OK(p)                   ((p[p[0]+3] & 0x51) == 0x10)
 #define    RF_ZIGBEE_PACKET_RSSI_GET(p)                 (p[p[0]+2])
-#define    RF_ZIGBEE_PACKET_TIMESTAMP_GET(p)               (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
-#define    RF_ZIGBEE_PACKET_PAYLOAD_LENGTH_GET(p)          (p[4])
-#define    RF_NRF_ESB_PACKET_LENGTH_OK(p)                  (p[0] == (p[4] & 0x3f) + 11)
-#define    RF_NRF_ESB_PACKET_CRC_OK(p)                     ((p[p[0]+3] & 0x01) == 0x00)
-#define    RF_NRF_ESB_PACKET_RSSI_GET(p)                   (p[p[0]+2])
-#define    RF_NRF_SB_PACKET_PAYLOAD_LENGTH_GET(p)          (p[0] - 10)
-#define    RF_NRF_SB_PACKET_CRC_OK(p)                      ((p[p[0]+3] & 0x01) == 0x00)
-#define    RF_NRF_SB_PACKET_CRC_GET(p)                     ((p[p[0]-8]<<8) + p[p[0]-7]) //Note: here assume that the MSByte of CRC is received first
-#define    RF_NRF_SB_PACKET_RSSI_GET(p)                    (p[p[0]+2])
-#define    RF_NRF_ESB_PACKET_TIMESTAMP_GET(p)          (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
-#define    RF_NRF_SB_PACKET_TIMESTAMP_GET(p)           (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
+#define    RF_ZIGBEE_PACKET_TIMESTAMP_GET(p)            (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
+#define    RF_ZIGBEE_PACKET_PAYLOAD_LENGTH_GET(p)       (p[4])
+#define    RF_NRF_ESB_PACKET_LENGTH_OK(p)               (p[0] == (p[4] & 0x3f) + 11)
+#define    RF_NRF_ESB_PACKET_CRC_OK(p)                  ((p[p[0]+3] & 0x01) == 0x00)
+#define    RF_NRF_ESB_PACKET_RSSI_GET(p)                (p[p[0]+2])
+#define    RF_NRF_SB_PACKET_PAYLOAD_LENGTH_GET(p)       (p[0] - 10)
+#define    RF_NRF_SB_PACKET_CRC_OK(p)                   ((p[p[0]+3] & 0x01) == 0x00)
+#define    RF_NRF_SB_PACKET_CRC_GET(p)                  ((p[p[0]-8]<<8) + p[p[0]-7]) //Note: here assume that the MSByte of CRC is received first
+#define    RF_NRF_SB_PACKET_RSSI_GET(p)                 (p[p[0]+2])
+#define    RF_NRF_ESB_PACKET_TIMESTAMP_GET(p)           (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
+#define    RF_NRF_SB_PACKET_TIMESTAMP_GET(p)            (p[p[0]-4] | (p[p[0]-3]<<8) | (p[p[0]-2]<<16) | (p[p[0]-1]<<24))
 
 
 

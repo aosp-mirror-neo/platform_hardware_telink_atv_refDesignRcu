@@ -39,77 +39,77 @@
 #define            SMP_OP_PAIRING_REQ                    1
 #define            SMP_OP_PAIRING_RSP                    2
 #define            SMP_OP_PAIRING_CONFIRM                3
-#define            SMP_OP_PAIRING_RANDOM                4
-#define            SMP_OP_PAIRING_FAIL                    5
-#define            SMP_OP_ENC_INFO                        6
+#define            SMP_OP_PAIRING_RANDOM                 4
+#define            SMP_OP_PAIRING_FAIL                   5
+#define            SMP_OP_ENC_INFO                       6
 #define            SMP_OP_ENC_IDX                        7
-#define            SMP_OP_ENC_IINFO                    8
-#define            SMP_OP_ENC_IADR                        9
-#define            SMP_OP_ENC_SIGN                        0x0a
+#define            SMP_OP_ENC_IINFO                      8
+#define            SMP_OP_ENC_IADR                       9
+#define            SMP_OP_ENC_SIGN                       0x0a
 #define            SMP_OP_SEC_REQ                        0x0b
-#define            SMP_OP_PARING_PUBLIC_KEY            0x0c
-#define            SMP_OP_PARING_DHKEY                    0x0d
-#define            SMP_OP_KEYPRESS_NOTIFICATION        0x0e
-#define            SMP_OP_WAIT                            0x0f
+#define            SMP_OP_PARING_PUBLIC_KEY              0x0c
+#define            SMP_OP_PARING_DHKEY                   0x0d
+#define            SMP_OP_KEYPRESS_NOTIFICATION          0x0e
+#define            SMP_OP_WAIT                           0x0f
 
 #define            SMP_OP_ENC_END                        0xFF
 
 
-#define         SMP_TRANSPORT_SPECIFIC_KEY_START    0xEF
-#define         SMP_TRANSPORT_SPECIFIC_KEY_END      0
+#define         SMP_TRANSPORT_SPECIFIC_KEY_START         0xEF
+#define         SMP_TRANSPORT_SPECIFIC_KEY_END           0
 
 #define IO_CAPABLITY_DISPLAY_ONLY                    0x00
-#define IO_CAPABLITY_DISPLAY_YESNO                    0x01
-#define IO_CAPABLITY_KEYBOARD_ONLY                    0x02
+#define IO_CAPABLITY_DISPLAY_YESNO                   0x01
+#define IO_CAPABLITY_KEYBOARD_ONLY                   0x02
 #define IO_CAPABLITY_NO_IN_NO_OUT                    0x03
 #define IO_CAPABLITY_KEYBOARD_DISPLAY                0x04
 
-#define PASSKEY_TYPE_ENTRY_STARTED                    0x00
-#define PASSKEY_TYPE_DIGIT_ENTERED                    0x01
+#define PASSKEY_TYPE_ENTRY_STARTED                   0x00
+#define PASSKEY_TYPE_DIGIT_ENTERED                   0x01
 #define PASSKEY_TYPE_DIGIT_ERASED                    0x02
-#define PASSKEY_TYPE_CLEARED                        0x03
-#define PASSKEY_TYPE_ENTRY_COMPLETED                0x04
+#define PASSKEY_TYPE_CLEARED                         0x03
+#define PASSKEY_TYPE_ENTRY_COMPLETED                 0x04
 
-#define PARING_FAIL_REASON_PASSKEY_ENTRY            0x01
-#define PARING_FAIL_REASON_OOB_NOT_AVAILABLE        0x02
-#define PARING_FAIL_REASON_AUTH_REQUIRE                0x03
+#define PARING_FAIL_REASON_PASSKEY_ENTRY             0x01
+#define PARING_FAIL_REASON_OOB_NOT_AVAILABLE         0x02
+#define PARING_FAIL_REASON_AUTH_REQUIRE              0x03
 #define PARING_FAIL_REASON_CONFIRM_FAILED            0x04
-#define PARING_FAIL_REASON_PARING_NOT_SUPPORTED        0x05
-#define PARING_FAIL_REASON_ENCRYPT_KEY_SIZE            0x06
+#define PARING_FAIL_REASON_PARING_NOT_SUPPORTED      0x05
+#define PARING_FAIL_REASON_ENCRYPT_KEY_SIZE          0x06
 //-- core 4.2
-#define PARING_FAIL_REASON_CMD_NOT_SUPPORT            0x07
+#define PARING_FAIL_REASON_CMD_NOT_SUPPORT           0x07
 #define PARING_FAIL_REASON_UNSPECIFIED_REASON        0x08
-#define PARING_FAIL_REASON_REPEATED_ATTEMPT            0x09
-#define PARING_FAIL_REASON_INVALID_PARAMETER        0x0A
-#define PARING_FAIL_REASON_DHKEY_CHECK_FAIL            0x0B
-#define PARING_FAIL_REASON_NUMUERIC_FAILED            0x0C
-#define PARING_FAIL_REASON_BREDR_PARING                0x0D
-#define PARING_FAIL_REASON_CROSS_TRANSKEY_NOT_ALLOW    0x0E
+#define PARING_FAIL_REASON_REPEATED_ATTEMPT          0x09
+#define PARING_FAIL_REASON_INVALID_PARAMETER         0x0A
+#define PARING_FAIL_REASON_DHKEY_CHECK_FAIL          0x0B
+#define PARING_FAIL_REASON_NUMUERIC_FAILED           0x0C
+#define PARING_FAIL_REASON_BREDR_PARING              0x0D
+#define PARING_FAIL_REASON_CROSS_TRANSKEY_NOT_ALLOW  0x0E
 
 //teLink define
 #define PARING_FAIL_REASON_PARING_TIEMOUT            0x80
-#define PARING_FAIL_REASON_CONN_DISCONNECT            0x81
-#define PARING_FAIL_REASON_SUPPORT_NC_ONLY            0x82
+#define PARING_FAIL_REASON_CONN_DISCONNECT           0x81
+#define PARING_FAIL_REASON_SUPPORT_NC_ONLY           0x82
 
-#define    ENCRYPRION_KEY_SIZE_MAXINUM                16
-#define    ENCRYPRION_KEY_SIZE_MINIMUM                7
+#define    ENCRYPRION_KEY_SIZE_MAXINUM               16
+#define    ENCRYPRION_KEY_SIZE_MINIMUM               7
 
 
 
 //define for TK status
 #define TK_ST_REQUEST                                BIT(0)
-#define TK_ST_UPDATE                                BIT(1)
+#define TK_ST_UPDATE                                 BIT(1)
 #define TK_ST_CONFIRM_PENDING                        BIT(2)
 #define TK_ST_NUMERIC_COMPARE                        BIT(3)
-#define TK_ST_NUMERIC_CHECK_YES                        BIT(4)
-#define TK_ST_NUMERIC_CHECK_NO                        BIT(5)
-#define TK_ST_NUMERIC_DHKEY_FAIL_PENDING            BIT(6)
-#define TK_ST_NUMERIC_DHKEY_SUCC_PENDING            BIT(7)
+#define TK_ST_NUMERIC_CHECK_YES                      BIT(4)
+#define TK_ST_NUMERIC_CHECK_NO                       BIT(5)
+#define TK_ST_NUMERIC_DHKEY_FAIL_PENDING             BIT(6)
+#define TK_ST_NUMERIC_DHKEY_SUCC_PENDING             BIT(7)
 
 
 //define for KEY MASK
-#define KEY_MASK_ENC                                BIT(0)
-#define KEY_MASK_IDENTITY                             BIT(1)
+#define KEY_MASK_ENC                                 BIT(0)
+#define KEY_MASK_IDENTITY                            BIT(1)
 #define KEY_MASK_SIGN                                BIT(2)
 
 
@@ -180,18 +180,18 @@ typedef enum {
 static const stk_generationMethod_t gen_method_legacy[5 /*Responder*/][5 /*Initiator*/] = {
     { JustWorks,                  JustWorks,                 PK_Resp_Dsply_Init_Input, JustWorks, PK_Resp_Dsply_Init_Input },
     { JustWorks,                  JustWorks,                 PK_Resp_Dsply_Init_Input, JustWorks, PK_Resp_Dsply_Init_Input },
-    { PK_Init_Dsply_Resp_Input, PK_Init_Dsply_Resp_Input, PK_BOTH_INPUT,               JustWorks, PK_Init_Dsply_Resp_Input },
-    { JustWorks,                  JustWorks,                 JustWorks,                  JustWorks, JustWorks                   },
-    { PK_Init_Dsply_Resp_Input, PK_Init_Dsply_Resp_Input, PK_Resp_Dsply_Init_Input, JustWorks, PK_Init_Dsply_Resp_Input },
+    { PK_Init_Dsply_Resp_Input,   PK_Init_Dsply_Resp_Input,  PK_BOTH_INPUT,            JustWorks, PK_Init_Dsply_Resp_Input },
+    { JustWorks,                  JustWorks,                 JustWorks,                JustWorks, JustWorks                   },
+    { PK_Init_Dsply_Resp_Input,   PK_Init_Dsply_Resp_Input,  PK_Resp_Dsply_Init_Input, JustWorks, PK_Init_Dsply_Resp_Input },
 };
 
 #if SECURE_CONNECTION_ENABLE
 static const stk_generationMethod_t gen_method_sc[5 /*Responder*/][5 /*Initiator*/] = {
     { JustWorks,                  JustWorks,                 PK_Resp_Dsply_Init_Input, JustWorks, PK_Resp_Dsply_Init_Input },
-    { JustWorks,                  Numric_Comparison,        PK_Resp_Dsply_Init_Input, JustWorks, Numric_Comparison },
-    { PK_Init_Dsply_Resp_Input, PK_Init_Dsply_Resp_Input, PK_BOTH_INPUT,               JustWorks, PK_Init_Dsply_Resp_Input },
-    { JustWorks,                  JustWorks,                 JustWorks,                  JustWorks, JustWorks                   },
-    { PK_Init_Dsply_Resp_Input, Numric_Comparison,           PK_Resp_Dsply_Init_Input, JustWorks, Numric_Comparison },
+    { JustWorks,                  Numric_Comparison,         PK_Resp_Dsply_Init_Input, JustWorks, Numric_Comparison },
+    { PK_Init_Dsply_Resp_Input,   PK_Init_Dsply_Resp_Input,  PK_BOTH_INPUT,            JustWorks, PK_Init_Dsply_Resp_Input },
+    { JustWorks,                  JustWorks,                 JustWorks,                JustWorks, JustWorks                   },
+    { PK_Init_Dsply_Resp_Input,   Numric_Comparison,         PK_Resp_Dsply_Init_Input, JustWorks, Numric_Comparison },
 };
 #endif
 

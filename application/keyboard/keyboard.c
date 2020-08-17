@@ -501,7 +501,7 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 
 u8 kb_powerdet(void)
 {
-    unsigned char gpio[8],i,j;
+    unsigned char gpio[8],i;
     u32 ret = 0;
 
     for(i=0;i<2;i++)

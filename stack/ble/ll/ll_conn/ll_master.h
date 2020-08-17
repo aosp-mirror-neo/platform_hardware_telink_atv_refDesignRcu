@@ -35,38 +35,38 @@
 
 
 
-#define            BLE_DATA_CHANNEL_EN                1
+#define            BLE_DATA_CHANNEL_EN              1
 #define            SYS_LINK_ADV_INTERVAL            500000
 #define            BLE_MASTER_CONNECTION_REQ        1
-#define            BLM_CONN_HANDLE_CANCEL            BIT(8)
+#define            BLM_CONN_HANDLE_CANCEL           BIT(8)
 #define            BLM_CONN_MASTER_TERMINATE        BIT(4)
-#define            BLM_CONN_SLAVE_TERMINATE        BIT(5)
-#define            BLM_CONN_TERMINATE_SEND            BIT(0)
+#define            BLM_CONN_SLAVE_TERMINATE         BIT(5)
+#define            BLM_CONN_TERMINATE_SEND          BIT(0)
 
-#define            BLM_CONN_ENC_CHANGE                BIT(9)
-#define            BLM_CONN_ENC_REFRESH            BIT(10)
-#define            BLM_CONN_ENC_REFRESH_T            BIT(11)
+#define            BLM_CONN_ENC_CHANGE              BIT(9)
+#define            BLM_CONN_ENC_REFRESH             BIT(10)
+#define            BLM_CONN_ENC_REFRESH_T           BIT(11)
 
 
 #define            MASTER_LL_ENC_OFF                0
 #define            MASTER_LL_ENC_REQ                1
-#define            MASTER_LL_ENC_RSP_T                2
+#define            MASTER_LL_ENC_RSP_T              2
 #define            MASTER_LL_ENC_START_REQ_T        3
-#define            MASTER_LL_ENC_START_RSP            4
+#define            MASTER_LL_ENC_START_RSP          4
 #define            MASTER_LL_ENC_START_RSP_T        5
-#define            MASTER_LL_ENC_PAUSE_REQ            6
+#define            MASTER_LL_ENC_PAUSE_REQ          6
 #define            MASTER_LL_ENC_PAUSE_RSP_T        7
-#define            MASTER_LL_ENC_PAUSE_RSP            8
-#define            MASTER_LL_REJECT_IND_T            9
-#define            MASTER_LL_ENC_SMP_INFO_S        10
-#define            MASTER_LL_ENC_SMP_INFO_E        11
+#define            MASTER_LL_ENC_PAUSE_RSP          8
+#define            MASTER_LL_REJECT_IND_T           9
+#define            MASTER_LL_ENC_SMP_INFO_S         10
+#define            MASTER_LL_ENC_SMP_INFO_E         11
 
 
 
-#define  BLM_WINSIZE            4
+#define  BLM_WINSIZE              4
 #define  BLM_WINOFFSET            5
 
-#define  BLM_MID_WINSIZE        2500
+#define  BLM_MID_WINSIZE          2500
 
 
 #define CONN_REQ_WAIT_ACK_NUM                6
@@ -83,8 +83,8 @@
 typedef struct {
     u8        save_flg;
     u8        sn_nesn;
-    u8         dma_tx_rptr;
-    u8         rsvd;
+    u8        dma_tx_rptr;
+    u8        rsvd;
 }bb_msts_t;
 
 typedef struct {
@@ -97,10 +97,10 @@ typedef struct {
 #endif
     u8        chn_tbl[40];
 
-    u8         newRx;
+    u8        newRx;
     u8        tx_num;
     u8        remoteFeatureReq;
-    u8         adv_filterPolicy;
+    u8        adv_filterPolicy;
 
     u8        conn_Req_waitAck_enable;
     u8        conn_terminate_reason;
@@ -113,7 +113,7 @@ typedef struct {
     u8        conn_sn; // softwre rcrd sn to filter retry rx data
 
 
-    u8         conn_btx_not_working;;
+    u8        conn_btx_not_working;;
     u8        conn_rcvd_slave_pkt;
     u8        peer_adr_type;
     u8        rsvdd;
@@ -147,7 +147,7 @@ typedef struct {
     u16        enc_ediv;
 
     u32        enc_ivs;
-    u8        enc_random[8];
+    u8         enc_random[8];
     u8         enc_skds[8];
     ble_crypt_para_t    crypt;
 

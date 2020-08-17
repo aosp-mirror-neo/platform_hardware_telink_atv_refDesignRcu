@@ -97,7 +97,7 @@ extern unsigned int kb_scan_key_value (int numlock_status, int read_key,unsigned
 
 extern unsigned int    scan_pin_need;
 
-
+extern u8 kb_powerdet(void);
 static inline unsigned int kb_scan_key (int numlock_status, int read_key) {
     unsigned char gpio[8];
 

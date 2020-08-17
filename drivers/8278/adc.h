@@ -441,10 +441,10 @@ enum{
     FLD_R_MAX_MC0    =           BIT_RNG(0,7),//0xef<7:0>  r_max_mc[7:0]
 };
 
-#define areg_r_max_s            0xf1
+#define areg_r_max_s             0xf1
 enum{
-    FLD_R_MAX_S      =          BIT_RNG(0,3),//0xf1<3:0>  r_max_s
-    FLD_R_MAX_MC1    =          BIT_RNG(6,7),//0xf1<7:6>  r_max_mc[9:8]
+    FLD_R_MAX_S      =           BIT_RNG(0,3),//0xf1<3:0>  r_max_s
+    FLD_R_MAX_MC1    =           BIT_RNG(6,7),//0xf1<7:6>  r_max_mc[9:8]
 };
 
 /**

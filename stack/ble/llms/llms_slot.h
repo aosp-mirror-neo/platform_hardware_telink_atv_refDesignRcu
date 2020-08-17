@@ -47,9 +47,9 @@
  *   M          S         SCAN     ADV                  conn_handle_idx
  ******************************************************************************/
 #define            SLOT_TASK_ADV                                    BIT(4)
-#define            SLOT_TASK_SCAN                                    BIT(5)
-#define            SLOT_TASK_SLAVE                                    BIT(6)   //TODO, task_mask  SLOT_TASK_SLAVE ERROR
-#define            SLOT_TASK_MASTER                                BIT(7)
+#define            SLOT_TASK_SCAN                                   BIT(5)
+#define            SLOT_TASK_SLAVE                                  BIT(6)   //TODO, task_mask  SLOT_TASK_SLAVE ERROR
+#define            SLOT_TASK_MASTER                                 BIT(7)
 
 #define         SLOT_TASK_CONN                                    (SLOT_TASK_SLAVE | SLOT_TASK_MASTER)
 
@@ -74,34 +74,34 @@
     // connHandle:
     // Master:    0x80  Slave:  0x41
     #define            BLMS_MAX_CONN_NUM                                2
-    #define            BLMS_MAX_CONN_MASTER_NUM                        1
-    #define            BLMS_MAX_CONN_SLAVE_NUM                            1
+    #define            BLMS_MAX_CONN_MASTER_NUM                         1
+    #define            BLMS_MAX_CONN_SLAVE_NUM                          1
 
 
-    #define            CONN_IDX_MASTER0                                0
-    #define            CONN_IDX_SLAVE0                                    1
+    #define            CONN_IDX_MASTER0                                 0
+    #define            CONN_IDX_SLAVE0                                  1
 
 #elif (CONN_MAX_NUM_CONFIG == CONN_MAX_NUM_M2_S2)
     // connHandle:
     // Master:    0x80/0x81   Slave:  0x42/0x43
     #define            BLMS_MAX_CONN_NUM                                4
-    #define            BLMS_MAX_CONN_MASTER_NUM                        2
-    #define            BLMS_MAX_CONN_SLAVE_NUM                            2
+    #define            BLMS_MAX_CONN_MASTER_NUM                         2
+    #define            BLMS_MAX_CONN_SLAVE_NUM                          2
 
 
-    #define            CONN_IDX_MASTER0                                0
-    #define            CONN_IDX_SLAVE0                                    2
+    #define            CONN_IDX_MASTER0                                 0
+    #define            CONN_IDX_SLAVE0                                  2
 
 #elif (CONN_MAX_NUM_CONFIG == CONN_MAX_NUM_M4_S3)
     // connHandle:
     // Master:    0x80/0x81/0x82/0x83   Slave:  0x44/0x45/0x46
     #define            BLMS_MAX_CONN_NUM                                7
-    #define            BLMS_MAX_CONN_MASTER_NUM                        4
-    #define            BLMS_MAX_CONN_SLAVE_NUM                            3
+    #define            BLMS_MAX_CONN_MASTER_NUM                         4
+    #define            BLMS_MAX_CONN_SLAVE_NUM                          3
 
 
-    #define            CONN_IDX_MASTER0                                0
-    #define            CONN_IDX_SLAVE0                                    4
+    #define            CONN_IDX_MASTER0                                 0
+    #define            CONN_IDX_SLAVE0                                  4
 
 #else
 
@@ -111,72 +111,72 @@
 
 
 
-    #define            SLOT_TASK_MSK_CONN_0                            BIT(0)
+    #define         SLOT_TASK_MSK_CONN_0                             BIT(0)
 
 #if (CONN_MAX_NUM_CONFIG == CONN_MAX_NUM_M1_S1)
 
-    #define            SLOT_TASK_MSK_MASTER0                            BIT(0)
-    #define            SLOT_TASK_MSK_SLAVE0                            BIT(1)
+    #define         SLOT_TASK_MSK_MASTER0                            BIT(0)
+    #define         SLOT_TASK_MSK_SLAVE0                             BIT(1)
 
-    #define         SLOT_TASK_MSK_MASTER                            SLOT_TASK_MSK_MASTER0                                                              SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    )
-    #define         SLOT_TASK_MSK_SLAVE                                SLOT_TASK_MSK_SLAVE0
+    #define         SLOT_TASK_MSK_MASTER                             SLOT_TASK_MSK_MASTER0                                                              SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    )
+    #define         SLOT_TASK_MSK_SLAVE                              SLOT_TASK_MSK_SLAVE0
 
-    #define         SLOT_TASK_MSK_CONN                                ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_SLAVE0 )
+    #define         SLOT_TASK_MSK_CONN                               ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_SLAVE0 )
 
 #elif (CONN_MAX_NUM_CONFIG == CONN_MAX_NUM_M2_S2)
 
-    #define            SLOT_TASK_MSK_MASTER0                            BIT(0)
-    #define            SLOT_TASK_MSK_MASTER1                            BIT(1)
-    #define            SLOT_TASK_MSK_SLAVE0                            BIT(2)
-    #define            SLOT_TASK_MSK_SLAVE1                            BIT(3)
+    #define         SLOT_TASK_MSK_MASTER0                            BIT(0)
+    #define         SLOT_TASK_MSK_MASTER1                            BIT(1)
+    #define         SLOT_TASK_MSK_SLAVE0                             BIT(2)
+    #define         SLOT_TASK_MSK_SLAVE1                             BIT(3)
 
 
-    #define         SLOT_TASK_MSK_MASTER                            ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 )                                                              SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    )
-    #define         SLOT_TASK_MSK_SLAVE                                ( SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1 )
+    #define         SLOT_TASK_MSK_MASTER                             ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 )                                                              SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    )
+    #define         SLOT_TASK_MSK_SLAVE                              ( SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1 )
 
 
-    #define         SLOT_TASK_MSK_CONN                                ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 | \
+    #define         SLOT_TASK_MSK_CONN                               ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 | \
                                                                       SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1 )
 #elif (CONN_MAX_NUM_CONFIG == CONN_MAX_NUM_M4_S3)
 
-    #define            SLOT_TASK_MSK_MASTER0                            BIT(0)
-    #define            SLOT_TASK_MSK_MASTER1                            BIT(1)
-    #define            SLOT_TASK_MSK_MASTER2                            BIT(2)
-    #define            SLOT_TASK_MSK_MASTER3                            BIT(3)
-    #define            SLOT_TASK_MSK_SLAVE0                            BIT(4)
-    #define            SLOT_TASK_MSK_SLAVE1                            BIT(5)
-    #define            SLOT_TASK_MSK_SLAVE2                            BIT(6)
+    #define         SLOT_TASK_MSK_MASTER0                            BIT(0)
+    #define         SLOT_TASK_MSK_MASTER1                            BIT(1)
+    #define         SLOT_TASK_MSK_MASTER2                            BIT(2)
+    #define         SLOT_TASK_MSK_MASTER3                            BIT(3)
+    #define         SLOT_TASK_MSK_SLAVE0                             BIT(4)
+    #define         SLOT_TASK_MSK_SLAVE1                             BIT(5)
+    #define         SLOT_TASK_MSK_SLAVE2                             BIT(6)
 
 
     #define         SLOT_TASK_MSK_MASTER                            ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 |  \
                                                                       SLOT_TASK_MSK_MASTER2 | SLOT_TASK_MSK_MASTER3 )
 
-    #define         SLOT_TASK_MSK_SLAVE                                ( SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    |  SLOT_TASK_MSK_SLAVE2    )
+    #define         SLOT_TASK_MSK_SLAVE                             ( SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    |  SLOT_TASK_MSK_SLAVE2    )
 
-    #define         SLOT_TASK_MSK_CONN                                ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 |  \
+    #define         SLOT_TASK_MSK_CONN                              ( SLOT_TASK_MSK_MASTER0 | SLOT_TASK_MSK_MASTER1 |  \
                                                                       SLOT_TASK_MSK_MASTER2 | SLOT_TASK_MSK_MASTER3 | \
                                                                       SLOT_TASK_MSK_SLAVE0  | SLOT_TASK_MSK_SLAVE1    |  SLOT_TASK_MSK_SLAVE2 )
 #endif
 
 
-#define            SLOT_TASK_MSK_ADV                                    BIT(12)
-#define            SLOT_TASK_MSK_SCAN                                    BIT(13)
+#define            SLOT_TASK_MSK_ADV                                 BIT(12)
+#define            SLOT_TASK_MSK_SCAN                                BIT(13)
 
 
 
 
 
 
-#define            SLOT_UPDT_SLAVE_SYNC                            BIT(0)
+#define            SLOT_UPDT_SLAVE_SYNC                             BIT(0)
 #define            SLOT_UPDT_SLAVE_SYNC_DONE                        BIT(1)
 #define            SLOT_UPDT_SLAVE_TERMINATE                        BIT(2)
 #define            SLOT_UPDT_ADV_RECOVER                            BIT(3)
 
 #define            SLOT_UPDT_MASTER_CONN                            BIT(4)
-#define            SLOT_UPDT_MASTER_TERMINATE                        BIT(5)
-#define            SLOT_UPDT_SCAN_RECOVER                            BIT(6)
+#define            SLOT_UPDT_MASTER_TERMINATE                       BIT(5)
+#define            SLOT_UPDT_SCAN_RECOVER                           BIT(6)
 
-#define            SLOT_UPDT_SLAVE_SLOT_FINE_TUNE                    BIT(7)
+#define            SLOT_UPDT_SLAVE_SLOT_FINE_TUNE                   BIT(7)
 
 
 
@@ -201,11 +201,11 @@ PDU 37 bytes, 32M clock,  all code running in SRAM, receive scan_req/conn_req on
 ***************************************************************************************************************************************/
 //TODO, optimize if ADV channel is not 37/38/39, or if ADV data & Scan_Rsp data not longest
 //TODO, if none connecTable ADV or driect_adv, duration can be smaller
-#define            SLOT_DURATION_ADV                                6   // 625*4 = 2500uS,  625*5= 3125 uS,  625*6= 3750 uS
+#define            SLOT_DURATION_ADV                                 6   // 625*4 = 2500uS,  625*5= 3125 uS,  625*6= 3750 uS
 
 
 #define            SLOT_DURATION_SLAVE_COMMON                        4
-#define            SLOT_DURATION_MASTER_COMMON                        3
+#define            SLOT_DURATION_MASTER_COMMON                       3
 
 
 
@@ -215,17 +215,17 @@ PDU 37 bytes, 32M clock,  all code running in SRAM, receive scan_req/conn_req on
 // real test data: 470 uS,  beginning is "u32 tick_now = rx_tick_now = clock_time();" in irq_blms_rx
 //                            ending is    "while( !(reg_rf_irq_status & FLD_RF_IRQ_TX));" in
 //                          "irq_handler" to "u32 tick_now = rx_tick_now = clock_time();" is 4 uS
-#define            PKT_INIT_AFTER_RX_TICK                            ( 480 *CLOCK_16M_SYS_TIMER_CLK_1US)
+#define            PKT_INIT_AFTER_RX_TICK                           ( 480 *CLOCK_16M_SYS_TIMER_CLK_1US)
 
 #define            SLOT_PROCESS_MAX_TICK                            ( 300 *CLOCK_16M_SYS_TIMER_CLK_1US)
 
-#define            BOUNDARY_MARGIN_COMMON_TICK                        ( SLOT_PROCESS_MAX_TICK + 20 *CLOCK_16M_SYS_TIMER_CLK_1US)
+#define            BOUNDARY_MARGIN_COMMON_TICK                      ( SLOT_PROCESS_MAX_TICK + 20 *CLOCK_16M_SYS_TIMER_CLK_1US)
 #define            BOUNDARY_MARGIN_INIT_TICK                        ( PKT_INIT_AFTER_RX_TICK + BOUNDARY_MARGIN_COMMON_TICK)      // initiate timing + slot_update_rebuild_allocate running potential biggest time
 
 
 
 
-#define            BOUNDARY_RX_RELOAD_TICK                            ( 30  *CLOCK_16M_SYS_TIMER_CLK_1US)
+#define            BOUNDARY_RX_RELOAD_TICK                          ( 30  *CLOCK_16M_SYS_TIMER_CLK_1US)
 
 enum{
     CLOCK_16M_SYS_TIMER_CLK_312US  = 5000,   //312.5*16
@@ -239,10 +239,10 @@ typedef enum{
 
     SLOT_PRIORITY_MID            =    100,
 
-    SLOT_PRIORITY_HIGH_THRES    =    199,
+    SLOT_PRIORITY_HIGH_THRES     =    199,
 
-    SLOT_PRIORITY_HIGH            =    200,
-    SLOT_PRIORITY_SUPER_HIGH    =    240,    //only for slave connection establish or connection update
+    SLOT_PRIORITY_HIGH           =    200,
+    SLOT_PRIORITY_SUPER_HIGH     =    240,    //only for slave connection establish or connection update
 }slot_pri_t;
 
 
@@ -257,12 +257,12 @@ typedef struct{
 
 
     u8     num_cur;
-    u8    update;
+    u8     update;
     u8     rebuild;
-    u8    slot_task_irq;                     //only used for insert Scan in slot gap
+    u8     slot_task_irq;                     //only used for insert Scan in slot gap
 
-    u32 task_mask;
-    u32 slot_tick_irq;
+    u32    task_mask;
+    u32    slot_tick_irq;
     u32    slot_tick_next;
 
 
@@ -276,8 +276,8 @@ typedef struct{
 
     slot_type     slot_mark_adv;
     slot_type     slot_mark_scan;
-    slot_type    slot_idx_next;
-    slot_type    slot_idx_start;   // start of a new slot timing
+    slot_type     slot_idx_next;
+    slot_type     slot_idx_start;   // start of a new slot timing
 
 
     slot_type     slot_mark_conn[BLMS_MAX_CONN_NUM == 7 ? 8 : BLMS_MAX_CONN_NUM];   //slot_idx_mark_conn

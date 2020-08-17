@@ -231,7 +231,7 @@ void rc_ir_irq_prc(void)
 
                     T_dmaData_buf.data_num = 0;
 
-                    u32 tick_2_repeat_sysClockTimer16M = 110*CLOCK_16M_SYS_TIMER_CLK_1MS - (clock_time() - ir_send_ctrl.sending_start_time);
+                    u32 tick_2_repeat_sysClockTimer16M = 107*CLOCK_16M_SYS_TIMER_CLK_1MS - (clock_time() - ir_send_ctrl.sending_start_time);
                     u32 tick_2_repeat_sysTimer = (tick_2_repeat_sysClockTimer16M*CLOCK_SYS_CLOCK_1US>>4);
 
 
@@ -262,7 +262,7 @@ void rc_ir_irq_prc(void)
                     printf("ir irq release\r\n");
                     reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
                     ir_send_ctrl.is_sending = IR_SENDING_NONE;
-
+ 
                 }
             }
             else{
@@ -417,7 +417,7 @@ void rc_ir_init(void)
 
 //repeat signal  second part,  560 us carrier, 99190 us low(110 ms - 9000us - 2250us - 560us = 99190 us)
     waveform_repeat_3rd = pwm_config_dma_fifo_waveform(1, PWM0_PULSE_NORMAL, 560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK);
-    waveform_repeat_4th = pwm_config_dma_fifo_waveform(0, PWM0_PULSE_NORMAL, 99190 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK);
+    waveform_repeat_4th = pwm_config_dma_fifo_waveform(0, PWM0_PULSE_NORMAL, 96190 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK);
 
 
 

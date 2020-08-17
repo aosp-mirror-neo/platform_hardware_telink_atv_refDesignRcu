@@ -32,7 +32,7 @@
 
 //TODO:  all debug MACRO should remove at last
 #define         DBG_SLOT_CALCULTE_TIMING_EN                        1
-#define            DBG_DECRYPTION_ERR_EN                            1
+#define         DBG_DECRYPTION_ERR_EN                              1
 
 
 
@@ -40,9 +40,9 @@
 #define            CONNECT_COMPLETE_CALLBACK_IN_MAINLOOP            1
 
 /********************* Macro & Enumeration & Structure Definition for Stack, user can not use!!!!  **********************/
-#define            BLMS_STATE_NONE                                    0
-#define            BLMS_STATE_ADV                                    BIT(1)
-#define            BLMS_STATE_SCAN                                    BIT(2)
+#define            BLMS_STATE_NONE                                 0
+#define            BLMS_STATE_ADV                                  BIT(1)
+#define            BLMS_STATE_SCAN                                 BIT(2)
 #define            BLMS_STATE_SCAN_POST                            BIT(3)
 #define            BLMS_STATE_BTX_S                                BIT(4)
 #define            BLMS_STATE_BTX_E                                BIT(5)
@@ -62,12 +62,12 @@
 
 
 
-#define            SYS_IRQ_TRIG_SLOT_TASK                            0         //Scan/ ADV /BRX start /BTX start
+#define            SYS_IRQ_TRIG_SLOT_TASK                           0         //Scan/ ADV /BRX start /BTX start
 #define            SYS_IRQ_TRIG_BTX_POST                            BIT(0)
 #define            SYS_IRQ_TRIG_BRX_POST                            BIT(1)
-#define            SYS_IRQ_TRIG_SCAN_POST                            BIT(2)
+#define            SYS_IRQ_TRIG_SCAN_POST                           BIT(2)
 
-#define            SYS_IRQ_TRIG_BRX_START                            BIT(3)   //only slave high duty mode use
+#define            SYS_IRQ_TRIG_BRX_START                           BIT(3)   //only slave high duty mode use
 
 
 

@@ -40,8 +40,8 @@
 
 // "SecReq" refer to "security request"
 typedef enum {
-    SecReq_NOT_SEND = 0,   // do not send "security request" after link layer connection established
-    SecReq_IMM_SEND = BIT(0),   //"IMM" refer to immediate, send "security request" immediately after link layer connection established
+    SecReq_NOT_SEND  = 0,   // do not send "security request" after link layer connection established
+    SecReq_IMM_SEND  = BIT(0),   //"IMM" refer to immediate, send "security request" immediately after link layer connection established
     SecReq_PEND_SEND = BIT(1),  //"PEND" refer to pending,  pending "security request" for some time after link layer connection established, when pending time arrived. send it
 }secReq_cfg;
 

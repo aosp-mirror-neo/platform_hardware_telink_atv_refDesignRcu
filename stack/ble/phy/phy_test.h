@@ -35,42 +35,42 @@
 #endif
 
 #ifndef            PHYTEST_MODE_THROUGH_2_WIRE_UART
-#define         PHYTEST_MODE_THROUGH_2_WIRE_UART        1   //Direct Test Mode through a 2-wire UART interface
+#define            PHYTEST_MODE_THROUGH_2_WIRE_UART        1   //Direct Test Mode through a 2-wire UART interface
 #endif
 
 #ifndef            PHYTEST_MODE_OVER_HCI_WITH_USB
-#define         PHYTEST_MODE_OVER_HCI_WITH_USB            2   //Direct Test Mode over HCI(UART hardware interface)
+#define            PHYTEST_MODE_OVER_HCI_WITH_USB          2   //Direct Test Mode over HCI(UART hardware interface)
 #endif
 
 #ifndef            PHYTEST_MODE_OVER_HCI_WITH_UART
-#define         PHYTEST_MODE_OVER_HCI_WITH_UART            3   //Direct Test Mode over HCI(USB  hardware interface)
+#define            PHYTEST_MODE_OVER_HCI_WITH_UART         3   //Direct Test Mode over HCI(USB  hardware interface)
 #endif
 
 
-#define         BLC_PHYTEST_DISABLE                        0
-#define         BLC_PHYTEST_ENABLE                        1
+#define            BLC_PHYTEST_DISABLE                     0
+#define            BLC_PHYTEST_ENABLE                      1
 
 
 
-#define            PHY_CMD_SETUP                            0
-#define            PHY_CMD_RX                                1
-#define            PHY_CMD_TX                                2
-#define            PHY_CMD_END                                3
+#define            PHY_CMD_SETUP                           0
+#define            PHY_CMD_RX                              1
+#define            PHY_CMD_TX                              2
+#define            PHY_CMD_END                             3
 
 
-#define         PKT_TYPE_PRBS9                             0
-#define         PKT_TYPE_0X0F                             1
-#define         PKT_TYPE_0X55                             2
-#define         PKT_TYPE_0XFF                             3
+#define            PKT_TYPE_PRBS9                          0
+#define            PKT_TYPE_0X0F                           1
+#define            PKT_TYPE_0X55                           2
+#define            PKT_TYPE_0XFF                           3
 
-#define            PKT_TYPE_HCI_PRBS9                        0
-#define            PKT_TYPE_HCI_0X0F                        1
-#define            PKT_TYPE_HCI_0X55                         2
-#define            PKT_TYPE_HCI_PRBS15                        3
-#define            PKT_TYPE_HCI_0XFF                         4
-#define            PKT_TYPE_HCI_0X00                        5
-#define            PKT_TYPE_HCI_0XF0                        6
-#define            PKT_TYPE_HCI_0XAA                        7
+#define            PKT_TYPE_HCI_PRBS9                      0
+#define            PKT_TYPE_HCI_0X0F                       1
+#define            PKT_TYPE_HCI_0X55                       2
+#define            PKT_TYPE_HCI_PRBS15                     3
+#define            PKT_TYPE_HCI_0XFF                       4
+#define            PKT_TYPE_HCI_0X00                       5
+#define            PKT_TYPE_HCI_0XF0                       6
+#define            PKT_TYPE_HCI_0XAA                       7
 enum{
     PHY_EVENT_STATUS     = 0,
     PHY_EVENT_PKT_REPORT = 0x8000,
@@ -78,7 +78,7 @@ enum{
 
 enum{
     PHY_STATUS_SUCCESS      = 0,
-    PHY_STATUS_FAIL      = 0x0001,
+    PHY_STATUS_FAIL         = 0x0001,
 };
 
 

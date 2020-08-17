@@ -48,15 +48,15 @@ typedef struct {  //82
     u8        peer_addr_type;  //address used in link layer connection
     u8        peer_addr[6];
 
-    u8         peer_key_size;
+    u8        peer_key_size;
     u8        peer_id_adrType; //peer identity address information in key distribution, used to identify
     u8        peer_id_addr[6];
 
 
-    u8         peer_ltk[16];      //peer_ltk[16]
+    u8        peer_ltk[16];      //peer_ltk[16]
     u8        random[8];  //8
-    u16     ediv;       //2
-    u8         rsvd[6];    //6
+    u16       ediv;       //2
+    u8        rsvd[6];    //6
 
     u8        peer_irk[16];
     u8        peer_csrk[16];
@@ -68,15 +68,15 @@ typedef struct {  //82
 
 //  6 byte slave_MAC   8 byte rand  2 byte ediv
 // 16 byte ltk
-#define PAIR_INFO_SECTOR_SIZE                     64
+#define PAIR_INFO_SECTOR_SIZE                    64
 
-#define PAIR_OFFSET_SLAVE_MAC                     2
+#define PAIR_OFFSET_SLAVE_MAC                    2
 
 #define PAIR_OFFSET_RAND                         8
 #define PAIR_OFFSET_EDIV                         16
-#define PAIR_OFFSET_ATT                             18   //ATT handle
-#define PAIR_OFFSET_LTK                             32
-#define PAIR_OFFSET_IRK                             48
+#define PAIR_OFFSET_ATT                          18   //ATT handle
+#define PAIR_OFFSET_LTK                          32
+#define PAIR_OFFSET_IRK                          48
 
 #if (LL_MASTER_MULTI_CONNECTION)
     #define    PAIR_SLAVE_MAX_NUM                        8
@@ -91,7 +91,7 @@ typedef struct {
 } mac_adr_t;
 
 
-#define FlAG_BOND                BIT(0)
+#define FlAG_BOND               BIT(0)
 #define FLAG_FASTSMP            BIT(4)
 
 typedef struct {
@@ -107,11 +107,11 @@ typedef struct {
 
 
 
-#define SLAVE_TRIGGER_SMP_FIRST_PAIRING                0       //first pair, slave send security_request to trigger master's pairing&encryption
+#define SLAVE_TRIGGER_SMP_FIRST_PAIRING             0       //first pair, slave send security_request to trigger master's pairing&encryption
 #define MASTER_TRIGGER_SMP_FIRST_PAIRING            BIT(0)
 
-#define SLAVE_TRIGGER_SMP_AUTO_CONNECT                0       //auto connect, slave send security_request to trigger master's encryption
-#define MASTER_TRIGGER_SMP_AUTO_CONNECT                BIT(1)
+#define SLAVE_TRIGGER_SMP_AUTO_CONNECT              0       //auto connect, slave send security_request to trigger master's encryption
+#define MASTER_TRIGGER_SMP_AUTO_CONNECT             BIT(1)
 
 
 

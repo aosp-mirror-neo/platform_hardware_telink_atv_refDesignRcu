@@ -40,12 +40,12 @@
 
 #define FW_MAX_SIZE                            0x40000            //256K
 
-#define CMD_OTA_FW_VERSION                    0xff00
-#define CMD_OTA_START                        0xff01
+#define CMD_OTA_FW_VERSION                     0xff00
+#define CMD_OTA_START                          0xff01
 #define CMD_OTA_END                            0xff02
-#define CMD_OTA_SIGNATURE                    0xff03
+#define CMD_OTA_SIGNATURE                      0xff03
 
-#define FLAG_FW_CHECK                        0x5D
+#define FLAG_FW_CHECK                          0x5D
 #define FW_CHECK_AGTHM2                        0x02
 
 
@@ -53,7 +53,7 @@
 typedef struct{
     u8  ota_start_flag;
 #if (BLE_OTA_FW_CHECK_EN)
-    u8     fw_check_en;
+    u8  fw_check_en;
     u8  fw_check_match;
     u8  rsvd;
 
@@ -70,8 +70,8 @@ extern int blt_ota_start_flag;
 extern u32 blt_ota_start_tick;
 extern u32 blt_ota_timeout_us;
 
-extern u32    ota_program_offset;
-extern int     ota_firmware_size_k;
+extern u32 ota_program_offset;
+extern int ota_firmware_size_k;
 
 
 typedef void (*ota_startCb_t)(void);
@@ -83,18 +83,18 @@ extern ota_resIndicateCb_t otaResIndicateCb;
 
 
 enum{
-    OTA_SUCCESS = 0,     //success
-    OTA_PACKET_LOSS,     //lost one or more OTA PDU
-    OTA_DATA_CRC_ERR,     //data CRC err
-    OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
+     OTA_SUCCESS = 0,      //success
+     OTA_PACKET_LOSS,      //lost one or more OTA PDU
+     OTA_DATA_CRC_ERR,     //data CRC err
+     OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
      OTA_DATA_UNCOMPLETE,  //lost last one or more OTA PDU
      OTA_TIMEOUT,           //
      OTA_FW_CHECK_ERR,
      OTA_LOW_VOLTAGE,
-     OTA_START_KEY_ERR,//8
+     OTA_START_KEY_ERR,    //8
 
      //app not
-     OTA_USER_TERMINATE,//9
+     OTA_USER_TERMINATE,   //9
 };
 
 void bls_ota_procTimeout(void);

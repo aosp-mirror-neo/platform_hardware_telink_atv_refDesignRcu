@@ -48,18 +48,18 @@
 
 
 
-#define BLE_EXT_ADV_PROP_CONNECTABLE                            (0x0001)
-#define BLE_EXT_ADV_PROP_SCANNABLE                                 (0x0002)
-#define BLE_EXT_ADV_PROP_DIRECTED                                  (0x0004)
+#define BLE_EXT_ADV_PROP_CONNECTABLE                             (0x0001)
+#define BLE_EXT_ADV_PROP_SCANNABLE                               (0x0002)
+#define BLE_EXT_ADV_PROP_DIRECTED                                (0x0004)
 #define BLE_EXT_ADV_PROP_HD_DIRECTED                             (0x0008)
 #define BLE_EXT_ADV_PROP_LEGACY                                  (0x0010)
 #define BLE_EXT_ADV_PROP_ANON_ADV                                (0x0020)
 #define BLE_EXT_ADV_PROP_INC_TX_PWR                              (0x0040)
 
-#define BLE_EXT_ADV_PROP_CONNECTABLE_SCANNABLE                    (0x0003)  // BLE_EXT_ADV_PROP_CONNECTABLE | BLE_EXT_ADV_PROP_SCANNABLE
+#define BLE_EXT_ADV_PROP_CONNECTABLE_SCANNABLE                   (0x0003)  // BLE_EXT_ADV_PROP_CONNECTABLE | BLE_EXT_ADV_PROP_SCANNABLE
 #define BLE_EXT_ADV_PROP_LEGACY_SCANNABLE                        (0x0012)  // BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_SCANNABLE
-#define    BLE_EXT_ADV_PROP_LEGACY_DIRECTED                        (0x0014)  // BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_DIRECTED
-#define    BLE_EXT_ADV_PROP_LEGACY_HD_DIRECTED                        (0x0018)  //BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_HD_DIRECTED
+#define BLE_EXT_ADV_PROP_LEGACY_DIRECTED                         (0x0014)  // BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_DIRECTED
+#define BLE_EXT_ADV_PROP_LEGACY_HD_DIRECTED                      (0x0018)  //BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_HD_DIRECTED
 #define BLE_EXT_ADV_PROP_LEGACY_CONNECTABLE_SCANNABLE            (0x0013)  // BLE_EXT_ADV_PROP_LEGACY | BLE_EXT_ADV_PROP_CONNECTABLE | BLE_EXT_ADV_PROP_SCANNABLE
 
 
@@ -80,10 +80,10 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    advA[6];            //address
-    u8    data[31];            //0-31 byte
+    u8 advA[6];            //address
+    u8 data[31];            //0-31 byte
 }rf_pkt_pri_scanrsp_t;
 
 
@@ -98,14 +98,14 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    data[253];   //Extended Header + AdvData
+    u8 data[253];   //Extended Header + AdvData
 }rf_pkt_ext_adv_t;
 #define MAX_LENGTH_SECOND_ADV_PKT                264   //sizeof(rf_pkt_ext_adv_t) = 261
 
@@ -145,15 +145,15 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
-    u8    targetA[6];
+    u8 advA[6];
+    u8 targetA[6];
 }rf_pkt_adv_ext_ind_1;
 
 
@@ -166,23 +166,23 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
     //AuxPrt
-    u8  chn_index    :6;
-    u8  ca              :1;
-    u8  offset_unit    :1;
+    u8 chn_index    :6;
+    u8 ca              :1;
+    u8 offset_unit    :1;
     u16 aux_offset  :13;
-    u16    aux_phy        :3;
+    u16 aux_phy        :3;
 
 }rf_pkt_adv_ext_ind_2;
 
@@ -215,20 +215,20 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
+    u8 advA[6];
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
-    u8    dat[1];   // AuxPtr/AdvData
+    u8 dat[1];   // AuxPtr/AdvData
 }rf_pkt_aux_adv_ind_1;
 
 
@@ -241,21 +241,21 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
-    u8    targetA[6];
+    u8 advA[6];
+    u8 targetA[6];
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
-    u8    dat[1]; // AuxPtr/AdvData
+    u8 dat[1]; // AuxPtr/AdvData
 }rf_pkt_aux_adv_ind_2;
 
 
@@ -271,27 +271,27 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
+    u8 advA[6];
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
     //AuxPrt
-    u8  chn_index    :6;
-    u8  ca              :1;
-    u8  offset_unit    :1;
+    u8 chn_index    :6;
+    u8 ca              :1;
+    u8 offset_unit    :1;
     u16 aux_offset  :13;
-    u16    aux_phy        :3;
+    u16 aux_phy        :3;
 
-    u8    dat[1];   // AdvData
+    u8 dat[1];   // AdvData
 }rf_pkt_aux_adv_ind_3;
 
 
@@ -306,28 +306,28 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
-    u8    targetA[6];
+    u8 advA[6];
+    u8 targetA[6];
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
     //AuxPrt
     u8  chn_index    :6;
     u8  ca              :1;
     u8  offset_unit    :1;
     u16 aux_offset  :13;
-    u16    aux_phy        :3;
+    u16 aux_phy        :3;
 
-    u8    dat[1]; // AdvData
+    u8 dat[1]; // AdvData
 }rf_pkt_aux_adv_ind_4;
 
 
@@ -348,15 +348,15 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
-    u8    dat[1];   // AuxPtr/AdvData
+    u8 advA[6];
+    u8 dat[1];   // AuxPtr/AdvData
 }rf_pkt_aux_scan_rsp_t;
 
 #define MAX_ADVDATA_NUM_AUX_SCANRSP                                    247   // 255 - 8( Extended Header Length(1) + Extended Header Flag(1) + AdvA(6) ) = 247
@@ -389,19 +389,19 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
 
     //ADI
-    u16    did    :12;
-    u16    sid : 4;
+    u16 did    :12;
+    u16 sid    : 4;
 
-    u8    dat[1]; // AuxPrt/AdvData
+    u8 dat[1]; // AuxPrt/AdvData
 }rf_pkt_aux_chain_ind_1;
 
 #define MAX_ADVDATA_NUM_AUX_CHAIN_IND_1                                    251   // 255 - 4( Extended Header Length(1) + Extended Header Flag(1) + ADI(2) ) = 251
@@ -429,15 +429,15 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    ext_hdr_len        :6;
-    u8    adv_mode        :2;
+    u8 ext_hdr_len     :6;
+    u8 adv_mode        :2;
 
-    u8    ext_hdr_flg;
+    u8 ext_hdr_flg;
 
-    u8    advA[6];
-    u8    targetA[6];
+    u8 advA[6];
+    u8 targetA[6];
 }rf_pkt_aux_conn_rsp_t;
 
 
@@ -455,10 +455,10 @@ typedef struct{
     u8 txAddr :1;
     u8 rxAddr :1;
 
-    u8  rf_len;
+    u8 rf_len;
 
-    u8    scanA[6];
-    u8    advA[6];
+    u8 scanA[6];
+    u8 advA[6];
 }rf_pkt_ext_scan_req_t;
 
 
@@ -484,7 +484,7 @@ extern st_ll_ext_t  bltExtPara;
 
 
 
-#define BLE_LL_EXT_ADV_MODE_NON_CONN_NON_SCAN                    (0x00)
+#define BLE_LL_EXT_ADV_MODE_NON_CONN_NON_SCAN                   (0x00)
 #define BLE_LL_EXT_ADV_MODE_CONN                                (0x01)        //connectable, none_scannable
 #define BLE_LL_EXT_ADV_MODE_SCAN                                (0x02)      //scannable,   none_connectable
 
@@ -492,18 +492,18 @@ extern st_ll_ext_t  bltExtPara;
 
 
 #define    EXT_ADV_PDU_AUXPTR_OFFSET_UNITS_30_US                    0
-#define    EXT_ADV_PDU_AUXPTR_OFFSET_UNITS_300_US                    1
+#define    EXT_ADV_PDU_AUXPTR_OFFSET_UNITS_300_US                   1
 
-#define    EXT_ADV_PDU_AUXPTR_CA_51_500_PPM                        0
-#define    EXT_ADV_PDU_AUXPTR_CA_0_50_PPM                            1
+#define    EXT_ADV_PDU_AUXPTR_CA_51_500_PPM                         0
+#define    EXT_ADV_PDU_AUXPTR_CA_0_50_PPM                           1
 
 
 
 
 #define TLK_T_MAFS                                                    302  // T_MAFS >= 300 uS, add some margin
-#define TLK_T_MAFS_30US_NUM                                            10
+#define TLK_T_MAFS_30US_NUM                                           10
 
-#define    TX_TX_DELAY_US                                                120 // TX settle(74 uS) + 5  preamble(40uS) + some other baseband cost,   and be 30*N
+#define TX_TX_DELAY_US                                                120 // TX settle(74 uS) + 5  preamble(40uS) + some other baseband cost,   and be 30*N
 
 
 

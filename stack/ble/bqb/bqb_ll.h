@@ -126,34 +126,34 @@ typedef struct {
     u8        En_scanRsp_crcERR;
 
 
-    u32     AdvPkt_max;
-    u32     AdvPkt_no;
-    u32        ConnPkt_max;
-    u32        ConnPkt_no;
+    u32       AdvPkt_max;
+    u32       AdvPkt_no;
+    u32       ConnPkt_max;
+    u32       ConnPkt_no;
 
-    u8         feature_req_skip;
+    u8        feature_req_skip;
     u8        version_ind_skip;
     u8        ver_ind_once;
-    u8         phy_req_col;
+    u8        phy_req_col;
     u8        phy_req_skip;
 
-    u8         phy_req_nochange;
+    u8        phy_req_nochange;
     u8        Disable_moreData;
     u8        phy_no_common;
 //    u8        testEn_printRcvdData_onConnect;
     u8        En_rcvd_l2cap_data_callback;
 //    u8         lenReq_no_support;
 
-    int        testData_pkts;
-    int        testData_no;
+    int       testData_pkts;
+    int       testData_no;
 
 
-    u16     brx_miss_en;
-    u16     brx_miss_delay_intervals;
-    u32     brx_miss_startTick;
-    u32     brx_miss_duration;  //us
+    u16       brx_miss_en;
+    u16       brx_miss_delay_intervals;
+    u32       brx_miss_startTick;
+    u32       brx_miss_duration;  //us
 
-    u8      conn_pkt_crcERR;
+    u8        conn_pkt_crcERR;
 } st_bqb_ll_t;
 extern st_bqb_ll_t        bqbS;
 

@@ -32,21 +32,21 @@
 #define PM_LONG_SUSPEND_EN                    0
 
 #ifndef PM_TIM_RECOVER_MODE
-#define PM_TIM_RECOVER_MODE                    1
+#define PM_TIM_RECOVER_MODE                   1
 #endif
 
 
-#define XTAL_READY_CHECK_TIMING_OPTIMIZE    1
+#define XTAL_READY_CHECK_TIMING_OPTIMIZE      1
 
-#define    RAM_CRC_EN                            0
+#define    RAM_CRC_EN                         0
 
 
 //when timer wakeup,the DCDC delay time is accurate,but other wake-up sources wake up,
 //this time is ((PM_DCDC_DELAY_CYCLE+1)*2-1)*32us ~ (PM_DCDC_DELAY_CYCLE+1)*2*32us
-#define PM_DCDC_DELAY_DURATION                         187   // delay_time_us = (PM_DCDC_DELAY_CYCLE+1)*2*32us
-                                                  // 2 * 1/16k = 125 uS, 3 * 1/16k = 187.5 uS  4*1/16k = 250 uS
+#define PM_DCDC_DELAY_DURATION                187   // delay_time_us = (PM_DCDC_DELAY_CYCLE+1)*2*32us
+                                                    // 2 * 1/16k = 125 uS, 3 * 1/16k = 187.5 uS  4*1/16k = 250 uS
 
-#define PM_XTAL_MANUAL_MODE_DELAY            200  //150  200
+#define PM_XTAL_MANUAL_MODE_DELAY             200   //150  200
 
 #if(PM_DCDC_DELAY_DURATION == 62)
 #define PM_DCDC_DELAY_CYCLE        0
@@ -62,14 +62,14 @@
 #define EARLYWAKEUP_TIME_US_SUSPEND         (PM_DCDC_DELAY_DURATION + PM_XTAL_MANUAL_MODE_DELAY + 200)  //100: code running time margin
 #define EARLYWAKEUP_TIME_US_DEEP_RET        (PM_DCDC_DELAY_DURATION  + 64)
 #define EARLYWAKEUP_TIME_US_DEEP            (PM_DCDC_DELAY_DURATION  + 32 + SOFT_START_DELAY*62)
-#define EMPTYRUN_TIME_US                       (EARLYWAKEUP_TIME_US_SUSPEND + 200)
+#define EMPTYRUN_TIME_US                    (EARLYWAKEUP_TIME_US_SUSPEND + 200)
 
 
 #define PM_EMPTYRUN_TIME_US            25
 
 
 
-#define PM_LONG_SLEEP_WAKEUP_EN                0 //if user need to make MCU sleep for a long time that is more than 268s, this macro need to be enabled and use "pm_long_sleep_wakeup" function
+#define PM_LONG_SLEEP_WAKEUP_EN             0 //if user need to make MCU sleep for a long time that is more than 268s, this macro need to be enabled and use "pm_long_sleep_wakeup" function
 
 /**
  * @brief analog register below can store information when MCU in deepsleep mode
@@ -100,11 +100,11 @@
 //ana3b system used, user can not use
 #define SYS_DEEP_ANA_REG                     DEEP_ANA_REG1
 #define WAKEUP_STATUS_TIMER_CORE             ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_CORE)
-#define WAKEUP_STATUS_TIMER_PAD                ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
+#define WAKEUP_STATUS_TIMER_PAD              ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
 
-#define    ZB_POWER_DOWN                        1 //weather to power down the RF before suspend
+#define    ZB_POWER_DOWN                       1 //weather to power down the RF before suspend
 #define    AUDIO_POWER_DOWN                    1 //weather to power down the AUDIO before suspend
-#define    USB_POWER_DOWN                        1 //weather to power down the USB before suspend  //PA5/PA6 pad low wakeup need USB power on
+#define    USB_POWER_DOWN                      1 //weather to power down the USB before suspend  //PA5/PA6 pad low wakeup need USB power on
 
 /**
  * @brief sleep mode.
@@ -113,7 +113,7 @@ typedef enum {
     //available mode for customer
     SUSPEND_MODE                        = 0x00,
 
-    DEEPSLEEP_MODE                        = 0x30,
+    DEEPSLEEP_MODE                      = 0x30,
     DEEPSLEEP_MODE_RET_SRAM_LOW16K      = 0x21,  //for boot from sram
     DEEPSLEEP_MODE_RET_SRAM_LOW32K      = 0x03,  //for boot from sram
 
@@ -131,11 +131,11 @@ typedef enum {
      PM_WAKEUP_PAD           = BIT(3),
      PM_WAKEUP_CORE          = BIT(4),
      PM_WAKEUP_TIMER         = BIT(5),
-     PM_WAKEUP_COMPARATOR     = BIT(6),
-     PM_WAKEUP_MDEC             = BIT(7),
+     PM_WAKEUP_COMPARATOR    = BIT(6),
+     PM_WAKEUP_MDEC          = BIT(7),
      //not available wake-up source for customer
-     PM_TIM_RECOVER_START   = BIT(14),
-     PM_TIM_RECOVER_END     = BIT(15),
+     PM_TIM_RECOVER_START    = BIT(14),
+     PM_TIM_RECOVER_END      = BIT(15),
 }SleepWakeupSrc_TypeDef;
 
 /**
@@ -143,14 +143,14 @@ typedef enum {
  */
 
 enum {
-     WAKEUP_STATUS_COMPARATOR          = BIT(0),
+     WAKEUP_STATUS_COMPARATOR         = BIT(0),
      WAKEUP_STATUS_TIMER              = BIT(1),
-     WAKEUP_STATUS_CORE             = BIT(2),
+     WAKEUP_STATUS_CORE               = BIT(2),
      WAKEUP_STATUS_PAD                = BIT(3),
-     WAKEUP_STATUS_MDEC                = BIT(4),
+     WAKEUP_STATUS_MDEC               = BIT(4),
 
      STATUS_GPIO_ERR_NO_ENTER_PM      = BIT(7),
-     STATUS_ENTER_SUSPEND              = BIT(30),
+     STATUS_ENTER_SUSPEND             = BIT(30),
 };
 
 /**
@@ -367,7 +367,7 @@ extern     cpu_pm_handler_t           cpu_sleep_wakeup;
  */
 static inline void blc_pm_select_internal_32k_crystal(void)
 {
-    cpu_sleep_wakeup          = cpu_sleep_wakeup_32k_rc;
+    cpu_sleep_wakeup         = cpu_sleep_wakeup_32k_rc;
     pm_tim_recover           = pm_tim_recover_32k_rc;
 
     blt_miscParam.pm_enter_en     = 1; // allow enter pm, 32k rc does not need to wait for 32k clk to be stable
@@ -382,19 +382,19 @@ extern void check_32k_clk_stable(void);
  */
 static inline void blc_pm_select_external_32k_crystal(void)
 {
-    cpu_sleep_wakeup          = cpu_sleep_wakeup_32k_xtal;
-    pm_check_32k_clk_stable = check_32k_clk_stable;
+    cpu_sleep_wakeup           = cpu_sleep_wakeup_32k_xtal;
+    pm_check_32k_clk_stable    = check_32k_clk_stable;
     pm_tim_recover             = pm_tim_recover_32k_xtal;
 
-    blt_miscParam.pad32k_en     = 1; // set '1': 32k clk src use external 32k crystal
+    blt_miscParam.pad32k_en    = 1; // set '1': 32k clk src use external 32k crystal
 }
 
 /**********************************  Internal APIs (not for user)***************************************************/
-extern  unsigned char             tl_24mrc_cal;
+extern  unsigned char            tl_24mrc_cal;
 extern  unsigned int             tick_32k_calib;
 extern  unsigned int             tick_cur;
 extern  unsigned int             tick_32k_cur;
-extern  unsigned char           pm_long_suspend;
+extern  unsigned char            pm_long_suspend;
 
 void sleep_start(void);
 

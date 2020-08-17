@@ -69,7 +69,7 @@ typedef enum{
     BLT_ENABLE_ADV_37    =        BIT(0),
     BLT_ENABLE_ADV_38    =        BIT(1),
     BLT_ENABLE_ADV_39    =        BIT(2),
-    BLT_ENABLE_ADV_ALL    =        (BLT_ENABLE_ADV_37 | BLT_ENABLE_ADV_38 | BLT_ENABLE_ADV_39),
+    BLT_ENABLE_ADV_ALL   =        (BLT_ENABLE_ADV_37 | BLT_ENABLE_ADV_38 | BLT_ENABLE_ADV_39),
 }adv_chn_map_t;
 
 
@@ -116,13 +116,13 @@ typedef enum {
 typedef enum {
      TX_POWER_0dBm  = 0,
      TX_POWER_1dBm  = 1,
-     TX_POWER_2dBm     = 2,
-     TX_POWER_3dBm     = 3,
-     TX_POWER_4dBm     = 4,
-     TX_POWER_5dBm     = 5,
-     TX_POWER_6dBm     = 6,
-     TX_POWER_7dBm     = 7,
-     TX_POWER_8dBm     = 8,
+     TX_POWER_2dBm  = 2,
+     TX_POWER_3dBm  = 3,
+     TX_POWER_4dBm  = 4,
+     TX_POWER_5dBm  = 5,
+     TX_POWER_6dBm  = 6,
+     TX_POWER_7dBm  = 7,
+     TX_POWER_8dBm  = 8,
      TX_POWER_9dBm  = 9,
      TX_POWER_10dBm = 10,
 } tx_power_t;
@@ -136,7 +136,7 @@ typedef enum {
     DATA_OPER_FIRST          =    0x01,
     DATA_OPER_LAST           =    0x02,
     DATA_OPER_COMPLETE       =    0x03,
-    DATA_OPER_UNCHANGEED    =      0x04,
+    DATA_OPER_UNCHANGEED     =    0x04,
 } data_oper_t;
 
 
@@ -146,7 +146,7 @@ typedef enum {
  *  @brief   "Fragment_Preference" in "LE Set Extended Advertising Data Command" and "LE Set Extended Scan Response Data Command"
  */
 typedef enum {
-    DATA_FRAGM_ALLOWED                      =    0x00,
+    DATA_FRAGM_ALLOWED                   =    0x00,
     DATA_FRAGM_NONE_OR_MINIMIZE          =    0x01,
 } data_fragm_t;
 
@@ -182,11 +182,11 @@ typedef struct {
  */
 
 typedef struct {
-    u16 connHandle;
+    u16    connHandle;
     u8     all_phys;
     u8     tx_phys;
     u8     rx_phys;
-    u16 phy_options;
+    u16    phy_options;
 } hci_le_setPhyCmd_param_t;
 
 
@@ -200,15 +200,15 @@ typedef struct {
  */
 typedef struct {
     u8        adv_handle;
-    u16        adv_evt_props;
-    u8         pri_advIntMin[3];
+    u16       adv_evt_props;
+    u8        pri_advIntMin[3];
     u8        pri_advIntMax[3];
-    u8         pri_advChnMap;
+    u8        pri_advChnMap;
     u8        ownAddrType;
-    u8         peerAddrType;
-    u8      peerAddr[6];
+    u8        peerAddrType;
+    u8        peerAddr[6];
     u8        advFilterPolicy;
-    u8         adv_tx_pow;
+    u8        adv_tx_pow;
     u8        pri_adv_phy;
     u8        sec_adv_max_skip;
     u8        sec_adv_phy;

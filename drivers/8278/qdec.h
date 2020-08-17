@@ -66,7 +66,7 @@ typedef enum
 #define reg_qdec_channel_a 0xd2
 #define reg_qdec_channel_b 0xd3
 
-#define reg_qdec_mode 0xd7
+#define reg_qdec_mode      0xd7
 
 /**
  * qedc mode
@@ -77,9 +77,9 @@ typedef enum
     DOUBLE_ACCURACY_MODE,
 }QDEC_ModeTypeDef;
 
-#define rge_qdec_load  0xd8
-#define reg_qdec_count 0xd0
-#define reg_qdec_reset 0xd6
+#define rge_qdec_load     0xd8
+#define reg_qdec_count    0xd0
+#define reg_qdec_reset    0xd6
 
 /**
  * @brief      This function servers to set input port.

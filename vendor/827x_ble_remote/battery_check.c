@@ -27,6 +27,7 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "stack/ble/ble.h"
+#include "stack/ble/attr/att.h"
 
 #include "battery_check.h"
 
@@ -97,8 +98,7 @@ int battery_get_detect_enable (void)
     return lowBattDet_enable;
 }
 
-
-
+extern _attribute_ram_code_ void analog_write(unsigned char addr, unsigned char v);
 _attribute_ram_code_ void adc_vbat_detect_init(void)
 {
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
@@ -236,12 +236,12 @@ _attribute_data_retention_ u8 lowbat=0;
 
 void battery_refresh(void)
 {
-     bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal,1);
+     bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
 }
 
 void battery_percent(void)
 {
-   // printf("batt_vol_mv=%d mv\r\n",batt_vol_mv);
+    //printf("batt_vol_mv=%d mv\r\n",batt_vol_mv);
     //printf("my_batVal = %d\r\n",my_batVal[0]);
     //printf("bak_batpercent = %d\r\n",bak_batpercent);
     if(batt_vol_mv <= 2000)
@@ -257,20 +257,23 @@ void battery_percent(void)
     {
         if(bak_batpercent - my_batVal[0] >= 2)
         {
-            // printf("bat notify\r\n");
+            
              bak_batpercent = my_batVal[0];
              if(device_in_connection_state)
-                 bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal,1);
+                 bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
+
+			  printf("bat notify_batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
         }
     }
     else
     {
         if( my_batVal[0] - bak_batpercent >= 2)
         {
-             //printf("bat notify\r\n");
+             printf("bat notify\r\n");
              bak_batpercent = my_batVal[0];
              if(device_in_connection_state)
-                 bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal,1);
+                 bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
+			 printf("bat notify_batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
         }
     }
 }
@@ -427,7 +430,7 @@ _attribute_ram_code_ int app_battery_power_check(u16 threshold_deep_vol_mv, u16 
         }
         else  //1.8v<bat_vol<2.0v  enter deep sleep
         {
-            analog_write(USED_DEEP_ANA_REG,  analog_used_deep_reg | LOW_BATT_FLG & (~LOW_BATT_SUSPEND_FLG));  //mark
+            analog_write(USED_DEEP_ANA_REG,  analog_used_deep_reg | (LOW_BATT_FLG & (~LOW_BATT_SUSPEND_FLG)));  //mark
             cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
         }
     }
@@ -492,7 +495,7 @@ _attribute_ram_code_ int app_battery_power_check(u16 threshold_deep_vol_mv, u16 
         adc_index = 0;
     }
 #endif
-
+    return 0;
 }
 #else
 _attribute_ram_code_ int app_battery_power_check(u16 alram_vol_mv)

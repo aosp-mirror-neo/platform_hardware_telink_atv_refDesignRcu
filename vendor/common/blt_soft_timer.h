@@ -90,7 +90,7 @@ int     blt_soft_timer_delete(blt_timer_callback_t func);
 //////////////////////// SOFT TIMER MANAGEMENT  INTERFACE ///////////////////////////////////
 void     blt_soft_timer_init(void);
 void     blt_soft_timer_process(int type);
-int      blt_soft_timer_delete_by_index(u8 index);
+void      blt_soft_timer_delete_by_index(u8 index);
 
 
 int is_timer_expired(blt_timer_callback_t *e);

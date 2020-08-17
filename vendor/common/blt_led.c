@@ -87,7 +87,7 @@ int device_led_busy(void)
 	else  return 0;
 }
 
-int device_led_setup(led_cfg_t led_cfg)
+void device_led_setup(led_cfg_t led_cfg)
 {
     u8 led = led_cfg.led;
 

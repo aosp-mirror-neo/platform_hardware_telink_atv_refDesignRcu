@@ -37,10 +37,10 @@
 #include "battery_check.h"
 
 _attribute_data_retention_    u8        ui_mic_enable = 0;
-_attribute_data_retention_    u8         key_on_request_press = 0;
-_attribute_data_retention_    u8         key_ptt_press = 0;
-_attribute_data_retention_    u8         key_htt_press = 0;
-_attribute_data_retention_    int     ui_mtu_size_exchange_req = 0;
+_attribute_data_retention_    u8        key_on_request_press = 0;
+_attribute_data_retention_    u8        key_ptt_press = 0;
+_attribute_data_retention_    u8        key_htt_press = 0;
+_attribute_data_retention_    int       ui_mtu_size_exchange_req = 0;
 
 #if (BLE_AUDIO_ENABLE)
 
@@ -80,17 +80,25 @@ _attribute_data_retention_    int     ui_mtu_size_exchange_req = 0;
 
         }
     #endif
-    extern u8        buffer_mic_pkt_wptr;
-    extern u8        buffer_mic_pkt_rptr;
-    extern u16        app_audio_sync_serial;
-    extern u32        app_audio_transfer_timer;
-
+    extern u8  buffer_mic_pkt_wptr;
+    extern u8  buffer_mic_pkt_rptr;
+    extern u16 app_audio_sync_serial;
+    extern u32 app_audio_transfer_timer;
+    extern void app_ota_status(u8 status);
 
     u32   audio_stick = 0;
     _attribute_data_retention_    u8  audio_start = 0;
     void ui_enable_mic (int en)
     {
         ui_mic_enable = en;
+		if(ui_mic_enable)
+		{
+		    app_ota_status(0);
+		}
+		else
+		{
+		    app_ota_status(1);
+		}
 
 #if BLE_DMIC_ENABLE
         //DMIC Bias output
@@ -104,11 +112,12 @@ _attribute_data_retention_    int     ui_mtu_size_exchange_req = 0;
         #endif
         gpio_write (GPIO_AMIC_BIAS, en);
 #endif
+/*
         #if (BLT_APP_LED_ENABLE)
             extern const led_cfg_t led_cfg[];
             device_led_setup(led_cfg[en ? 1 : 2]);
         #endif
-
+*/
         if(en){  //audio on
             app_audio_sync_serial = 0;
             bls_pm_setManualLatency(0);

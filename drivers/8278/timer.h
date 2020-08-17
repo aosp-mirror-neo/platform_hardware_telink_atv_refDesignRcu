@@ -35,19 +35,19 @@
  * @brief   Type of Timer
  */
 typedef enum{
-    TIMER0        =0,
-    TIMER1        =1,
-    TIMER2        =2,
+    TIMER0        = 0,
+    TIMER1        = 1,
+    TIMER2        = 2,
 }TIMER_TypeDef;
 
 /**
  * @brief   Mode of Timer
  */
 typedef enum{
-    TIMER_MODE_SYSCLK        =0,
-    TIMER_MODE_GPIO_TRIGGER    =1,
-    TIMER_MODE_GPIO_WIDTH    =2,
-    TIMER_MODE_TICK            =3,
+    TIMER_MODE_SYSCLK        = 0,
+    TIMER_MODE_GPIO_TRIGGER  = 1,
+    TIMER_MODE_GPIO_WIDTH    = 2,
+    TIMER_MODE_TICK          = 3,
 }TIMER_ModeTypeDef;
 
 #define        sys_tick_per_us                   16
@@ -57,7 +57,7 @@ typedef enum{
  * @brief   system Timer : 16Mhz, Constant
  */
 enum{
-    CLOCK_16M_SYS_TIMER_CLK_1S  =  16*1000*1000,
+    CLOCK_16M_SYS_TIMER_CLK_1S  = 16*1000*1000,
     CLOCK_16M_SYS_TIMER_CLK_1MS = 16*1000,
     CLOCK_16M_SYS_TIMER_CLK_1US = 16,
 };
@@ -95,9 +95,9 @@ static inline void systimer_set_capture_tick(unsigned long tick)
 extern void sleep_us(unsigned long us);
 
 #define ClockTime            clock_time
-#define WaitUs                sleep_us
+#define WaitUs               sleep_us
 #define WaitMs(t)            sleep_us((t)*1000)
-#define sleep_ms(t)            sleep_us((t)*1000)
+#define sleep_ms(t)          sleep_us((t)*1000)
 
 /**
  * @brief     This function performs to calculation exceed us of the timer.

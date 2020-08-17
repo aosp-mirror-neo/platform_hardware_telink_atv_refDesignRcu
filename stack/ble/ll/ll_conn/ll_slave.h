@@ -38,14 +38,14 @@
 
 #define                    SLAVE_LL_ENC_OFF                        0
 #define                    SLAVE_LL_ENC_REQ                        1
-#define                    SLAVE_LL_ENC_RSP_T                        2
+#define                    SLAVE_LL_ENC_RSP_T                      2
 #define                    SLAVE_LL_ENC_START_REQ_T                3
-#define                    SLAVE_LL_ENC_START_RSP                    4
+#define                    SLAVE_LL_ENC_START_RSP                  4
 #define                    SLAVE_LL_ENC_START_RSP_T                5
-#define                    SLAVE_LL_ENC_PAUSE_REQ                    6
+#define                    SLAVE_LL_ENC_PAUSE_REQ                  6
 #define                    SLAVE_LL_ENC_PAUSE_RSP_T                7
-#define                    SLAVE_LL_ENC_PAUSE_RSP                    8
-#define                    SLAVE_LL_REJECT_IND_T                    9
+#define                    SLAVE_LL_ENC_PAUSE_RSP                  8
+#define                    SLAVE_LL_REJECT_IND_T                   9
 
 
 #define                 TRY_FIX_ERR_BY_ADD_BRX_WAIT                1
@@ -69,14 +69,14 @@ typedef struct {
     u8        rsvd1;
 
     u8         conn_master_terminate;
-    u8        conn_terminate_reason;
+    u8         conn_terminate_reason;
     u8         conn_slave_terminate;
-    u8        conn_terminate_pending;   // terminate_pending = master_terminate || slave_terminate
+    u8         conn_terminate_pending;   // terminate_pending = master_terminate || slave_terminate
 
 
     u16        conn_update_inst_diff;
     u16        connHandle;
-    u16     conn_offset_next;
+    u16        conn_offset_next;
     u16        conn_interval_next; //standard value,  not * 1.25ms
     u16        conn_latency_next;
     u16        conn_timeout_next;  //standard value,  not *10ms
@@ -107,7 +107,7 @@ typedef struct {
 
     u32        conn_pkt_rcvd;
     u32        conn_pkt_rcvd_no;
-    u8 *    conn_pkt_dec_pending;
+    u8 *       conn_pkt_dec_pending;
     int        conn_enc_dec_busy;
     int        conn_stop_brx;
 
@@ -128,11 +128,11 @@ typedef struct {
     u8        save_flg;
     u8        sn_nesn;
     u8        rsvd1;
-    u8         rsvd2;
+    u8        rsvd2;
 
 #if (DEEP_RET_ENTRY_CONDITIONS_OPTIMIZATION_EN)
     u8        dma_tx_rcvry_dat_depth;
-    u8         dma_tx_data_depth;
+    u8        dma_tx_data_depth;
 
     u16        dma_tx_ptr[8];//dma tx buffer ptr rcd
 #endif
@@ -160,7 +160,7 @@ u16            bls_ll_getConnectionLatency(void);     // if return 0, means not 
 u16            bls_ll_getConnectionTimeout(void);     // if return 0, means not in connection state
 
 
-int            bls_ll_requestConnBrxEventDisable(void);
+int         bls_ll_requestConnBrxEventDisable(void);
 void        bls_ll_disableConnBrxEvent(void);
 void        bls_ll_restoreConnBrxEvent(void);
 
@@ -176,10 +176,10 @@ ble_sts_t     bls_hci_mod_setEventMask_cmd(u32 evtMask);  //eventMask: module sp
 
 /*********************************** Stack Interface, user can not use!!! ********************************/
 bool        bls_ll_pushTxFifo (int handle, u8 *p);
-ble_sts_t      bls_hci_reset(void);
+ble_sts_t    bls_hci_reset(void);
 
 ble_sts_t    bls_hci_receiveHostACLData(u16 connHandle, u8 PB_Flag, u8 BC_Flag, u8 *pData );
-ble_sts_t     bls_hci_le_getRemoteSupportedFeatures(u16 connHandle);
+ble_sts_t    bls_hci_le_getRemoteSupportedFeatures(u16 connHandle);
 
 void        blt_push_fifo_hold (u8 *p);
 

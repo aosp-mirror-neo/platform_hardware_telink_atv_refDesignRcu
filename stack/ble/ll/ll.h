@@ -55,44 +55,44 @@
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
 //TX settle time
 
-#define            LL_ADV_TX_SETTLE                81
+#define         LL_ADV_TX_SETTLE                 81
 #define         LL_SCAN_TX_SETTLE                62
-#define         LL_SLAVE_TX_SETTLE                82
-#define         LL_MASTER_TX_SETTLE                83
+#define         LL_SLAVE_TX_SETTLE               82
+#define         LL_MASTER_TX_SETTLE              83
 
-#define            LL_ADV_TX_STL_2M                87
-#define            LL_ADV_TX_STL_CODED                119
+#define         LL_ADV_TX_STL_2M                 87
+#define         LL_ADV_TX_STL_CODED              119
 
-#define         LL_SLAVE_TX_STL_2M                89
+#define         LL_SLAVE_TX_STL_2M               89
 #define         LL_SLAVE_TX_STL_CODED            121
 
-#define            LL_MASTER_TX_STL_2M                90
-#define            LL_MASTER_TX_STL_CODED            122
+#define         LL_MASTER_TX_STL_2M              90
+#define         LL_MASTER_TX_STL_CODED           122
 
 #else
 //TX settle time
-#define            LL_ADV_TX_SETTLE                74
+#define         LL_ADV_TX_SETTLE                 74
 #define         LL_SCAN_TX_SETTLE                56
-#define         LL_SLAVE_TX_SETTLE                75
-#define         LL_MASTER_TX_SETTLE                76
+#define         LL_SLAVE_TX_SETTLE               75
+#define         LL_MASTER_TX_SETTLE              76
 
-#define            LL_ADV_TX_STL_2M                84
-#define            LL_ADV_TX_STL_CODED                116
+#define         LL_ADV_TX_STL_2M                 84
+#define         LL_ADV_TX_STL_CODED              116
 
-#define         LL_SLAVE_TX_STL_2M                86
+#define         LL_SLAVE_TX_STL_2M               86
 #define         LL_SLAVE_TX_STL_CODED            118
 
-#define            LL_MASTER_TX_STL_2M                86
-#define            LL_MASTER_TX_STL_CODED            119
+#define         LL_MASTER_TX_STL_2M              86
+#define         LL_MASTER_TX_STL_CODED           119
 #endif
 /////////////////////////////////////////////////////////////////////////////
 
 //ble link layer state
 #define            BLS_LINK_STATE_IDLE                0
-#define            BLS_LINK_STATE_ADV                BIT(0)
+#define            BLS_LINK_STATE_ADV                 BIT(0)
 #define            BLS_LINK_STATE_SCAN                BIT(1)
 #define            BLS_LINK_STATE_INIT                BIT(2)
-#define         BLS_LINK_STATE_CONN                BIT(3)
+#define            BLS_LINK_STATE_CONN                BIT(3)
 
 
 
@@ -108,23 +108,23 @@
 ////////////////// Telink defined Event Callback  ////////////////////////
 typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 
-#define         BLT_EV_MAX_NUM                        20
+#define            BLT_EV_MAX_NUM                        20
 
-#define            BLT_EV_FLAG_ADV                        0
+#define            BLT_EV_FLAG_ADV                     0
 #define            BLT_EV_FLAG_ADV_DURATION_TIMEOUT    1
 #define            BLT_EV_FLAG_SCAN_RSP                2
-#define            BLT_EV_FLAG_CONNECT                    3
-#define            BLT_EV_FLAG_TERMINATE                4
-#define            BLT_EV_FLAG_LL_REJECT_IND            5
-#define            BLT_EV_FLAG_RX_DATA_ABANDOM            6
-#define         BLT_EV_FLAG_PHY_UPDATE                7
+#define            BLT_EV_FLAG_CONNECT                 3
+#define            BLT_EV_FLAG_TERMINATE               4
+#define            BLT_EV_FLAG_LL_REJECT_IND           5
+#define            BLT_EV_FLAG_RX_DATA_ABANDOM         6
+#define         BLT_EV_FLAG_PHY_UPDATE                 7
 #define            BLT_EV_FLAG_DATA_LENGTH_EXCHANGE    8
-#define            BLT_EV_FLAG_GPIO_EARLY_WAKEUP        9
-#define            BLT_EV_FLAG_CHN_MAP_REQ                10
-#define            BLT_EV_FLAG_CONN_PARA_REQ            11
-#define            BLT_EV_FLAG_CHN_MAP_UPDATE            12
+#define            BLT_EV_FLAG_GPIO_EARLY_WAKEUP       9
+#define            BLT_EV_FLAG_CHN_MAP_REQ             10
+#define            BLT_EV_FLAG_CONN_PARA_REQ           11
+#define            BLT_EV_FLAG_CHN_MAP_UPDATE          12
 #define            BLT_EV_FLAG_CONN_PARA_UPDATE        13
-#define            BLT_EV_FLAG_SUSPEND_ENTER            14
+#define            BLT_EV_FLAG_SUSPEND_ENTER           14
 #define            BLT_EV_FLAG_SUSPEND_EXIT            15
 
 
@@ -133,14 +133,14 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 
 
 
-#define            EVENT_MASK_TERMINATE                BIT(BLT_EV_FLAG_TERMINATE)
-#define            EVENT_MASK_RX_DATA_ABANDOM            BIT(BLT_EV_FLAG_RX_DATA_ABANDOM)
-#define            EVENT_MASK_CHN_MAP_REQ                BIT(BLT_EV_FLAG_CHN_MAP_REQ)
-#define            EVENT_MASK_CONN_PARA_REQ            BIT(BLT_EV_FLAG_CONN_PARA_REQ)
-#define            EVENT_MASK_CHN_MAP_UPDATE            BIT(BLT_EV_FLAG_CHN_MAP_UPDATE)
-#define            EVENT_MASK_CONN_PARA_UPDATE            BIT(BLT_EV_FLAG_CONN_PARA_UPDATE)
+#define         EVENT_MASK_TERMINATE                 BIT(BLT_EV_FLAG_TERMINATE)
+#define         EVENT_MASK_RX_DATA_ABANDOM           BIT(BLT_EV_FLAG_RX_DATA_ABANDOM)
+#define         EVENT_MASK_CHN_MAP_REQ               BIT(BLT_EV_FLAG_CHN_MAP_REQ)
+#define         EVENT_MASK_CONN_PARA_REQ             BIT(BLT_EV_FLAG_CONN_PARA_REQ)
+#define         EVENT_MASK_CHN_MAP_UPDATE            BIT(BLT_EV_FLAG_CHN_MAP_UPDATE)
+#define         EVENT_MASK_CONN_PARA_UPDATE          BIT(BLT_EV_FLAG_CONN_PARA_UPDATE)
 #define         EVENT_MASK_PHY_UPDATE                BIT(BLT_EV_FLAG_PHY_UPDATE)
-#define         EVENT_MASK_DATA_LEN_UPDATE            BIT(BLT_EV_FLAG_DATA_LENGTH_EXCHANGE)
+#define         EVENT_MASK_DATA_LEN_UPDATE           BIT(BLT_EV_FLAG_DATA_LENGTH_EXCHANGE)
 
 
 #define         EVENT_MASK_CHN_SELECTION_ALGOTITHM    BIT(31)  //no event, only mask here
@@ -152,19 +152,19 @@ typedef void (*blt_event_callback_t)(u8 e, u8 *p, int n);
 #define            STOP_RF_STATE_MACHINE                    ( REG_ADDR8(0xf00) = 0x80 )
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-#define         ADV_LEGACY_MASK                                            BIT(0)
-#define         ADV_EXTENDED_MASK                                        BIT(1)
+#define         ADV_LEGACY_MASK                                         BIT(0)
+#define         ADV_EXTENDED_MASK                                       BIT(1)
 #define         SCAN_LEGACY_MASK                                        BIT(0)
-#define         SCAN_EXTENDED_MASK                                        BIT(1)
+#define         SCAN_EXTENDED_MASK                                      BIT(1)
 
 
 
 
 my_fifo_t            blt_rxfifo;
-u8                    blt_rxfifo_b[];
+//u8                   blt_rxfifo_b[];
 
 my_fifo_t            blt_txfifo;
-u8                    blt_txfifo_b[];
+//u8                   blt_txfifo_b[];
 //////////////////////////////////////
 
 
@@ -179,7 +179,7 @@ typedef struct {
     u8        adv_en;
     u8        adv_extension_mask;
     u8        adv_scanReq_connReq;
-    u8         phy_en;
+    u8        phy_en;
 
 
     u8        ll_recentAvgRSSI;
@@ -187,12 +187,12 @@ typedef struct {
     u8        tx_irq_proc_en;
     u8        rsvd;
 
-    u8      md_max_nums;  //supported max md nums, default value: 0
+    u8        md_max_nums;  //supported max md nums, default value: 0
     u8        drop_rx_data;
     u8        adv_version;
     u8        adv_hci_cmd;
 
-    u8         local_chSel;   //default  0x00: CHANNAL_SELECTION_ALGORITHM_1
+    u8        local_chSel;   //default  0x00: CHANNAL_SELECTION_ALGORITHM_1
     u8        peer_chSel;
     u8        rsvd1;
     u8        rsvd2;
@@ -212,17 +212,17 @@ extern _attribute_aligned_(4) st_ll_para_t  bltParam;
 typedef struct {
     u16        connEffectiveMaxRxOctets;
     u16        connEffectiveMaxTxOctets;
-    u16     connMaxRxOctets;
-    u16     connMaxTxOctets;
+    u16        connMaxRxOctets;
+    u16        connMaxTxOctets;
     u16        connRemoteMaxRxOctets;
-    u16     connRemoteMaxTxOctets;
+    u16        connRemoteMaxTxOctets;
     u16        supportedMaxRxOctets;
     u16        supportedMaxTxOctets;
 
     u8         connInitialMaxTxOctets;  //u8 is enough
-    u8        connMaxTxRxOctets_req;
-    u8        connRxDiff100;
-    u8        connTxDiff100;
+    u8         connMaxTxRxOctets_req;
+    u8         connRxDiff100;
+    u8         connTxDiff100;
 }ll_data_extension_t;
 
 extern _attribute_aligned_(4) ll_data_extension_t  bltData;
@@ -344,10 +344,10 @@ int             blc_ll_encrypted_data(u8*key, u8*plaintextData, u8* encrypteText
 
 //core4.2 data extension
 void             blc_ll_initDataLengthExtension (void);
-ble_sts_t       blc_ll_exchangeDataLength (u8 opcode, u16 maxTxOct);
-ble_sts_t         blc_hci_setTxDataLength (u16 connHandle, u16 tx, u16 txtime);
-ble_sts_t         blc_hci_readSuggestedDefaultTxDataLength (u8 *tx, u8 *txtime);
-ble_sts_t         blc_hci_writeSuggestedDefaultTxDataLength (u16 tx, u16 txtime);
+ble_sts_t        blc_ll_exchangeDataLength (u8 opcode, u16 maxTxOct);
+ble_sts_t        blc_hci_setTxDataLength (u16 connHandle, u16 tx, u16 txtime);
+ble_sts_t        blc_hci_readSuggestedDefaultTxDataLength (u8 *tx, u8 *txtime);
+ble_sts_t        blc_hci_writeSuggestedDefaultTxDataLength (u16 tx, u16 txtime);
 ble_sts_t        blc_hci_receiveHostACLData(u16 connHandle, u8 PB_Flag, u8 BC_Flag, u8 *pData );
 
 

@@ -32,6 +32,7 @@
 #include "blt_common.h"
 #include "proj_lib/firmware_encrypt.h"
 
+#if FIRMWARES_SIGNATURE_ENABLE
 void blt_firmware_signature_check(void)
 {
         unsigned int flash_mid;
@@ -49,3 +50,4 @@ void blt_firmware_signature_check(void)
             while(1);   //user can change the code here to stop firmware running
         }
 }
+#endif

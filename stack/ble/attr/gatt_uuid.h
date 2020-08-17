@@ -50,10 +50,10 @@
 
 #define GATT_UUID_DEVICE_NAME            0x2a00     //!< Report Reference
 #define GATT_UUID_APPEARANCE             0x2a01
-#define GATT_UUID_PERI_CONN_PARAM          0x2a04
+#define GATT_UUID_PERI_CONN_PARAM        0x2a04
 #define GATT_UUID_SERVICE_CHANGE         0x2a05
-#define    GATT_UUID_BATTERY_LEVEL             0x2A19
-#define    GATT_UUID_FIRMWARE_VER             0x2a26        //!<Firmware Version
+#define GATT_UUID_BATTERY_LEVEL          0x2A19
+#define GATT_UUID_FIRMWARE_VER           0x2a26     //!<Firmware Version
 /** @} end of group GATT_UUID */
 
 
@@ -134,7 +134,7 @@
 
 
 #define CHARACTERISTIC_UUID_BATTERY_LEVEL                    0x2A19
-#define CHARACTERISTIC_UUID_ALERT_LEVEL                       0x2A06
+#define CHARACTERISTIC_UUID_ALERT_LEVEL                      0x2A06
 
 //#include <stack/ble/service/hids.h>
 #include "att.h"

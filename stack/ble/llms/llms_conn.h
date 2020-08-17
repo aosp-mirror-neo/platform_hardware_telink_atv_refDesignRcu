@@ -36,19 +36,19 @@
 //////////////////////////////// LL ENC ///////////////////////////////////
 #define            MS_LL_ENC_OFF                                    0
 #define            MS_LL_ENC_REQ                                    1
-#define            MS_LL_ENC_RSP_T                                    2
+#define            MS_LL_ENC_RSP_T                                  2
 #define            MS_LL_ENC_START_REQ_T                            3
-#define            MS_LL_ENC_START_RSP                                4
+#define            MS_LL_ENC_START_RSP                              4
 #define            MS_LL_ENC_START_RSP_T                            5
-#define            MS_LL_ENC_PAUSE_REQ                                6
+#define            MS_LL_ENC_PAUSE_REQ                              6
 #define            MS_LL_ENC_PAUSE_RSP_T                            7
-#define            MS_LL_ENC_PAUSE_RSP                                8
-#define            MS_LL_REJECT_IND_T                                9
-#define         MS_LL_ENC_SMP_INFO_S                            10
-#define         MS_LL_ENC_SMP_INFO_E                            11
+#define            MS_LL_ENC_PAUSE_RSP                              8
+#define            MS_LL_REJECT_IND_T                               9
+#define            MS_LL_ENC_SMP_INFO_S                             10
+#define            MS_LL_ENC_SMP_INFO_E                             11
 
-#define            MS_CONN_ENC_CHANGE                                BIT(16) //offset 2byte
-#define            MS_CONN_ENC_REFRESH                                BIT(17)
+#define            MS_CONN_ENC_CHANGE                               BIT(16) //offset 2byte
+#define            MS_CONN_ENC_REFRESH                              BIT(17)
 #define            MS_CONN_ENC_REFRESH_T                            BIT(18)
 
 
@@ -57,27 +57,27 @@
 
 
 
-#define             CONN_STATUS_DISCONNECT                            0   //disconnect must be "0"
-#define            CONN_STATUS_COMPLETE                            1
+#define            CONN_STATUS_DISCONNECT                           0   //disconnect must be "0"
+#define            CONN_STATUS_COMPLETE                             1
 #define            CONN_STATUS_ESTABLISH                            2
 
 
-#define         BLMS_CONN_RX_MAX_TRY_NUM                        4
-#define         BLMS_CONN_UPDATE_RX_MAX_TRY_NUM                    4
+#define         BLMS_CONN_RX_MAX_TRY_NUM                            4
+#define         BLMS_CONN_UPDATE_RX_MAX_TRY_NUM                     4
 
 
-#define            BLMS_TX_FIFO_NUM                                8
-#define         BLMS_STACK_USED_TX_FIFO_NUM                      1
-#define            BLMS_TX_FIFO_SIZE                                40
+#define         BLMS_TX_FIFO_NUM                                    8
+#define         BLMS_STACK_USED_TX_FIFO_NUM                         1
+#define         BLMS_TX_FIFO_SIZE                                   40
 
-#define            CONN_UPDATE_CHN_MAP                                BIT(0)
-#define            CONN_UPDATE_CONN_PARAM                            BIT(1)
-#define            CONN_UPDATE_PHY_MODE                            BIT(2)
+#define            CONN_UPDATE_CHN_MAP                              BIT(0)
+#define            CONN_UPDATE_CONN_PARAM                           BIT(1)
+#define            CONN_UPDATE_PHY_MODE                             BIT(2)
 
 typedef struct {
     u8        save_flg;
     u8        sn_nesn;
-    u8         dma_tx_rptr;
+    u8        dma_tx_rptr;
     u8        reg_core_f03;
 }bb_ms_sts_t;
 
@@ -89,7 +89,7 @@ typedef struct {
     u8        conn_rx_num;  //rx number in a new interval   //TODO: all connection can share one
 
     u8        role;
-    u8      ll_enc_busy;
+    u8        ll_enc_busy;
     u8        connState;             // 0/Conn_Complete/Conn_Establish
     u8        conn_peer_sn;
 
@@ -98,10 +98,10 @@ typedef struct {
     u8        rsvd22;
     u8        rsvd33;
 
-    u8      conn_dma_tx_rptr;
-    u8      smp_empty_pkt_entry; //slave-role empty pkt entry: ble main_loop entry enable flg
-    u8      blt_tx_pkt_hold;
-    u8        last_rf_len;
+    u8       conn_dma_tx_rptr;
+    u8       smp_empty_pkt_entry; //slave-role empty pkt entry: ble main_loop entry enable flg
+    u8       blt_tx_pkt_hold;
+    u8       last_rf_len;
 
     u8        chn_idx;
     u8        conn_chn;
@@ -109,20 +109,20 @@ typedef struct {
     u8        conn_map_update;
 
     u8        conn_receive_packet;
-    u8         conn_established;
+    u8        conn_established;
     u8        peer_adr_type;
     u8        conn_sca;
 
-    u8        conn_receive_new_packet;
+    u8         conn_receive_new_packet;
     u8         conn_peer_terminate;
     u8         conn_local_terminate;
-    u8        conn_terminate_reason;
+    u8         conn_terminate_reason;
 
 
     u8        conn_chn_hop;
-    u8      conn_winsize_next;        //u8 is enough
+    u8        conn_winsize_next;        //u8 is enough
     u8        conn_interval_next;        //pay attention: we do not support too big interval, so u8  enough
-    u8      conn_offset_next;        //pay attention: we do not support too big interval, so winOffset u8  enough
+    u8        conn_offset_next;        //pay attention: we do not support too big interval, so winOffset u8  enough
 
 
 
@@ -142,7 +142,7 @@ typedef struct {
     u16        updateReq_conn_timeout;
 
     u16        conn_nesn;//local nesn
-    u16     conn_sn;  //local sn
+    u16        conn_sn;  //local sn
 
     u16        connHandle;
     u16        conn_interval;
@@ -155,9 +155,9 @@ typedef struct {
 
     u32        conn_paraUpt_tick;
     u32        conn_terminate_tick;
-    u32     conn_interval_tick;
+    u32        conn_interval_tick;
     u32        conn_timeout;
-    u32     conn_established_tick;
+    u32        conn_established_tick;
 
     u32        btxbrx_start_tick;
     u32        conn_tick;
@@ -168,7 +168,7 @@ typedef struct {
 
     u32     conn_crc_revert; //revert crc24 init value
     u32     ll_remoteFeature;
-    u32        conn_inst_u32;
+    u32     conn_inst_u32;
 
     bb_ms_sts_t blms_bb;// BaseBand info: SN/NESN/TX_FIFO_RPTR
 
@@ -210,7 +210,7 @@ extern _attribute_aligned_(4)    st_llms_conn_t    AA_blms[];   // AA_ just for 
 
 
 extern st_llms_conn_t  *blms_pconn;
-extern int                blms_conn_sel;
+extern int              blms_conn_sel;
 
 
 
@@ -227,7 +227,7 @@ int         blms_post_common   (st_llms_conn_t *pc);
 
 bool         blms_ll_pushTxfifo (u16 connHandle, u8 *p);
 ble_sts_t    blt_llms_unknown_rsp(u16 connHandle, u8 op_code );
-int            blt_llms_main_loop_data (u16 connHandle, u8 *raw_pkt);
+int          blt_llms_main_loop_data (u16 connHandle, u8 *raw_pkt);
 
 
 void         blt_llms_registerLtkReqEvtCb(blms_LTK_req_callback_t evtCbFunc);
@@ -248,11 +248,11 @@ void         blt_llms_registerLtkReqEvtCb(blms_LTK_req_callback_t evtCbFunc);
 
 
 /************************************ User Interface  Begin  ******************************************************/
-ble_sts_t     blc_llms_setMaxConnectionNumber(int max_master_num, int max_slave_num);
+ble_sts_t    blc_llms_setMaxConnectionNumber(int max_master_num, int max_slave_num);
 ble_sts_t    blc_llms_setMasterConnectionInterval(u16 conn_interval);   //This API master called after "blc_llms_setMaxConnectionNumber"
 
 
-ble_sts_t     blc_llms_disconnect (u16 connHandle, u8 reason);
+ble_sts_t    blc_llms_disconnect (u16 connHandle, u8 reason);
 
 /************************************ User Interface  End  ********************************************************/
 

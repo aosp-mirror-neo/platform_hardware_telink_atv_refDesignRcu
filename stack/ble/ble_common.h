@@ -84,41 +84,41 @@
 
 #if (BLUETOOTH_VER == BLUETOOTH_VER_4_0)
     #define LL_FEATURE_ENABLE_LE_ENCRYPTION                                1
-    #define LL_CMD_MAX                                                       LL_REJECT_IND
+    #define LL_CMD_MAX                                                     LL_REJECT_IND
 
 #elif (BLUETOOTH_VER == BLUETOOTH_VER_4_1)
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                                1
-    #define    LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define    LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE            1
-    #define    LL_FEATURE_ENABLE_LE_PING                                    1
+    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
+    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
+    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
+    #define LL_FEATURE_ENABLE_LE_PING                                   1
 
-    #define LL_CMD_MAX                                                       LL_PING_RSP
+    #define LL_CMD_MAX                                                  LL_PING_RSP
 
 #elif (BLUETOOTH_VER == BLUETOOTH_VER_4_2)
 
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                                1
-    #define    LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define    LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE            1
-    #define    LL_FEATURE_ENABLE_LE_PING                                    1
-    #define    LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                    BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
+    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
+    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
+    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
+    #define LL_FEATURE_ENABLE_LE_PING                                   1
+    #define LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                  BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
 
-    #define LL_CMD_MAX                                                      LL_LENGTH_RSP
+    #define LL_CMD_MAX                                                  LL_LENGTH_RSP
 
 #elif (BLUETOOTH_VER == BLUETOOTH_VER_5_0)
 
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                                1
-    #define    LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define    LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE            1
-    #define    LL_FEATURE_ENABLE_LE_PING                                    1
-    #define    LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                    BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
+    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
+    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
+    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
+    #define LL_FEATURE_ENABLE_LE_PING                                   1
+    #define LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                  BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
 
-    #define    LL_FEATURE_ENABLE_LE_2M_PHY                                    LL_FEATURE_SUPPORT_LE_2M_PHY
-    #define    LL_FEATURE_ENABLE_LE_CODED_PHY                                LL_FEATURE_SUPPORT_LE_CODED_PHY
-    #define    LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                    LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING
-    #define    LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                    LL_FEATURE_SUPPORT_LE_PERIODIC_ADVERTISING
-    #define    LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2                LL_FEATURE_SUPPORT_CHANNEL_SELECTION_ALGORITHM2
+    #define LL_FEATURE_ENABLE_LE_2M_PHY                                 LL_FEATURE_SUPPORT_LE_2M_PHY
+    #define LL_FEATURE_ENABLE_LE_CODED_PHY                              LL_FEATURE_SUPPORT_LE_CODED_PHY
+    #define LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                   LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING
+    #define LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                   LL_FEATURE_SUPPORT_LE_PERIODIC_ADVERTISING
+    #define LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2              LL_FEATURE_SUPPORT_CHANNEL_SELECTION_ALGORITHM2
 
-    #define LL_CMD_MAX                                                       LL_MIN_USED_CHN_IND
+    #define LL_CMD_MAX                                                  LL_MIN_USED_CHN_IND
 #else
 
 
@@ -134,7 +134,7 @@
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION
-#define         LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                0
+#define         LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION               0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE
@@ -142,19 +142,19 @@
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_PING
-#define         LL_FEATURE_ENABLE_LE_PING                                    0
+#define         LL_FEATURE_ENABLE_LE_PING                                  0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION
-#define         LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                    0
+#define         LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                 0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LL_PRIVACY
-#define         LL_FEATURE_ENABLE_LL_PRIVACY                                0
+#define         LL_FEATURE_ENABLE_LL_PRIVACY                               0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES
-#define         LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES            0
+#define         LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES         0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_2M_PHY
@@ -162,31 +162,31 @@
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX
-#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX                0
+#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX               0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX
-#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX                0
+#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX               0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_CODED_PHY
-#define         LL_FEATURE_ENABLE_LE_CODED_PHY                                0
+#define         LL_FEATURE_ENABLE_LE_CODED_PHY                             0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING
-#define         LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                    0
+#define         LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                  0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING
-#define         LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                    0
+#define         LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                  0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2
-#define         LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2                0
+#define         LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2             0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_LE_POWER_CLASS_1
-#define         LL_FEATURE_ENABLE_LE_POWER_CLASS_1                            0
+#define         LL_FEATURE_ENABLE_LE_POWER_CLASS_1                         0
 #endif
 
 #ifndef         LL_FEATURE_ENABLE_MIN_USED_OF_USED_CHANNELS
@@ -349,11 +349,11 @@ typedef enum {
     L2CAP_ERR_INVALID_PARAMETER                                    = 0x90,
 
     //SMP status
-    SMP_ERR_INVALID_PARAMETER                                        = 0xA0,
+    SMP_ERR_INVALID_PARAMETER                                      = 0xA0,
     SMP_ERR_PAIRING_BUSY,
 
     //GATT status
-    GATT_ERR_INVALID_PARAMETER                                        = 0xB0,
+    GATT_ERR_INVALID_PARAMETER                                     = 0xB0,
     GATT_ERR_PREVIOUS_INDICATE_DATA_HAS_NOT_CONFIRMED,
     GATT_ERR_SERVICE_DISCOVERY_TIEMOUT,
     GATT_ERR_NOTIFY_INDICATION_NOT_PERMITTED,
@@ -361,7 +361,7 @@ typedef enum {
     GATT_ERR_DATA_LENGTH_EXCEED_MTU_SIZE,
 
     //GAP status
-    GAP_ERR_INVALID_PARAMETER                                           = 0xC0,
+    GAP_ERR_INVALID_PARAMETER                                       = 0xC0,
 
 
 } ble_sts_t;
@@ -410,7 +410,7 @@ typedef enum {
 
 
 #define IS_PUBLIC_ADDR(Type, Addr)                      ( (Type)==BLE_ADDR_PUBLIC) )
-#define IS_RANDOM_STATIC_ADDR(Type, Addr)                  ( (Type)==BLE_ADDR_RANDOM && (Addr[5] & 0xC0) == 0xC0 )
+#define IS_RANDOM_STATIC_ADDR(Type, Addr)               ( (Type)==BLE_ADDR_RANDOM && (Addr[5] & 0xC0) == 0xC0 )
 #define IS_NON_RESOLVABLE_PRIVATE_ADDR(Type, Addr)      ( (Type)==BLE_ADDR_RANDOM && (Addr[5] & 0xC0) == 0x00 )
 #define IS_RESOLVABLE_PRIVATE_ADDR(Type, Addr)          ( (Type)==BLE_ADDR_RANDOM && (Addr[5] & 0xC0) == 0x40 )
 
@@ -449,10 +449,10 @@ typedef enum {
 #define         ADV_INTERVAL_500MS                          800
 #define         ADV_INTERVAL_505MS                          808
 
-#define         ADV_INTERVAL_1S                              1600
-#define         ADV_INTERVAL_1S5                             2400
-#define         ADV_INTERVAL_2S                              3200
-#define         ADV_INTERVAL_1_28_S                        0x0800
+#define         ADV_INTERVAL_1S                             1600
+#define         ADV_INTERVAL_1S5                            2400
+#define         ADV_INTERVAL_2S                             3200
+#define         ADV_INTERVAL_1_28_S                         0x0800
 #define         ADV_INTERVAL_10_24S                         16384
 
 
@@ -485,9 +485,9 @@ typedef enum {
 #define         CONN_INTERVAL_100MS                          80
 
 
-#define         CONN_TIMEOUT_500MS                             50
-#define         CONN_TIMEOUT_1S                               100
-#define         CONN_TIMEOUT_4S                               400
+#define         CONN_TIMEOUT_500MS                           50
+#define         CONN_TIMEOUT_1S                              100
+#define         CONN_TIMEOUT_4S                              400
 #define         CONN_TIMEOUT_10S                             1000
 #define         CONN_TIMEOUT_20S                             2000
 
@@ -502,27 +502,27 @@ typedef enum {
 
 /////////////////////////////////////////////////////////////////////////////
                                                                                 // rf_len without MIC
-#define                    LL_CONNECTION_UPDATE_REQ    0x00                            // 12
-#define                    LL_CHANNEL_MAP_REQ          0x01                            //    8
-#define                    LL_TERMINATE_IND            0x02                            //    2
+#define                 LL_CONNECTION_UPDATE_REQ     0x00                            //    12
+#define                 LL_CHANNEL_MAP_REQ           0x01                            //    8
+#define                 LL_TERMINATE_IND             0x02                            //    2
 
-#define                    LL_ENC_REQ                  0x03    // encryption            // 23
-#define                    LL_ENC_RSP                  0x04    // encryption            // 13
-#define                    LL_START_ENC_REQ            0x05    // encryption            //    1
-#define                    LL_START_ENC_RSP            0x06    // encryption            //    1
+#define                 LL_ENC_REQ                   0x03    // encryption            //    23
+#define                 LL_ENC_RSP                   0x04    // encryption            //    13
+#define                 LL_START_ENC_REQ             0x05    // encryption            //    1
+#define                 LL_START_ENC_RSP             0x06    // encryption            //    1
 
-#define                 LL_UNKNOWN_RSP              0x07                            //    2
-#define                 LL_FEATURE_REQ              0x08                            //    9
-#define                 LL_FEATURE_RSP              0x09                            //    9
+#define                 LL_UNKNOWN_RSP               0x07                            //    2
+#define                 LL_FEATURE_REQ               0x08                            //    9
+#define                 LL_FEATURE_RSP               0x09                            //    9
 
-#define                 LL_PAUSE_ENC_REQ          0x0A    // encryption            //    1
-#define                 LL_PAUSE_ENC_RSP          0x0B    // encryption            //    1
+#define                 LL_PAUSE_ENC_REQ             0x0A    // encryption            //    1
+#define                 LL_PAUSE_ENC_RSP             0x0B    // encryption            //    1
 
-#define                 LL_VERSION_IND               0x0C                            //    6
-#define                 LL_REJECT_IND                0x0D                            //    2
+#define                 LL_VERSION_IND               0x0C                              //    6
+#define                 LL_REJECT_IND                0x0D                              //    2
 #define                 LL_SLAVE_FEATURE_REQ         0x0E    //core_4.1                //    9
-#define                 LL_CONNECTION_PARAM_REQ      0x0F    //core_4.1                // 24
-#define                 LL_CONNECTION_PARAM_RSP      0x10    //core_4.1                // 24
+#define                 LL_CONNECTION_PARAM_REQ      0x0F    //core_4.1                //    24
+#define                 LL_CONNECTION_PARAM_RSP      0x10    //core_4.1                //    24
 #define                 LL_REJECT_IND_EXT            0x11    //core_4.1                //    3
 #define                 LL_PING_REQ                  0x12    //core_4.1                //    1
 #define                 LL_PING_RSP                  0x13    //core_4.1                //    1
@@ -533,20 +533,20 @@ typedef enum {
 #define                 LL_PHY_UPDATE_IND            0x18    //core_5.0                //    5
 #define                 LL_MIN_USED_CHN_IND          0x19    //core_5.0                //    3
 
-#define                 LL_CTE_REQ                  0x1A    //core_5.1                //    2
-#define                 LL_CTE_RSP                  0x1B    //core_5.1                //    2
-#define                 LL_PERIODIC_SYNC_IND        0x1C    //core_5.1                // 35
-#define                 LL_CLOCK_ACCURACY_REQ       0x1D    //core_5.1                //    2
-#define                 LL_CLOCK_ACCURACY_RSP       0x1E    //core_5.1                //    2
+#define                 LL_CTE_REQ                   0x1A    //core_5.1                //    2
+#define                 LL_CTE_RSP                   0x1B    //core_5.1                //    2
+#define                 LL_PERIODIC_SYNC_IND         0x1C    //core_5.1                //    35
+#define                 LL_CLOCK_ACCURACY_REQ        0x1D    //core_5.1                //    2
+#define                 LL_CLOCK_ACCURACY_RSP        0x1E    //core_5.1                //    2
 
 
-#define                 LL_CIS_REQ                  0x1F    //core_5.2                //    36
-#define                 LL_CIS_RSP                  0x20    //core_5.2                //    9
-#define                 LL_CIS_IND                  0x21    //core_5.2                //  16
-#define                 LL_CIS_TERMINATE_IND        0x22    //core_5.2                //    4
-#define                 LL_POWER_CONTROL_REQ        0x23    //core_5.2                //    4
-#define                 LL_POWER_CONTROL_RSP        0x24    //core_5.2                //    5
-#define                 LL_POWER_CHANGE_IND         0x25    //core_5.2                //    5
+#define                 LL_CIS_REQ                    0x1F    //core_5.2                //    36
+#define                 LL_CIS_RSP                    0x20    //core_5.2                //    9
+#define                 LL_CIS_IND                    0x21    //core_5.2                //    16
+#define                 LL_CIS_TERMINATE_IND          0x22    //core_5.2                //    4
+#define                 LL_POWER_CONTROL_REQ          0x23    //core_5.2                //    4
+#define                 LL_POWER_CONTROL_RSP          0x24    //core_5.2                //    5
+#define                 LL_POWER_CHANGE_IND           0x25    //core_5.2                //    5
 
 /////////////////////////////// Link Layer: ADV //////////////////////////////////////////////
 
@@ -561,7 +561,7 @@ typedef enum advChannelPDUType_e {
     LL_TYPE_ADV_SCAN_IND      = 0x06,
 
     LL_TYPE_ADV_EXT_IND       = 0x07,        LL_TYPE_AUX_ADV_IND      = 0x07,    LL_TYPE_AUX_SCAN_RSP = 0x07,    LL_TYPE_AUX_SYNC_IND = 0x07,    LL_TYPE_AUX_CHAIN_IND = 0x07,
-    LL_TYPE_AUX_CONNNECT_RSP = 0x08,
+    LL_TYPE_AUX_CONNNECT_RSP  = 0x08,
 } advChannelPDUType_t;
 
 
@@ -684,10 +684,10 @@ typedef enum {
     DT_APPEARANCE                           = 0x19,        //    Appearance
 
     DT_BIGINFO                              = 0x2C,        //    BIGInfo
-    DT_BROADCAST_CODE                       = 0x2D,        //     Broadcast_Code
+    DT_BROADCAST_CODE                       = 0x2D,        //    Broadcast_Code
     DT_3D_INFORMATION_DATA                  = 0x3D,        //    3D Information Data
 
-    DATA_TYPE_MANUFACTURER_SPECIFIC_DATA    = 0xFF,     //    Manufacturer Specific Data
+    DATA_TYPE_MANUFACTURER_SPECIFIC_DATA    = 0xFF,        //    Manufacturer Specific Data
 }data_type_t;
 
 

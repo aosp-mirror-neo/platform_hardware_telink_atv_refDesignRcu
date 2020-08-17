@@ -148,9 +148,9 @@ static inline void uart_reset(void)
  *
  *              sys_clk      baud rate   g_uart_div         g_bwpc
  *
- *              16Mhz        9600         118                13
- *                          19200         118                 6
- *                         115200           9                13
+ *              16Mhz        9600         118               13
+ *                          19200         118                6
+ *                         115200           9               13
  *
  *              24Mhz        9600          249               9
  *                          19200          124               9

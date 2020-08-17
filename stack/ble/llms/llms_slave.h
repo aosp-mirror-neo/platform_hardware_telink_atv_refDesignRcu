@@ -36,14 +36,14 @@
 
 #define            SLAVE_SYNC_CONN_CREATE                            BIT(0)
 #define            SLAVE_SYNC_CONN_UPDATE                            BIT(1)
-#define            SLAVE_SYNC_HIGH_DUTY                            BIT(7)
+#define            SLAVE_SYNC_HIGH_DUTY                              BIT(7)
 
 
 #define            SLAVE_SYNC_HIGHDUTY_SUPPORT_EN                    0
 
 
 #define            BRX_EARLY_SET_SYNC                                200
-#define            BRX_EARLY_SET_COMMON                            150
+#define            BRX_EARLY_SET_COMMON                              150
 
 
 

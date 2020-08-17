@@ -43,7 +43,7 @@ extern void main_loop (void);
 extern void deep_wakeup_proc(void);
 
 extern void rc_ir_irq_prc(void);
-
+extern _attribute_ram_code_ void user_init_battery_power_check(void);
 _attribute_ram_code_ void irq_handler(void)
 {
 #if (REMOTE_IR_ENABLE)
@@ -117,6 +117,8 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
 
     irq_enable();
+	//printf("deep\r\n");
+	//cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
 
     while (1) {
 #if (MODULE_WATCHDOG_ENABLE)

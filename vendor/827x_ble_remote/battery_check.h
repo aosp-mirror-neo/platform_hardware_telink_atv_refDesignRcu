@@ -28,9 +28,9 @@
 #define BATTERY_CHECK_H_
 
 #define MANNUAL_MODE_GET_ADC_SAMPLE_RESULT  0
-#define VBAT_LEAKAGE_PROTECT_EN                1
-#define VBAT_DEEP_THRES_MV                2000   // 2000 mV low battery alarm
-#define VBAT_SUSPEND_THRES_MV            1800   // 1800 mV low battery alarm
+#define VBAT_LEAKAGE_PROTECT_EN             1
+#define VBAT_DEEP_THRES_MV                  2000   // 2000 mV low battery alarm
+#define VBAT_SUSPEND_THRES_MV               1800   // 1800 mV low battery alarm
 
 
 

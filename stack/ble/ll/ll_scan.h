@@ -38,11 +38,11 @@
 
 
 
-#define            BLS_FLAG_SCAN_ENABLE                    BIT(0)
+#define            BLS_FLAG_SCAN_ENABLE                     BIT(0)
 
 
 #define            BLS_FLAG_SCAN_IN_ADV_MODE                BIT(5)
-#define            BLS_FLAG_SCAN_IN_SLAVE_MODE                BIT(6)
+#define            BLS_FLAG_SCAN_IN_SLAVE_MODE              BIT(6)
 
 
 

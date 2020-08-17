@@ -32,7 +32,7 @@
 
 #define DMA_RFRX_LEN_HW_INFO                0    // 826x: 8
 #define DMA_RFRX_OFFSET_HEADER              4    // 826x: 12
-#define DMA_RFRX_OFFSET_RFLEN               5   // 826x: 13
+#define DMA_RFRX_OFFSET_RFLEN               5    // 826x: 13
 #define DMA_RFRX_OFFSET_DATA                6    // 826x: 14
 
 
@@ -43,11 +43,11 @@
 
 
 
-#define    RFDMA_RX_DISABLE        (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_RX))
-#define    RFDMA_RX_ENABLE         (reg_dma_chn_en |= (FLD_DMA_CHN_RF_RX))
+#define RFDMA_RX_DISABLE            (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_RX))
+#define RFDMA_RX_ENABLE             (reg_dma_chn_en |= (FLD_DMA_CHN_RF_RX))
 
-#define    RFDMA_TX_DISABLE        (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_TX))
-#define    RFDMA_TX_ENABLE         (reg_dma_chn_en |= (FLD_DMA_CHN_RF_TX))
+#define RFDMA_TX_DISABLE            (reg_dma_chn_en &= (~FLD_DMA_CHN_RF_TX))
+#define RFDMA_TX_ENABLE             (reg_dma_chn_en |= (FLD_DMA_CHN_RF_TX))
 
 
 typedef enum{

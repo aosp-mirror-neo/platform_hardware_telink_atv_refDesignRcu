@@ -51,7 +51,7 @@
 #define     IRK_REVERT_TO_SAVE_AES_TMIE_ENABLE        1
 
 
-#define        MAC_MATCH8(md,ms)    (md[0]==ms[0] && md[1]==ms[1] && md[2]==ms[2] && md[3]==ms[3] && md[4]==ms[4] && md[5]==ms[5])
+#define        MAC_MATCH8(md,ms)     (md[0]==ms[0] && md[1]==ms[1] && md[2]==ms[2] && md[3]==ms[3] && md[4]==ms[4] && md[5]==ms[5])
 #define        MAC_MATCH16(md,ms)    (md[0]==ms[0] && md[1]==ms[1] && md[2]==ms[2])
 #define        MAC_MATCH32(md,ms)    (md[0]==ms[0] && md[1]==ms[1])
 
@@ -67,14 +67,14 @@ typedef enum {
     ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_WL         =        0x02,  // Process scan requests from all devices and only connection requests from devices that are in the White List..
     ADV_FP_ALLOW_SCAN_WL_ALLOW_CONN_WL          =        0x03,  // Process scan and connection requests only from devices in the White List.
 
-    ADV_FP_NONE                                    =        ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_ANY, //adv filter policy set to zero, not use whitelist
+    ADV_FP_NONE                                 =        ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_ANY, //adv filter policy set to zero, not use whitelist
 } adv_fp_type_t;  //adv_filterPolicy_type_t
 
 
 typedef enum {
     SCAN_FP_ALLOW_ADV_ANY                        =        0x00,  //except direct adv address not match
-    SCAN_FP_ALLOW_ADV_WL                        =        0x01,  //except direct adv address not match
-    SCAN_FP_ALLOW_UNDIRECT_ADV                  =        0x02,  //and direct adv address match initiator's resolvable private MAC
+    SCAN_FP_ALLOW_ADV_WL                         =        0x01,  //except direct adv address not match
+    SCAN_FP_ALLOW_UNDIRECT_ADV                   =        0x02,  //and direct adv address match initiator's resolvable private MAC
     SCAN_FP_ALLOW_ADV_WL_DIRECT_ADV_MACTH        =        0x03,  //and direct adv address match initiator's resolvable private MAC
 
 } scan_fp_type_t;   //scan_filterPolicy_type_t

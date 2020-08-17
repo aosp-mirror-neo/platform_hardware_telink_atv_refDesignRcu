@@ -41,28 +41,28 @@
 #define         LL_ROLE_MASTER                                  0
 #define         LL_ROLE_SLAVE                                   1
 
-#define            BLM_CONN_HANDLE                                    BIT(7)
-#define            BLS_CONN_HANDLE                                    BIT(6)
+#define         BLM_CONN_HANDLE                                 BIT(7)
+#define         BLS_CONN_HANDLE                                 BIT(6)
 
-#define            HANDLE_STK_FLAG                                    BIT(15)
-
-/////////////////////////////////////////////////////////////////////////////
-#define            MAX_OCTETS_DATA_LEN_27                            27
-#define            MAX_OCTETS_DATA_LEN_EXTENSION                    251
-
-
-#define            LL_PACKET_OCTET_TIME(n)                            ((n) * 8 + 112)
-
-#define         DATA_LENGTH_REQ_PENDING                            1
-#define            DATA_LENGTH_REQ_DONE                            2
+#define         HANDLE_STK_FLAG                                 BIT(15)
 
 /////////////////////////////////////////////////////////////////////////////
-#define         BLE_INVALID_CONNECTION_HANDLE                    0xffff
+#define         MAX_OCTETS_DATA_LEN_27                          27
+#define         MAX_OCTETS_DATA_LEN_EXTENSION                   251
+
+
+#define         LL_PACKET_OCTET_TIME(n)                         ((n) * 8 + 112)
+
+#define         DATA_LENGTH_REQ_PENDING                         1
+#define         DATA_LENGTH_REQ_DONE                            2
+
+/////////////////////////////////////////////////////////////////////////////
+#define         BLE_INVALID_CONNECTION_HANDLE                   0xffff
 #define         IS_CONNECTION_HANDLE_VALID(handle)              ( handle != BLE_INVALID_CONNECTION_HANDLE )
 
 
 /////////////////////////////////////////////////////////////////////////////
-#define         FLG_RF_CONN_DONE                          (FLD_RF_IRQ_CMD_DONE | FLD_RF_IRQ_FSM_TIMEOUT | FLD_RF_IRQ_FIRST_TIMEOUT | FLD_RF_IRQ_RX_TIMEOUT | FLD_RF_IRQ_RX_CRC_2)
+#define         FLG_RF_CONN_DONE                                (FLD_RF_IRQ_CMD_DONE | FLD_RF_IRQ_FSM_TIMEOUT | FLD_RF_IRQ_FIRST_TIMEOUT | FLD_RF_IRQ_RX_TIMEOUT | FLD_RF_IRQ_RX_CRC_2)
 
 
 

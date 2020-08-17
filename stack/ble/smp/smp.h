@@ -46,9 +46,9 @@
 #define SIMPLE_MULTI_MAC_EN                    0
 #endif
 
-#define SMP_INFO_STORAGE_IN_FLASH            1
+#define SMP_INFO_STORAGE_IN_FLASH             1
 #define SMP_INFO_STORAGE_IN_EEPROM            2
-#define SMP_INFO_STORAGE_OTHER_MCU             3
+#define SMP_INFO_STORAGE_OTHER_MCU            3
 
 
 
@@ -62,17 +62,17 @@
 
 
 #define SMP_STANDARD_PAIR       0
-#define SMP_FAST_CONNECT           1
+#define SMP_FAST_CONNECT        1
 
 
 
-#define  ADDR_NOT_BONDED    0xFF
-#define  ADDR_NEW_BONDED    0xFE
+#define  ADDR_NOT_BONDED     0xFF
+#define  ADDR_NEW_BONDED     0xFE
 #define  ADDR_DELETE_BOND    0xFD
 
-#define  KEY_FLAG_IDLE        0xFF
+#define  KEY_FLAG_IDLE       0xFF
 #define  KEY_FLAG_NEW        0xFE
-#define  KEY_FLAG_FAIL        0xFD
+#define  KEY_FLAG_FAIL       0xFD
 
 
 #define        LL_CONNECTION_MAX                        1  //controller determine this value
@@ -177,7 +177,7 @@ typedef struct{
 
     smp_paring_req_rsp_t      paring_req;
     smp_paring_req_rsp_t      paring_rsp;
-    smp_authReq_t            auth_req;
+    smp_authReq_t             auth_req;
     u8                        own_conn_type;  //current connection peer own type
 
     u16                        rsvd;
@@ -195,11 +195,11 @@ extern _attribute_aligned_(4) smp_param_own_t        smp_param_own;
 
 typedef struct{
     u8    type;                //RFU(3)_MD(1)_SN(1)_NESN(1)-LLID(2)
-    u8  rf_len;                //LEN(5)_RFU(3)
+    u8    rf_len;                //LEN(5)_RFU(3)
     u16    l2capLen;
     u16    chanId;
-    u8  opcode;
-    u8 data[21];
+    u8    opcode;
+    u8    data[21];
 }smp2llcap_type_t;
 
 typedef int (*smp_finish_callback_t)(void);
@@ -273,7 +273,7 @@ void         blc_smp_setEcdhDebugMode(ecdh_keys_mode_t mode);
 
 void         blc_smp_setTK_by_OOB (u8 *oobData);  //used for set oob data
 void         blc_smp_setTK_by_PasskeyEntry (u32 pinCodeInput);
-void        blc_smp_setNumericComparisonResult(bool YES_or_NO);   //numeric compare confirm, 1: YES  0: NO
+void         blc_smp_setNumericComparisonResult(bool YES_or_NO);   //numeric compare confirm, 1: YES  0: NO
 
 
 

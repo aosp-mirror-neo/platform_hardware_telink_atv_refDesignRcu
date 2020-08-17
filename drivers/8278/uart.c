@@ -138,17 +138,17 @@ static void GetBetterBwpc(unsigned int baut_rate,unsigned int  tmp_sysclk )
  *
  *              sys_clk      baud rate   g_uart_div         g_bwpc
  *
- *              16Mhz        9600          118                13
- *                           19200         118                 6
- *                           115200          9                13
+ *              16Mhz        9600          118               13
+ *                           19200         118                6
+ *                           115200          9               13
  *
  *              24Mhz        9600          249                9
  *                           19200         124                9
  *                           115200         12               15
  *
- *              32Mhz        9600          235                13
- *                           19200         235                 6
- *                           115200         17                13
+ *              32Mhz        9600          235               13
+ *                           19200         235                6
+ *                           115200         17               13
  *
  *              48Mhz        9600          499                9
  *                           19200         249                9

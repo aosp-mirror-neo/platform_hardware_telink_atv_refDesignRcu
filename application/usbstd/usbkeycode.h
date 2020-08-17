@@ -369,7 +369,7 @@ typedef enum {
     G00GLE_MKEY_BOOKMARK   = 0x022a,
     G00GLE_MKEY_ASSIST       = 0x0221,
     G00GLE_MKEY_INPUT      = 0x01bb,
-    G00GLE_MKEY_DASHBOARD  = 0x01a2,
+    G00GLE_MKEY_DASHBOARD  = 0x0096,
 } google_media_key_t;
 
 
