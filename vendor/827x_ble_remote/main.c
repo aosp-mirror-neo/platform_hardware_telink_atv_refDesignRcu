@@ -62,7 +62,6 @@ _attribute_ram_code_ void irq_handler(void)
 _attribute_ram_code_ int main (void)    //must run in ramcode
 {
 
-
     DBG_CHN0_LOW;   //debug
 
     blc_pm_select_internal_32k_crystal();
@@ -99,11 +98,11 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
             }
         #endif
     }
-
+	
     blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
 
     if( deepRetWakeUp ){
-
+        //printf("user_init_deepRetn\n");
         user_init_deepRetn ();
     }
     else{
@@ -117,8 +116,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
 
     irq_enable();
-	//printf("deep\r\n");
-	//cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
+   
 
     while (1) {
 #if (MODULE_WATCHDOG_ENABLE)

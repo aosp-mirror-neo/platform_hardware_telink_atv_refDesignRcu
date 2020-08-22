@@ -74,6 +74,7 @@ extern "C" {
 #define IR_MODE_DEEP_FLG                      BIT(2) //if 1: IR mode, 0: BLE mode
 #define LOW_BATT_SUSPEND_FLG                  BIT(3) //if 1 : low battery, < 1.8v
 #define OTA_FLG                               BIT(4) //if 1: OTA SUCCESS
+#define POWER_ON_FLG                          BIT(5) 
 
 #if (BATT_CHECK_ENABLE)
 #if 0//(__PROJECT_8278_BLE_REMOTE__)
@@ -144,10 +145,10 @@ extern "C" {
 
 
 //////////////////////////// KEYSCAN/MIC  GPIO //////////////////////////////////
-#define MATRIX_ROW_PULL                       PM_PIN_PULLDOWN_100K
-#define MATRIX_COL_PULL                       PM_PIN_PULLUP_10K
+#define MATRIX_ROW_PULL                       PM_PIN_PULLUP_1M//PM_PIN_PULLDOWN_100K//PM_PIN_PULLUP_1M
+#define MATRIX_COL_PULL                       PM_PIN_PULLDOWN_100K//PM_PIN_PULLUP_10K//PM_PIN_PULLDOWN_100K
 
-#define KB_LINE_HIGH_VALID                    0   //dirve pin output 0 when keyscan, scanpin read 0 is valid
+#define KB_LINE_HIGH_VALID                    1   //dirve pin output 0 when keyscan, scanpin read 0 is valid
 #define DEEPBACK_FAST_KEYSCAN_ENABLE          0   //proc fast scan when deepsleep back trigged by key press, in case key loss
 #define LONG_PRESS_KEY_POWER_OPTIMIZE         1   //lower power when pressing key without release
 
@@ -390,12 +391,6 @@ typedef enum
     DeviceInformation_pnpID_CD_H,           //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_pnpID_DP_H,           //UUID: 2A50,     VALUE: PnPtrs
 
-    DeviceInformation_modelNUM_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_modelNUM_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
-
-    DeviceInformation_serialNUM_CD_H,       //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_serialNUM_DP_H,       //UUID: 2A50,     VALUE: PnPtrs
-
     DeviceInformation_firmwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_firmwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
 
@@ -404,9 +399,6 @@ typedef enum
 
     DeviceInformation_hardwareRev_CD_H,     //UUID: 2803,     VALUE:              Prop: Read
     DeviceInformation_hardwareRev_DP_H,     //UUID: 2A50,     VALUE: PnPtrs
-
-    DeviceInformation_manuNAME_CD_H,        //UUID: 2803,     VALUE:              Prop: Read
-    DeviceInformation_manuNAME_DP_H,        //UUID: 2A50,     VALUE: PnPtrs
 
     //// HID ////
     /**********************************************************************************************/

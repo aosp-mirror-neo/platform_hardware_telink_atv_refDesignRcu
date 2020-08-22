@@ -524,8 +524,6 @@ u8 kb_powerdet(void)
 
     return 1;
 }
-
-
 #endif
 
 

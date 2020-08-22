@@ -4,5 +4,5 @@
 
 USER_OBJS :=
 
-LIBS := -llt_8278 -lfirmware_encrypt -lapp_ota
+LIBS := -llt_8278 -lapp_ota -lfirmware_encrypt
 

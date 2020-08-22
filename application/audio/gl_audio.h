@@ -99,6 +99,13 @@
 #define ASSISTANT_SUPPORTED_PTT             0x01        //Press-to-Talk and On-request models are supported;
 #define ASSISTANT_SUPPORTED_HTT             0x03        //Hold-to-Talk, Press-to-Talk and On-request models are supported.
 
+/**************************************************************
+ ******************   google voice v1.0   *********************
+ **************************************************************/
+#define FIRST_SYNC                          BIT(0)
+#define SAMPLING_CHANGE                     BIT(1)
+#define PACKET_LOSS                         BIT(2)
+#define SYNC_PACKET                         BIT(3)
 typedef enum {
     REASON_MICCLOSE                         = 0x00,
     REASON_RELEASE_HTT                      = 0x02,

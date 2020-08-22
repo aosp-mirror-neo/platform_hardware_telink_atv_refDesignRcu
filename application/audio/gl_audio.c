@@ -252,9 +252,9 @@ u8 app_audio_key_start(u8 start_reasion){
     return 0;
 }
 
+
 u8 app_audio_key_stop(u8 reason){
     ui_enable_mic(0);
-
     app_active_remote_timer = 0;
     app_audio_transfer_timer = 0;
 
@@ -839,26 +839,26 @@ void google_voice_data_notify_v1p0_proc(){
 
         //check seq no and sampling rate before notify audio data
         if(current_sampling_rate != previous_sampling_rate){
-            send_sync_cmd_flag = 2;
+            send_sync_cmd_flag |= SAMPLING_CHANGE;
             need_buffer_count = 1;
         }
 
         if((u16)(current_seq_no - previous_seq_no) != 1){
-            send_sync_cmd_flag = 3;
+            send_sync_cmd_flag |= PACKET_LOSS;
             need_buffer_count = 1;
         }
 
         app_audio_sync_serial ++;
         if(app_audio_sync_serial >= 20){
             app_audio_sync_serial = 0;
-            send_sync_cmd_flag = 4;
+            send_sync_cmd_flag |= SYNC_PACKET;
             need_buffer_count = 1;
         }
 
         if(google_voice_ctl & FLAG_GOOGLE_AUDIO_FIRST_SYNC){
             printf("FLAG_GOOGLE_AUDIO_FIRST_SYNC\n");
             google_voice_ctl &= ~FLAG_GOOGLE_AUDIO_FIRST_SYNC;
-            //send_sync_cmd_flag = 1;
+            //send_sync_cmd_flag |= FIRST_SYNC;
             //need_buffer_count = 1;
             previous_sampling_rate = U16_LO(CODEC_USED_16K);    //default sampling rate:16k
             previous_seq_no = 0xffff;
@@ -885,11 +885,12 @@ void google_voice_data_notify_v1p0_proc(){
             sendBuff[1] = current_sampling_rate;            //The audio codec that will be used for the audio stream after this sync point.
             sendBuff[2] = (notify_seq_no >> 8) & 0xFF;      //Sequence number of the audio frame
             sendBuff[3] = notify_seq_no & 0xFF;             //Sequence number of the audio frame
+
             sendBuff[4] = pd[3];                            //Predicted ADPCM value.
             sendBuff[5] = pd[4];                            //Predicted ADPCM value.
             sendBuff[6] = pd[5];                            //step index (1) Index in ADPCM step size table.
 
-            if(send_sync_cmd_flag == 1 ){
+            if(send_sync_cmd_flag&FIRST_SYNC){
                 printf("Predicted ADPCM value1:0x%x\n",sendBuff[4]);
                 printf("Predicted ADPCM value2:0x%x\n",sendBuff[5]);
                 printf("step index:0x%x\n",sendBuff[6]);
@@ -897,11 +898,13 @@ void google_voice_data_notify_v1p0_proc(){
                 printf("(VOICE_V1P0_ADPCM_PACKET_LEN - 8)/auido_frame_size:%d\n",(VOICE_V1P0_ADPCM_PACKET_LEN - 8)/auido_frame_size);
             }
 
-            if(BLE_SUCCESS == bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 7)){
+            ble_sts_t ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 7);
+            if(ret == BLE_SUCCESS){
 
                 printf("send_sync_cmd_flag:%d\n",send_sync_cmd_flag);
-                if(send_sync_cmd_flag == 2) printf("previous_sampling_rate:%d_current:%d\n",previous_sampling_rate,current_sampling_rate);
-                if(send_sync_cmd_flag == 3) printf("previous_seq_no:%d_current:%d\n",previous_seq_no,current_seq_no);
+                if(send_sync_cmd_flag&SAMPLING_CHANGE) printf("SAMPLING_CHANGE previous_sampling_rate:%d_current:%d\n",previous_sampling_rate,current_sampling_rate);
+                if(send_sync_cmd_flag&PACKET_LOSS) printf("PACKET_LOSS previous_seq_no:%d_current:%d\n",previous_seq_no,current_seq_no);
+//                array_printf(sendBuff,7);
 
                 app_audio_send_index++;
             }else{
@@ -912,14 +915,24 @@ void google_voice_data_notify_v1p0_proc(){
         //send audio data
         for(u8 i=0; i< ((VOICE_V1P0_ADPCM_PACKET_LEN - 8)/auido_frame_size); i++){
 
-            if(BLE_SUCCESS == bls_att_pushNotifyData(AUDIO_GOOGLE_RX_DP_H, pd + 6 + app_audio_send_index *auido_frame_size, auido_frame_size)){
+            u8 audio_addr_shift = app_audio_send_index - (send_sync_cmd_flag==0)?0:1;
+
+//            printf("send_sync_cmd_flag:%d\n",send_sync_cmd_flag);
+//            printf("audio_addr_shift:%d\n",audio_addr_shift);
+            if(BLE_SUCCESS == bls_att_pushNotifyData(AUDIO_GOOGLE_RX_DP_H, pd + 6 + audio_addr_shift *auido_frame_size, auido_frame_size)){
                 app_audio_send_index++;
+//                array_printf(pd + 6 + audio_addr_shift *auido_frame_size,20);
             }else{
                 return;
             }
 
-            if(app_audio_send_index == need_buffer_count){
+
+            if(app_audio_send_index >= need_buffer_count){
+//                printf("need_buffer_count:0x%x\n",need_buffer_count);
+//                printf("app_audio_send_index:0x%x\n",app_audio_send_index);
                 app_audio_send_index = 0;
+                //printf("notify data:");
+                //array_printf(pd,10);
 
                 mic_encoder_data_read_ok();
 

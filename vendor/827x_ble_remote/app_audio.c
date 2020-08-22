@@ -99,7 +99,6 @@ _attribute_data_retention_    int       ui_mtu_size_exchange_req = 0;
 		{
 		    app_ota_status(1);
 		}
-
 #if BLE_DMIC_ENABLE
         //DMIC Bias output
         gpio_set_output_en (GPIO_DMIC_BIAS, en);
@@ -112,12 +111,8 @@ _attribute_data_retention_    int       ui_mtu_size_exchange_req = 0;
         #endif
         gpio_write (GPIO_AMIC_BIAS, en);
 #endif
-/*
-        #if (BLT_APP_LED_ENABLE)
-            extern const led_cfg_t led_cfg[];
-            device_led_setup(led_cfg[en ? 1 : 2]);
-        #endif
-*/
+        extern void app_mic_led(u8 en);
+        app_mic_led(en);
         if(en){  //audio on
             app_audio_sync_serial = 0;
             bls_pm_setManualLatency(0);

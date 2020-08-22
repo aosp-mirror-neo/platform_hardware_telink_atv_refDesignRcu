@@ -148,8 +148,6 @@ _attribute_data_retention_    u32    mtuExchange_check_tick=0;
 
 _attribute_data_retention_    u32    delay3s_to_sleep_tick=0;
 
-_attribute_data_retention_    u8     terminate_flag=0;
-
 _attribute_data_retention_    u16    enterdeep_time_count = 0;
 _attribute_data_retention_    u16    enterdeep_time = 0;
 _attribute_data_retention_    u16    service_change = 0;
@@ -161,6 +159,7 @@ extern ble_sts_t    blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size
 extern void is_flash_info_full(void);
 extern void battery_refresh(void);
 extern void device_led_off(u8 led);
+extern void app_connect_led(void);
 
 void app_enter_deep_timeset(void)
 {
@@ -264,7 +263,7 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 			  app_pairing_error();
 			  app_pairing_led();
 		      enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
-
+              printf("HCI_ERR_CONN_TERM_MIC_FAILURE\r\n");
         }
         else{
 
@@ -387,7 +386,7 @@ void    task_connect (u8 e, u8 *p, int n)
 	interval_update_tick = clock_time() | 1; //none zero
 
     battery_refresh();
-
+	app_connect_led();
 }
 
 void    task_conn_update_req (u8 e, u8 *p, int n)
@@ -398,8 +397,6 @@ void    task_conn_update_req (u8 e, u8 *p, int n)
 void    task_conn_update_done (u8 e, u8 *p, int n)
 {
     printf("task_conn_update_done\n");
-	
-    device_led_off(APP_LED_GREEN);
     device_in_connection_state = 1;
     mtuExchange_check_tick = clock_time() | 1;
     is_pairing_mode = 0;
@@ -448,7 +445,6 @@ void blt_pm_proc(void)
          printf("stuck key\r\n");
          stuckkey_keypresstimer = 0;
          {
-         	#if 1
             u32 pin[] = KB_DRIVE_PINS;
             for(int i=0; i<(sizeof(pin)/sizeof(*pin));i++)
             {
@@ -456,42 +452,16 @@ void blt_pm_proc(void)
                  if(stuckKeyPress[i])
                  {
                      printf("stuck key i=%x\r\n",i);
-                     cpu_set_gpio_wakeup(pin[i], 0, 1);
+                     cpu_set_gpio_wakeup(pin[i], KB_LINE_HIGH_VALID, 1);
                  }
 				 else
 				 {
-					cpu_set_gpio_wakeup(pin[i], 0, 0);
+					cpu_set_gpio_wakeup(pin[i], KB_LINE_HIGH_VALID, 0);
 				 }
             }
 			
 			app_release_hid_key();
 
-			#else
-
-			u8 i;
-			u8 count;
-			u32 pin[] = KB_DRIVE_PINS;
-
-			count = sizeof(pin)/sizeof(pin[0]);
-			for(i=0; i<count; i++){
-				cpu_set_gpio_wakeup(pin[i], Level_High, 0);  //drive pin pad high wakeup deepsleep
-			}
-			for(i=0; i<count; i++){
-				gpio_set_input_en(pin[i], 1);
-				gpio_set_output_en(pin[i], 0);
-				if(gpio_read(pin[i])){
-					cpu_set_gpio_wakeup(pin[i], Level_Low, 1);
-					break;
-				}
-				gpio_set_input_en(pin[i], 0);
-			}
-			if(i == count){
-				for(i=0; i<count; i++){
-					cpu_set_gpio_wakeup(pin[i], Level_High, 1);
-				}
-			}
-		
-			#endif
 			printf("deep\r\n");
             cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
 			printf("into deep fail\r\n");
@@ -584,7 +554,7 @@ void blt_pm_proc(void)
                         printf("adv 2 mins\r\n");
 					delay3s_to_sleep_tick = clock_time()|1;
 					device_led_off(APP_LED_GREEN);
-					device_led_on(APP_LED_RED);
+					app_pairing_error();
                 }
                 else
                 {
@@ -685,6 +655,7 @@ _attribute_ram_code_ void user_init_battery_power_check(void)
     #endif
 }
 
+
 u8  mac_public[6];
 void user_init_normal(void)
 {
@@ -748,17 +719,27 @@ void user_init_normal(void)
     bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
     bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
 
-    if(kb_powerdet())
-    {
-         printf("press and hold back key\r\n");
-         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-         printf("bond_number_1=%x\r\n",bond_number);
-         if(bond_number)
-             bls_smp_param_deleteByIndex(0);
-         bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-         printf("bond_number_1=%x\r\n",bond_number);
-    }
-
+    if(analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG)
+	{
+	    printf("power on deep\r\n");
+	}
+	else
+	{
+		printf("power on for power down\r\n");
+		if(kb_powerdet())
+        {
+            printf("press and hold back key\r\n");
+            u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+            printf("bond_number_1=%x\r\n",bond_number);
+            if(bond_number)
+                 bls_smp_param_deleteByIndex(0);
+            bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+            printf("bond_number_1=%x\r\n",bond_number);
+        }
+	}
+	
+    analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | POWER_ON_FLG);
+	
     is_pairing_mode = 0;
     device_in_connection_state = 0;
 	is_adv_mode = 0;
@@ -776,7 +757,7 @@ void user_init_normal(void)
     if(bond_number)   //at least 1 bonding device exist
     {
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-    }
+    } 
 
 	//s_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
 	printf("peer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
@@ -785,8 +766,7 @@ void user_init_normal(void)
         if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
         {
             printf("ana read = ota succ\r\n");
-			service_change = 0x55;
-           
+			service_change = 0x55;  
         }
         enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
         //set direct adv
@@ -937,6 +917,7 @@ void interval_update_loop(void)
         interval_update_tick = 0;
         bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
 		app_service_change();
+
 
     }
 }
