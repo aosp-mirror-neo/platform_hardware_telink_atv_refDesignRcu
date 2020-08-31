@@ -32,10 +32,11 @@ extern "C" {
 #endif
 
 #include  "application/audio/audio_common.h"
-
+#include  "application/usbstd/usbkeycode.h"
 
 #define IR_DATA_SECT_1_ADDR                   0x71000
 #define IR_DATA_SECT_2_ADDR                   0x72000
+#define MAC_DATA_SECT_ADDR                    0x73000
 
 
 
@@ -61,12 +62,19 @@ extern "C" {
 
 #define AUDIO_TRANS_USE_2M_PHY_ENABLE         0
 
-
 #define REMOTE_G10                            1
 #define REMOTE_G20                            2
 
-#define RCU_TYPE                              REMOTE_G10
 
+#define MP_TEST_MODE                          0
+
+/////////////////// TEST MODE & DUT ////////////////////////////////
+#if (MP_TEST_MODE)
+#define MODE_TEST                             0xFF
+#define MODE_USER                             0x00
+
+#define DUT_INPUT_PORT                        GPIO_PB2
+#endif
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                     DEEP_ANA_REG0 //u8,can save 8 bit info when deep
 #define LOW_BATT_FLG                          BIT(0) //if 1: low battery
@@ -166,11 +174,13 @@ extern "C" {
 #define CR_VOL_UP                             0x80
 #define CR_VOL_DN                             0x81
 
-#define CR_NETFLIX                            0x78
-#define CR_YOUTUBE                            0x77
-#define CR_DISNEY                             0x79
-#define CR_HBOMAX                             0x7a
 
+#define CR_MEDIA_KEY_INDEX                    CR_YOUTUBE
+
+#define CR_YOUTUBE                            0xec
+#define CR_NETFLIX                            0xed
+#define CR_DISNEY                             0xee
+#define CR_HBOMAX                             0xef
 #define CR_UP                                 0xf0
 #define CR_DN                                 0xf1
 #define CR_LEFT                               0xf2
@@ -242,62 +252,36 @@ extern "C" {
 #define T_VK_CH_DN                            0xd1
 
 
-#define KB_MAP_NORMAL {\
-                        {0,          1,             2}, \
-                        {3,          4,             5}, \
-                        {6,          7,             8}, \
-                        {VOICE,      10,            11},\
-                        {12,         13,            14},\
-                        {15,         16,            17},\
-                        {18,         19,            20},\
-                        {21,         22,            23},}
 
-
-#define KB_MAP_BLE    {\
-                        CR_POWER,      CR_RIGHT,       CR_CHN_DN,    \
-                        CR_INPUT,      CR_DN,          CR_VOL_DN,    \
-                        CR_BOOKMARK,   CR_BACK,        CR_YOUTUBE,   \
-                        CR_ASSIST,     CR_HOME,        CR_NETFLIX,   \
-                        CR_DASHBOARD,  CR_GUIDE,       CR_DISNEY,    \
-                        CR_UP,         CR_CHN_UP,      CR_HBOMAX,    \
-                        CR_LEFT,       CR_VOL_UP,      VK_NONE,      \
-                        CR_CENTER,     CR_VOL_MUTE,    VK_NONE,    }
-
-
-#define KB_MAP_IR     {\
-                        IR_POWER,      IR_RIGHT,       IR_CHN_DN,    \
-                        IR_INPUT,      IR_DN,          IR_VOL_DN,    \
-                        IR_BOOKMARK,   IR_BACK,        IR_YOUTUBE,   \
-                        IR_ASSIST,     IR_HOME,        IR_NETFLIX,   \
-                        IR_DASHBOARD,  IR_GUIDE,       IR_DISNEY,    \
-                        IR_UP,         IR_CHN_UP,      IR_HBOMAX,    \
-                        IR_LEFT,       IR_VOL_UP,      VK_NONE,      \
-                        IR_CENTER,     IR_MUTE,        VK_NONE,    }
-
-
-
-
-//////////////////// KEY CONFIG (RCU board) ///////////////////////////
-#define KB_DRIVE_PINS  {GPIO_PD2, GPIO_PD3, GPIO_PD4}
 #define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
+
 
 //drive pin as gpio
 
 #define PD2_FUNC                              AS_GPIO
 #define PD3_FUNC                              AS_GPIO
 #define PD4_FUNC                              AS_GPIO
+#define PD7_FUNC                              AS_GPIO
+#define PA0_FUNC                              AS_GPIO
+#define PD1_FUNC                              AS_GPIO
 
 
 //drive pin need 100K pulldown
 #define PULL_WAKEUP_SRC_PD2                   MATRIX_ROW_PULL
 #define PULL_WAKEUP_SRC_PD3                   MATRIX_ROW_PULL
 #define PULL_WAKEUP_SRC_PD4                   MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PD7                   MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PA0                   MATRIX_ROW_PULL
+#define PULL_WAKEUP_SRC_PD1                   MATRIX_ROW_PULL
 
 
 //drive pin open input to read gpio wakeup level
 #define PD2_INPUT_ENABLE                      1
 #define PD3_INPUT_ENABLE                      1
 #define PD4_INPUT_ENABLE                      1
+#define PD7_INPUT_ENABLE                      1
+#define PA0_INPUT_ENABLE                      1
+#define PD1_INPUT_ENABLE                      1
 
 
 //scan pin as gpio
@@ -335,8 +319,8 @@ extern "C" {
 
 
 
-#define KB_MAP_NUM                            KB_MAP_NORMAL
-#define KB_MAP_FN                             KB_MAP_NORMAL
+//#define KB_MAP_NUM                            KB_MAP_NORMAL
+//#define KB_MAP_FN                             KB_MAP_NORMAL
 
 /////////////////// Clock  /////////////////////////////////
 #if (TL_AUDIO_MODE & (TL_AUDIO_MASK_SBC_MODE | TL_AUDIO_MASK_MSBC_MODE))
@@ -534,6 +518,16 @@ typedef enum
     IR_KEY_EVENT_CCC_H,
 
 
+#if (MP_TEST_MODE)
+    //// Test Mode ////
+    /**********************************************************************************************/
+    TEST_MODE_PS_H,                         //UUID: 2800,     VALUE: test mode service uuid
+    TEST_MODE_CD_H,                         //UUID: 2803,     VALUE: Prop: read | write | write_without_rsp | notify
+    TEST_MODE_DP_H,                         //UUID: test mode uuid,  VALUE: testData
+    TEST_MODE_CCB_H,                        //UUID: 2902,     VALUE: testDataCCC
+#endif
+
+
     ATT_END_H,
 
 }ATT_HANDLE;
@@ -616,8 +610,11 @@ typedef enum
 
 
 
-
+#if (MP_TEST_MODE)
+#define BLE_PHYTEST_MODE                      PHYTEST_MODE_THROUGH_2_WIRE_UART
+#else
 #define BLE_PHYTEST_MODE                      PHYTEST_MODE_DISABLE
+#endif
 
 #define UART_PRINT_DEBUG_ENABLE               1
 

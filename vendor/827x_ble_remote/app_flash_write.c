@@ -30,6 +30,7 @@
 
 
 _attribute_data_retention_ u8 flag_ccc_data = 0;
+_attribute_data_retention_ u8 peer_mac[6] = {0};
 
 
 
@@ -301,10 +302,59 @@ void is_flash_info_full(void)
     if(flash_pos_info(CCC_DATA_AREA,1,4) == 0x03)
     {
         flash_erase_sector(CCC_DATA_AREA);
+		write_ccc_info(&flag_ccc_data);
     }
-
 }
 
+void write_peer_mac_info(u8 *mac){
+
+    u8 dat[8] ={0xA5,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+    memcpy(dat+2,mac,6);
+    u8 ret = flash_write_info(MAC_DATA_SECT_ADDR,1,8,8,dat);
+    printf("write_mac_info:0x%x\r\n",ret);
+}
+
+u8 read_peer_mac_info(u8 *mac){
+
+    u8 dat[8] ={0};
+    u8 ret = flash_read_info(MAC_DATA_SECT_ADDR,1,8,8,dat);
+    if(!ret){
+		for(u8 i=0;i<6;i++)
+			mac[i] = dat[2+i];
+    }
+    //return 0:Success,1:flash is empty,2:sector data error
+    return ret;
+}
+
+u8 is_peer_mac_flash_info_full(void)
+{
+    if(flash_pos_info(MAC_DATA_SECT_ADDR,1,8) == 0x03)
+    {
+		return 1;
+    }
+	return 0;
+}
+
+void init_peer_mac(void)
+{
+    if(read_peer_mac_info(peer_mac) == 0)
+    {
+        printf("peer_mac =\r\n");
+        for(u8 i=0;i<6;i++)
+		    printf(" %x",peer_mac[i]);
+         printf("\r\n");
+		if(is_peer_mac_flash_info_full())
+        {
+            flash_erase_sector(MAC_DATA_SECT_ADDR);
+	        write_peer_mac_info(peer_mac);
+        }
+    }
+	else
+	{
+		printf("no_peer_mac\r\n");
+	}
+	
+}
 
 
 

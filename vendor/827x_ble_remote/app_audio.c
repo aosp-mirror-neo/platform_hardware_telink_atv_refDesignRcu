@@ -40,7 +40,6 @@ _attribute_data_retention_    u8        ui_mic_enable = 0;
 _attribute_data_retention_    u8        key_on_request_press = 0;
 _attribute_data_retention_    u8        key_ptt_press = 0;
 _attribute_data_retention_    u8        key_htt_press = 0;
-_attribute_data_retention_    int       ui_mtu_size_exchange_req = 0;
 
 #if (BLE_AUDIO_ENABLE)
 

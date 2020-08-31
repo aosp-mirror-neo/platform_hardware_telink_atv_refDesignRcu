@@ -154,7 +154,7 @@ void app_phytest_init(void)
         uart_reset();
     #endif
 
-    uart_recbuff_init((unsigned short*)hci_rx_fifo_b, hci_rx_fifo.size);
+    uart_recbuff_init((unsigned char*)hci_rx_fifo_b, hci_rx_fifo.size);
 
 
     #if (CLOCK_SYS_CLOCK_HZ == 16000000)

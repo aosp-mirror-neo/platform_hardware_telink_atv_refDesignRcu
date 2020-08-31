@@ -34,7 +34,6 @@
 extern    unsigned int         key_voice_pressTick;
 extern    unsigned char        ui_mic_enable;
 extern    unsigned char        key_voice_press;
-extern    int                  ui_mtu_size_exchange_req;
 
 void dmic_gpio_reset (void);
 void amic_gpio_reset (void);

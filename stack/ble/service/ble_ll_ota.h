@@ -44,6 +44,7 @@
 #define CMD_OTA_START                          0xff01
 #define CMD_OTA_END                            0xff02
 #define CMD_OTA_SIGNATURE                      0xff03
+#define CMD_OTA_SCHEDULE                       0xff04
 
 #define FLAG_FW_CHECK                          0x5D
 #define FW_CHECK_AGTHM2                        0x02

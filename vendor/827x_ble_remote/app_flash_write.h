@@ -36,19 +36,19 @@
 #define IR_FLASH_LENGTH              0x500  //(256*5)
 
 //ccc data flag
-#define FLAG_GOOGLE_RX_CCC                        BIT(0)
-#define FLAG_GOOGLE_CTL_CCC                       BIT(1)
+#define FLAG_GOOGLE_RX_CCC           BIT(0)
+#define FLAG_GOOGLE_CTL_CCC          BIT(1)
 
 extern u8 flag_ccc_data;
-
+extern u8 peer_mac[6];
 void write_ccc_info(u8 *ccc);
 u8 read_ccc_info(u8 *ccc);
 void init_ccc_value();
 
-
 u8 flash_write_info(unsigned long addr, u8 used_sector, u8 used_block, unsigned long len, u8 *wbuf );
 u8 flash_read_info(unsigned long addr, u8 used_sector, u8 used_block, unsigned long len, u8 *rbuf);
 void flash_check_area(unsigned long addr, u8 used_sector, u8 used_block, unsigned long len);
-
-
+extern void init_peer_mac(void);
+extern u8 is_peer_mac_flash_info_full(void);
+extern void write_peer_mac_info(u8 *mac);
 #endif /* APP_INFO_H_ */

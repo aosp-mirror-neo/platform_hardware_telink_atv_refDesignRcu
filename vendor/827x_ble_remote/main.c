@@ -31,8 +31,13 @@
 #include "vendor/common/blt_fw_sign.h"
 #include "vendor/common/flash_fw_check.h"
 #include "../../vendor/common/user_config.h"
+#if (MP_TEST_MODE)
+#include "../common/blt_led.h"
 
-
+#include "app_flash_write.h"
+#include "app_test.h"
+#endif
+#include "app_custom.h"
 
 
 extern void user_init_normal();
@@ -87,8 +92,25 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
     clock_init(SYS_CLK_48M_Crystal);
 #endif
 
+#if (MP_TEST_MODE)
+    if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
+    {
+        device_led_init();
+        device_led_on(APP_LED_GREEN);
+        device_led_on(APP_LED_RED);
+
+        extern void app_phytest_init(void);
+        app_phytest_init();
+
+        rf_set_power_level_index(RF_POWER_P7p80dBm);
+
+        extern void app_trigger_phytest_mode(void);
+        app_trigger_phytest_mode();
+    }
+#endif
 
     if(!deepRetWakeUp){//read flash size
+    	app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
         #if FIRMWARE_CHECK_ENABLE
@@ -106,6 +128,11 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         user_init_deepRetn ();
     }
     else{
+		extern u8 wakeup_src;  //1:wakeup for pad  2:wake up for timer
+        extern u8 app_wakeup_src(void);
+	
+		wakeup_src = app_wakeup_src();
+	    printf("wakeup_src=%x\r\n",wakeup_src);
         #if FIRMWARES_SIGNATURE_ENABLE
             blt_firmware_signature_check();
         #endif
@@ -117,6 +144,9 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     irq_enable();
    
+#if (MP_TEST_MODE)
+    if (test_get_mode() == MODE_TEST) test_entry_mode();
+#endif
 
     while (1) {
 #if (MODULE_WATCHDOG_ENABLE)

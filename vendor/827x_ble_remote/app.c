@@ -42,6 +42,16 @@
 #include "application/audio/gl_audio.h"
 #include "app_ota.h"
 #include "app_ir.h"
+#include "app_custom.h"
+#include "app_config.h"
+#include "app_flash_write.h"
+
+#include "../../application/audio/gl_audio.h"
+
+
+#if (MP_TEST_MODE)
+#include "app_test.h"
+#endif
 
 
 #if (__PROJECT_8258_BLE_REMOTE__ || __PROJECT_8278_BLE_REMOTE__)
@@ -72,8 +82,6 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 
 
 
-
-
 //#define RX_FIFO_SIZE            96                    //-24//64
 //#define RX_FIFO_SIZE            160                    //-24//64
 #define RX_FIFO_SIZE            160                    //-24//64
@@ -84,7 +92,7 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 #define TX_FIFO_NUM                16
 
 //#define MTU_SIZE_SETTING        72
-#define MTU_SIZE_SETTING        220
+#define MTU_SIZE_SETTING         180
 //#define MTU_SIZE_SETTING        210
 
 #if 0
@@ -113,8 +121,8 @@ _attribute_data_retention_    my_fifo_t    blt_rxfifo = {
 #endif
 
 
-u8 flag_mtu=0;
-u8 flag_dle=0;
+//u8 flag_mtu=0;
+_attribute_data_retention_ u8 flag_dle=0;
 
 //////////////////////////////////////////////////////////////////////////////
 //     Adv Packet, Response Packet
@@ -136,7 +144,7 @@ _attribute_data_retention_    int device_in_connection_state=0;
 _attribute_data_retention_    u32 advertise_begin_tick;
 _attribute_data_retention_    u8 advertise_downgrade_flag=0;
 
-_attribute_data_retention_    u32    interval_update_tick;
+//_attribute_data_retention_    u32    interval_update_tick;
 
 _attribute_data_retention_    u8    sendTerminate_before_enterDeep = 0;
 
@@ -145,6 +153,8 @@ _attribute_data_retention_    u32    latest_user_event_tick;
 _attribute_data_retention_    u32    lowBattDet_tick   = 0;
 
 _attribute_data_retention_    u32    mtuExchange_check_tick=0;
+
+_attribute_data_retention_    u32    ir_flash_erase_tick=0;
 
 _attribute_data_retention_    u32    delay3s_to_sleep_tick=0;
 
@@ -186,21 +196,89 @@ void app_switch_to_indirect_adv(u8 e, u8 *p, int n)
     app_pairing_led();
 }
 
+void direct_adv_led(u8 e, u8 *p, int n)
+{
+    printf("direct_adv_led\r\n");
+	bls_ll_setAdvEnable(1);  //must: set adv enable
+    app_pairing_led();
+	
+}
+
 void     app_adv_interval_downgrade(void)
 {
-
+    smp_param_save_t  bondInfo;
     printf("app_adv_interval_downgrade\r\n");
-    bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+	//direct adv
+    if(bond_number)   //at least 1 bonding device exist
+    {
+       printf("direct adv\r\n");
+       bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+  
+	   u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                        bondInfo.peer_addr_type,  bondInfo.peer_addr,
+                                        MY_APP_ADV_CHANNEL,
+                                        ADV_FP_NONE);
+       if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
+    }
+	//indirect adv
+	else
+	{
+	    printf("indirect adv\r\n");
+	    bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
                         ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
                         0,  NULL,
                         MY_APP_ADV_CHANNEL,
                         ADV_FP_NONE);
+	}
 
 }
+
+void app_adv_indirect(void)
+{
+    printf("app_adv_indirect\r\n");
+
+	bls_ll_setAdvData( (u8 *)tbl_advData, sizeof(tbl_advData) );
+	bls_ll_setScanRspData( (u8 *)tbl_scanRsp, sizeof(tbl_scanRsp));
+
+    bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+		ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
+		0,	NULL,
+		MY_APP_ADV_CHANNEL,
+		ADV_FP_NONE);
+	bls_ll_setAdvEnable(1);  
+}
+
+
+void app_adv_direct(void)
+{
+    printf("app_adv_direct\r\n");
+    smp_param_save_t  bondInfo;
+	bls_ll_setAdvEnable(0);  //adv enable
+	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+    if(bond_number)   //at least 1 bonding device exist
+    {
+       bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+  
+	   u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                        bondInfo.peer_addr_type,  bondInfo.peer_addr,
+                                        MY_APP_ADV_CHANNEL,
+                                        ADV_FP_NONE);
+       if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
+	   bls_ll_setAdvEnable(1);  //adv enable
+    }
+	else
+	{
+		bls_ll_setAdvEnable(1);  //adv enable
+	}
+}
+
 u8 effective_rx_dle = 0;
 void    task_datalengthexchange (u8 e, u8 *p, int n)
 {
-    flag_dle = 1;
+    flag_dle |= 1;
     printf("task_datalengthexchange\n");
     ll_data_extension_t *data_p = (ll_data_extension_t *)p;
     effective_rx_dle = data_p->connEffectiveMaxRxOctets;
@@ -210,30 +288,63 @@ void    task_datalengthexchange (u8 e, u8 *p, int n)
     //set_audio_frame_size(23);
 
 }
-void mtu_exchange_loop(void)
+
+void app_service_change(void)
 {
-    if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, 2000000 ))
-    { 
-        mtuExchange_check_tick = 0;
-       // printf("app_mtu_size=%x,mtu_exchange_loop.\n",app_mtu_size);
-        //if(app_mtu_size < MTU_SIZE_SETTING){
-        blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
-            //  printf("ble_sts_t status=%x\n",status);
-        //}
-        //if(effective_rx_dle < 103){
-        //	blc_ll_exchangeDataLength(LL_LENGTH_REQ,app_mtu_size);
-        //}
+    u8 service_data[4]={BATT_PS_H,0,0xff,0};
+    if(service_change == 0x55)
+    {
+        printf("app_service_change\r\n");
+        bls_att_pushIndicateData(GenericAttribute_ServiceChanged_DP_H,service_data,sizeof(service_data));
+		analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~OTA_FLG));
+		service_change = 0;
     }
 }
+
+void mtu_exchange_loop(void)
+{
+    if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, 13000000 ))
+    { 
+        mtuExchange_check_tick = 0;
+        if((flag_dle&0x10) == 0)
+        {
+            printf("mtu_exchange_loop_mtu\r\n");
+            blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
+        }
+		if((flag_dle&0x01) == 0)
+		{
+		    printf("mtu_exchange_loop_dle\r\n");
+			blc_ll_exchangeDataLength(LL_LENGTH_REQ,(TX_FIFO_SIZE-18));
+		}
+		bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
+		app_service_change();
+    }
+}
+
+void ir_flash_erase_loop(void)
+{
+    if(ir_flash_erase_tick && clock_time_exceed(ir_flash_erase_tick, 8000000 ))
+    { 
+        ir_flash_erase_tick = 0;
+  
+        printf("ir_flash_erase_loop\r\n");
+		ir_flash_erase();
+		extern u8 ir_flash_sector;
+		printf("ir_flash_sector=%x\r\n",ir_flash_sector);
+        
+    }
+}
+
 void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
 {
      printf("ble_ll_reject\r\n");
 }
 
-
 void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
     device_in_connection_state = 0;
+	mtuExchange_check_tick = 0;
+	flag_dle = 0;
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     printf("ble_remote_terminate  bond_number=%x,*p=%x\r\n",bond_number,*p);
 
@@ -244,7 +355,7 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 			app_pairing_led();
 		    enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
             printf("HCI_ERR_CONN_TIMEOUT\r\n");
-
+			app_adv_direct();
         }
         else if(*p == HCI_ERR_REMOTE_USER_TERM_CONN){  //0x13
 
@@ -263,6 +374,7 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 			  app_pairing_error();
 			  app_pairing_led();
 		      enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+			  bls_ll_setAdvEnable(1); 
               printf("HCI_ERR_CONN_TERM_MIC_FAILURE\r\n");
         }
         else{
@@ -293,10 +405,13 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 }
 
 
-
-
 _attribute_ram_code_ void    user_set_rf_power (u8 e, u8 *p, int n)
 {
+#if (MP_TEST_MODE)
+    if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
+        rf_set_power_level_index(RF_POWER_P7p37dBm);
+    else
+#endif
     rf_set_power_level_index (MY_RF_POWER_INDEX);
 }
 
@@ -310,7 +425,6 @@ int app_host_event_callback (u32 h, u8 *para, int n)
         case GAP_EVT_SMP_PARING_BEAGIN:
         {
             printf("----- Pairing begin -----\n");
-            //blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
         }
         break;
 
@@ -321,11 +435,11 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
             if(p->bonding_result){
                 printf("save smp key succ\n");
+                notify_get_rsp_tick = clock_time()|1;
             }
             else{
                 printf("save smp key failed\n");
             }
-            blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
 
         }
         break;
@@ -346,23 +460,29 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             //enable_rsp_gaps_rsp = 1;
 
             if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
-
+                printf("first pairing\r\n");
+                device_in_connection_state = 1;
             }
             else if(p->re_connect == SMP_FAST_CONNECT){  //auto connect
-
+                printf("auto connect \r\n");
+                device_in_connection_state = 1;
             }
+			mtuExchange_check_tick = clock_time() | 1;
         }
         break;
 
         case GAP_EVT_ATT_EXCHANGE_MTU:
         {
-            flag_mtu = 1;
+           // flag_mtu = 1;
             gap_gatt_mtuSizeExchangeEvt_t *pEvt = (gap_gatt_mtuSizeExchangeEvt_t *)para;
             printf("MTU Peer MTU(%d)/Effect ATT MTU(%d).\n", pEvt->peer_MTU, pEvt->effective_MTU);
             app_mtu_size = U16_LO(pEvt->effective_MTU);
+			flag_dle |= 0x10;
+			/*
             if(!flag_dle){
                 blc_ll_exchangeDataLength(LL_LENGTH_REQ,pEvt->effective_MTU);
             }
+            */
         }
         break;
 
@@ -374,19 +494,77 @@ int app_host_event_callback (u32 h, u8 *para, int n)
     return 0;
 }
 
+#define PEER_MAC_FLASH_ERASE_TIMEOUT 600000
+
+int app_peer_mac_flash_erase_timeoutcb(void)
+{
+    printf("app_peer_mac_flash_erase_timeoutcb\r\n");
+
+	if(bls_ll_requestConnBrxEventDisable() > 120)
+	{
+	    printf("flash erase \r\n");
+		bls_ll_disableConnBrxEvent();
+	    flash_erase_sector(MAC_DATA_SECT_ADDR);
+		bls_ll_restoreConnBrxEvent();
+		printf("flash erase succ\r\n");
+		blt_soft_timer_delete(app_peer_mac_flash_erase_timeoutcb);
+		write_peer_mac_info(peer_mac);
+	}
+    
+    return 0;
+}
+
+void app_peer_mac_flash_erase(void)
+{
+	blt_soft_timer_add(&app_peer_mac_flash_erase_timeoutcb, PEER_MAC_FLASH_ERASE_TIMEOUT);
+}
+
+void app_save_peer_mac_info(u8 *mac)
+{
+	/*
+    for(u8 i=0;i<6;i++)
+	{
+	    printf(" %x",mac[i]);
+	}
+	printf("\r\n");
+	*/
+	if((peer_mac[0] == 0) && (peer_mac[1] == 0))
+	{
+	    memcpy(peer_mac,mac,6); 
+		write_peer_mac_info(peer_mac);
+		
+	}
+	else
+	{
+        if(memcmp(mac,peer_mac,6))
+	    {
+	        printf("new mac\r\n");
+	        memcpy(peer_mac,mac,6); 
+			ir_table_init();
+			ir_flash_eraseall();
+	        if(is_peer_mac_flash_info_full() == 0)
+	           write_peer_mac_info(peer_mac);
+	        else
+	   	       app_peer_mac_flash_erase();
+	    }
+    }
+}
+
 void    task_connect (u8 e, u8 *p, int n)
 {
     printf("connect\r\n");
+	
+	//app_save_peer_mac_info(p);
     bls_l2cap_setMinimalUpdateReqSendingTime_after_connCreate(1000);
     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 
     latest_user_event_tick = clock_time();
 
-    ui_mtu_size_exchange_req = 1;
-	interval_update_tick = clock_time() | 1; //none zero
-
+	//interval_update_tick = clock_time() | 1; //none zero
+    
     battery_refresh();
 	app_connect_led();
+    bls_ll_setAdvEnable(0); 
 }
 
 void    task_conn_update_req (u8 e, u8 *p, int n)
@@ -397,12 +575,8 @@ void    task_conn_update_req (u8 e, u8 *p, int n)
 void    task_conn_update_done (u8 e, u8 *p, int n)
 {
     printf("task_conn_update_done\n");
-    device_in_connection_state = 1;
-    mtuExchange_check_tick = clock_time() | 1;
     is_pairing_mode = 0;
 	is_adv_mode = 0;
-
-    //blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
 }
 
 int app_conn_param_update_response(u8 id, u16  result)
@@ -432,31 +606,30 @@ void     app_phy_update_complete_event(u8 e,u8 *p, int n)
 }
 #endif
 
+extern u32 drive_pins[];
 void blt_pm_proc(void)
 {
     u8 time=0;
-
 #if(BLE_REMOTE_PM_ENABLE)
-
 #if (STUCK_KEY_PROCESS_ENABLE)
     extern u32 stuckkey_keypresstimer;
     if(key_not_released && stuckkey_keypresstimer && clock_time_exceed(stuckkey_keypresstimer, STUCK_KEY_ENTERDEEP_TIME*1000000))
     {
          printf("stuck key\r\n");
          stuckkey_keypresstimer = 0;
+		 u8 len = app_custom_get_drive_len();
          {
-            u32 pin[] = KB_DRIVE_PINS;
-            for(int i=0; i<(sizeof(pin)/sizeof(*pin));i++)
+            for(int i=0; i<len;i++)
             {
                  extern u8 stuckKeyPress[];
                  if(stuckKeyPress[i])
                  {
                      printf("stuck key i=%x\r\n",i);
-                     cpu_set_gpio_wakeup(pin[i], KB_LINE_HIGH_VALID, 1);
+                     cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 1);
                  }
 				 else
 				 {
-					cpu_set_gpio_wakeup(pin[i], KB_LINE_HIGH_VALID, 0);
+					cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
 				 }
             }
 			
@@ -476,7 +649,7 @@ void blt_pm_proc(void)
     }
     #if(REMOTE_IR_ENABLE)
         else if( ir_send_ctrl.is_sending){
-        //printf(" ir_send_ctrl.is_sending\r\n");
+            //printf(" ir_send_ctrl.is_sending\r\n");
             bls_pm_setSuspendMask(SUSPEND_DISABLE);
         }
     #endif
@@ -487,8 +660,30 @@ void blt_pm_proc(void)
             bls_pm_setSuspendMask(SUSPEND_DISABLE);  //phy test can not enter suspend
         }
     #endif
+    
+#if (MP_TEST_MODE)
+    else if (test_get_mode() == MODE_TEST)
+    {
+        if (test_get_state() == TEST_STAT_LED)
+        {
+            //printf("[TEST] Suspend for LED\n");
+            cpu_sleep_wakeup(SUSPEND_MODE, PM_WAKEUP_PAD, 0);
+        }
+        else if (test_get_state() == TEST_STAT_CURRENT)
+        {
+            //printf("[TEST] DeepSleep for CURRENT\n");
+            cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);
+        }
+        else
+        {
+            //printf("[TEST] Active for TEST\n");
+            bls_pm_setSuspendMask(SUSPEND_DISABLE);
+        }
+    }
+    #endif
     else
     {
+       
         #if (PM_DEEPSLEEP_RETENTION_ENABLE)
             bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
         #else
@@ -498,7 +693,6 @@ void blt_pm_proc(void)
         int user_task_flg = ota_is_working || scan_pin_need || key_not_released || device_led_busy();
 
         if(user_task_flg){
-
             bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 
             #if (LONG_PRESS_KEY_POWER_OPTIMIZE)
@@ -513,7 +707,7 @@ void blt_pm_proc(void)
                 bls_pm_setManualLatency(0);
             #endif
         }
-
+      
 
     #if 1 //deepsleep
         if(sendTerminate_before_enterDeep == 1){ //sending Terminate and wait for ack before enter deepsleep
@@ -565,7 +759,6 @@ void blt_pm_proc(void)
 			{
 			     cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
 			}
-
 			 if((is_pairing_mode == 0) && (is_adv_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg ) 
 			 {
 			      if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
@@ -575,7 +768,8 @@ void blt_pm_proc(void)
 				  if(clock_time_exceed(advertise_begin_tick ,  time* 1000000))
 				  {
 			          printf("idle to sleep\r\n");
-			          cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+					  cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0); 
+					  //cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,320000); 
 				  }
 			 }
 #if 0
@@ -655,12 +849,23 @@ _attribute_ram_code_ void user_init_battery_power_check(void)
     #endif
 }
 
+_attribute_data_retention_ u8 wakeup_src=1;  //1:wakeup for pad  2:wake up for timer
+
+u8 app_wakeup_src(void)
+{
+    u8 flag = analog_read(0X44);
+	if(flag & 0x08)
+		return 1;  //wakeup for pad
+	else
+	    return 2;  //wakeup for timer
+}
 
 u8  mac_public[6];
 void user_init_normal(void)
 {
 
     printf("ir_not_released=%x\r\n",ir_not_released);
+	
     //random number generator must be initiated here( in the beginning of user_init_nromal)
     //when deepSleep retention wakeUp, no need initialize again
     random_generator_init();  //this is must
@@ -710,7 +915,7 @@ void user_init_normal(void)
         //Hid device on android7.0/7.1 or later version
         // New paring: send security_request immediately after connection complete
         // reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
-        blc_smp_configSecurityRequestSending(SecReq_PEND_SEND, SecReq_PEND_SEND, 4000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
+        blc_smp_configSecurityRequestSending(SecReq_NOT_SEND, SecReq_NOT_SEND, 4000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
     #else
         blc_smp_setSecurityLevel(No_Security);
     #endif
@@ -738,13 +943,9 @@ void user_init_normal(void)
         }
 	}
 	
-    analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | POWER_ON_FLG);
-	
     is_pairing_mode = 0;
     device_in_connection_state = 0;
 	is_adv_mode = 0;
-	extern u8 lowbat;
-	lowbat =0;
 
     ////////////////// config adv packet /////////////////////
 #if (BLE_REMOTE_SECURITY_ENABLE)
@@ -779,10 +980,9 @@ void user_init_normal(void)
 
         //it is recommended that direct adv only last for several seconds, then switch to indirect adv
         bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
-        bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &app_switch_to_indirect_adv);
+        bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &direct_adv_led);
 
         bls_ll_setAdvEnable(1);  //adv enable
-        
     }
     else   //set indirect adv
 #endif
@@ -806,7 +1006,8 @@ void user_init_normal(void)
                           GAP_EVT_MASK_SMP_PARING_SUCCESS           |  \
                           GAP_EVT_MASK_SMP_PARING_FAIL                |  \
                           GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE     |  \
-                          GAP_EVT_MASK_ATT_EXCHANGE_MTU);
+                          GAP_EVT_MASK_ATT_EXCHANGE_MTU 
+                          );
 
     //ble event call back
     bls_app_registerEventCallback (BLT_EV_FLAG_CONNECT, &task_connect);
@@ -864,6 +1065,10 @@ void user_init_normal(void)
     bls_ota_registerVersionReqCb(app_ota_ver_check);
     bls_ota_registerotaSignatureCmdCb(app_ota_signature);
     bls_ota_registerResultIndicateCb(app_ota_result);
+    bls_ota_registerotaScheduletCb(app_schedule_ota);
+
+    bls_ota_init_handle(OTA_CMD_OUT_DP_H);
+
 #endif
 
     app_ui_init_normal();
@@ -874,6 +1079,9 @@ void user_init_normal(void)
     init_ccc_value();
     printf("flag_ccc_data:0x%x\n",flag_ccc_data);
     is_flash_info_full();
+
+	init_peer_mac();
+
 	ir_param_init();
 
 	extern void init_device_info (void);
@@ -885,6 +1093,11 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 {
 #if (PM_DEEPSLEEP_RETENTION_ENABLE)
     blc_ll_initBasicMCU();   //mandatory
+#if (MP_TEST_MODE)
+    if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
+        rf_set_power_level_index(RF_POWER_P7p37dBm);
+    else
+#endif
     rf_set_power_level_index (MY_RF_POWER_INDEX);
 
     blc_ll_recoverDeepRetention();
@@ -897,18 +1110,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 #endif
 }
 
-void app_service_change(void)
-{
-    u8 service_data[4]={BATT_PS_H,0,0xff,0};
-    if(service_change == 0x55)
-    {
-        printf("app_service_change\r\n");
-        bls_att_pushIndicateData(GenericAttribute_ServiceChanged_DP_H,service_data,sizeof(service_data));
-		analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~OTA_FLG));
-		service_change = 0;
-    }
-}
-
+/*
 void interval_update_loop(void)
 {
     if(interval_update_tick && clock_time_exceed(interval_update_tick,4000*1000))
@@ -921,19 +1123,23 @@ void interval_update_loop(void)
 
     }
 }
+*/
 
 /////////////////////////////////////////////////////////////////////
 // main loop flow
 /////////////////////////////////////////////////////////////////////
 u32 tick_loop;
 
+_attribute_data_retention_ u32 tick_schedule_ota;
+_attribute_data_retention_ u16 count_schedule_ota;
 
 void main_loop (void)
 {
 
     tick_loop ++;
     mtu_exchange_loop();
-    interval_update_loop();
+	ir_flash_erase_loop();
+    //interval_update_loop();
 
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_process(MAINLOOP_ENTRY);
@@ -948,7 +1154,7 @@ void main_loop (void)
     #endif
 
     #if (BATT_CHECK_ENABLE)
-        if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 500000) ){
+        if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){
             lowBattDet_tick = clock_time();
             #if(VBAT_LEAKAGE_PROTECT_EN)
 
@@ -980,7 +1186,25 @@ void main_loop (void)
 #if (BLT_APP_LED_ENABLE)
     device_led_process();
 #endif
+/*
+    if(tick_schedule_ota && clock_time_exceed(tick_schedule_ota,60*1000*1000)){
+        count_schedule_ota--;
+        tick_schedule_ota = clock_time()|1;
+        if(!count_schedule_ota){
+            tick_schedule_ota = 0;
+            //send notify hid key
 
+            u8 dat[2] = {0};
+            dat[0] = 0x73;
+            dat[1] = 0x6f;
+            bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2); //  8 HID_NORMAL_KB_REPORT_INPUT_DP_H
+
+            u8 report_data[4] = {SLAVE_REPORT_CMD,0x04,0x73,0x6f};
+            bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 4);
+        }
+
+    }
+    */
     blt_pm_proc();
 }
 

@@ -59,5 +59,6 @@ extern void ir_test_init(void);
 extern void ir_table_init(void);
 extern void ir_flash_factory(void);
 extern void ir_param_init(void);
-
+extern void ir_flash_erase(void);
+extern void ir_flash_eraseall(void);
 #endif

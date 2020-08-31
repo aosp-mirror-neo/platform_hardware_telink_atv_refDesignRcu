@@ -251,7 +251,7 @@ enum{
 
 #define    VK_EXT_LEN           2
 typedef struct{
-    u8 val[VK_EXT_LEN];
+    unsigned char val[VK_EXT_LEN];
 }vk_ext_t;
 
 // mulit-byte keycode for media keys, cannot used directly in c code..for reference
@@ -302,60 +302,64 @@ typedef struct{
 // media key, consumer key
 //reference:  <<HID Usage Tables>>  Consumer Page(0x0C)
 typedef enum {
-    MKEY_POWER             = 0x0030,
-    MKEY_RESET             = 0x0031,
-    MKEY_SLEEP             = 0x0032,
+    MKEY_POWER           = 0x0030,
+    MKEY_RESET           = 0x0031,
+    MKEY_SLEEP           = 0x0032,
 
-    MKEY_MENU             = 0x0040,
-    MKEY_MENU_PICK         = 0x0041,
+    MKEY_MENU            = 0x0040,
+    MKEY_MENU_PICK       = 0x0041,
     MKEY_MENU_UP         = 0x0042,
     MKEY_MENU_DN         = 0x0043,
-    MKEY_MENU_LEFT         = 0x0044,
-    MKEY_MENU_RIGHT     = 0x0045,
+    MKEY_MENU_LEFT       = 0x0044,
+    MKEY_MENU_RIGHT      = 0x0045,
 
 
-    MKEY_CHN_UP         = 0x009c,
-    MKEY_CHN_DN         = 0x009d,
+    MKEY_CHN_UP          = 0x009c,
+    MKEY_CHN_DN          = 0x009d,
 
-    MKEY_PLAY             = 0x00b0,
-    MKEY_PAUSE             = 0x00b1,
-    MKEY_RECORD         = 0x00b2,
-    MKEY_FAST_FORWARD     = 0x00b3,
-    MKEY_REWIND         = 0x00b4,
+    MKEY_PLAY            = 0x00b0,
+    MKEY_PAUSE           = 0x00b1,
+    MKEY_RECORD          = 0x00b2,
+    MKEY_FAST_FORWARD    = 0x00b3,
+    MKEY_REWIND          = 0x00b4,
     MKEY_NEXT_TRK        = 0x00b5,
-    MKEY_PREV_TRK         = 0x00b6,
-    MKEY_STOP             = 0x00b7,
-    MKEY_EJECT             = 0x00b8,
+    MKEY_PREV_TRK        = 0x00b6,
+    MKEY_STOP            = 0x00b7,
+    MKEY_EJECT           = 0x00b8,
 
-    MKEY_PLAY_PAUSE     = 0x00cd,
-    MKEY_PLAY_SKIP         = 0x00ce,
+    MKEY_PLAY_PAUSE      = 0x00cd,
+    MKEY_PLAY_SKIP       = 0x00ce,
 
-    MKEY_VOLUME         = 0x00e0,
+    MKEY_VOLUME          = 0x00e0,
     MKEY_BALANCE         = 0x00e1,
-    MKEY_MUTE             = 0x00e2,
-    MKEY_VOL_UP         = 0x00e9,
-    MKEY_VOL_DN         = 0x00ea,
+    MKEY_MUTE            = 0x00e2,
+    MKEY_VOL_UP          = 0x00e9,
+    MKEY_VOL_DN          = 0x00ea,
 
-    MKEY_AC_SEARCH         = 0x0221,
+    MKEY_AC_SEARCH       = 0x0221,
     MKEY_AC_GOTO         = 0x0222,
     MKEY_AC_HOME         = 0x0223,
     MKEY_AC_BACK         = 0x0224,
-    MKEY_AC_FORWARD         = 0x0225,
+    MKEY_AC_FORWARD      = 0x0225,
     MKEY_AC_STOP         = 0x0226,
-    MKEY_AC_REFRESH         = 0x0227,
-    MKEY_AC_BOOKMARK    = 0x022a,
-    MKEY_AC_HISTORY        = 0x022b,
-    MKEY_AC_ZOOM_IN        = 0x022d,
-    MKEY_AC_ZOOM_OUT    = 0x022e,
-    MKEY_AC_ZOOM        = 0x022f,
+    MKEY_AC_REFRESH      = 0x0227,
+    MKEY_AC_BOOKMARK     = 0x022a,
+    MKEY_AC_HISTORY      = 0x022b,
+    MKEY_AC_ZOOM_IN      = 0x022d,
+    MKEY_AC_ZOOM_OUT     = 0x022e,
+    MKEY_AC_ZOOM         = 0x022f,
 
 } media_key_t;
 
 // media key, consumer key
 //reference:  <<HID Usage Tables>>  Consumer Page(0x0C)
 typedef enum {
-    G00GLE_MKEY_UP           = 0x0042,
-    G00GLE_MKEY_DN           = 0x0043,
+	G00GLE_MKEY_YOUTUBE	   = 0x0077,
+    G00GLE_MKEY_NETFLIX	   = 0x0078,
+	G00GLE_MKEY_DISNEY	   = 0x0079,
+	G00GLE_MKEY_HBOMAX	   = 0x007A,
+    G00GLE_MKEY_UP         = 0x0042,
+    G00GLE_MKEY_DN         = 0x0043,
     G00GLE_MKEY_LEFT       = 0x0044,
     G00GLE_MKEY_RIGHT      = 0x0045,
     G00GLE_MKEY_CENTER     = 0x0041,
@@ -363,11 +367,11 @@ typedef enum {
     G00GLE_MKEY_BACK       = 0x0224,
     G00GLE_MKEY_POWER      = 0x0030,
     G00GLE_MKEY_VOL_MUTE   = 0X00E2,
-    G00GLE_MKEY_CHN_UP       = 0x009C,
-    G00GLE_MKEY_CHN_DN       = 0x009D,
-    G00GLE_MKEY_GUIDE       = 0x008D,
+    G00GLE_MKEY_CHN_UP     = 0x009C,
+    G00GLE_MKEY_CHN_DN     = 0x009D,
+    G00GLE_MKEY_GUIDE      = 0x008D,
     G00GLE_MKEY_BOOKMARK   = 0x022a,
-    G00GLE_MKEY_ASSIST       = 0x0221,
+    G00GLE_MKEY_ASSIST     = 0x0221,
     G00GLE_MKEY_INPUT      = 0x01bb,
     G00GLE_MKEY_DASHBOARD  = 0x0096,
 } google_media_key_t;

@@ -57,7 +57,7 @@
  ******************   google voice v0.4   *********************
  **************************************************************/
 
-#define APP_AUDIO_GOOGLE_TIMEOUT1           1000000 // 1s
+#define APP_AUDIO_GOOGLE_TIMEOUT1           60000000  //60s  //1000000 // 1s
 #define APP_AUDIO_GOOGLE_TIMEOUT2           15000000 // 15s
 
 #define PLAYBACK_MODE_THRESHOLD1            4    //16k audio change to 8k audio
@@ -159,12 +159,14 @@ extern u8  enable_rsp_gaps_rsp;
 
 extern u8  app_mtu_size;
 
-
+extern u8 notify_get_rsp_en;
+extern u32 notify_get_rsp_tick;
 
 void google_voice_on_request();
 void google_voice_dpad_select();
 u8 app_audio_key_start(u8 start_reasion);
 void google_voice_start();
+void active_mic_open();
 
 int app_auido_google_callback(void* p);
 

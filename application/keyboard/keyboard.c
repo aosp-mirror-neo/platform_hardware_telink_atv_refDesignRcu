@@ -28,16 +28,23 @@
 #include "drivers.h"
 #include "keyboard.h"
 #include "../usbstd/usbkeycode.h"
+#include "../../vendor/827x_ble_remote/app_custom.h"
+
+#define KB_DRIVE_PIN_MAX_NUM   KB_DRIVE_PIN_G20
+#define KB_DRIVE_PIN_G10       3   
+#define KB_DRIVE_PIN_G20       6   
+#define KB_SCAN_PIN            8
 
 
-#if (defined(KB_DRIVE_PINS) && defined(KB_SCAN_PINS))
-
-u32 drive_pins[] = KB_DRIVE_PINS;
+_attribute_data_retention_ u32 drive_pins[KB_DRIVE_PIN_MAX_NUM];
 u32 scan_pins[] = KB_SCAN_PINS;
+
+
+
 
 #if (STUCK_KEY_PROCESS_ENABLE)
 u32 stuckkey_keypresstimer=0;
-unsigned char stuckKeyPress[ARRAY_SIZE(drive_pins)];
+unsigned char stuckKeyPress[KB_DRIVE_PIN_MAX_NUM];
 #endif
 
 kb_data_t    kb_event;
@@ -102,113 +109,34 @@ repeatKey_t repeat_key = {
 
 #endif
 
-typedef unsigned char kb_k_mp_t[ARRAY_SIZE(drive_pins)]; //typedef unsigned char kb_k_mp_t[8]
-
-#if        KB_MAP_DEFAULT
-
-#ifndef            KB_MAP_NORMAL
-static const unsigned char kb_map_normal[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = {
-    {VK_PAUSE,     VK_POWER,      VK_EURO,        VK_SLEEP,         VK_RCTRL,      VK_WAKEUP,    VK_CTRL,        VK_F5},
-    {VK_Q,         VK_TAB,      VK_A,            VK_ESC,            VK_Z,          VK_NCHG,          VK_TILDE,        VK_1},
-    {VK_W,         VK_CAPITAL,  VK_S,            VK_K45,            VK_X,          VK_CHG,          VK_F1,            VK_2},
-    {VK_E,         VK_F3,          VK_D,            VK_F4,            VK_C,          VK_ROMA,          VK_F2,            VK_3},
-    {VK_R,         VK_T,          VK_F,            VK_G,            VK_V,          VK_B,              VK_5,            VK_4},
-    {VK_U,         VK_Y,          VK_J,            VK_H,            VK_M,          VK_N,             VK_6,            VK_7},
-    {VK_I,         VK_RBRACE,      VK_K,            VK_F6,            VK_COMMA,      VK_K56,          VK_EQUAL,        VK_8},
-    {VK_O,         VK_F7,        VK_L,           VK_RMB,             VK_PERIOD,    VK_APP,          VK_F8,            VK_9},
-    {VK_P,         VK_LBRACE,      VK_SEMICOLON, VK_QUOTE,        VK_BACKSLASH, VK_SLASH,          VK_MINUS,        VK_0},
-    {VK_SCR_LOCK,VK_C9R1,      VK_FN,        VK_ALT,            VK_MMODE,      VK_RALT,          VK_C9R6,        VK_PRINTSCREEN},
-    {VK_K14,     VK_BACKSPACE,VK_BACKSLASH,    VK_F11,            VK_ENTER,      VK_F12,          VK_F9,            VK_F10},
-    {VK_HOME,     VK_LEFT,      VK_END,        VK_SPACE,        VK_NUM_LOCK,  VK_DOWN,          VK_DELETE,        VK_POWER},
-    {VK_UP,          VK_NONE,      VK_DOWN,        VK_INSERT,        VKPAD_SLASH,  VK_RIGHT,          VK_INSERT,        VK_SLEEP},
-    {VK_PAGE_UP, VK_RIGHT,      VK_PAGE_DOWN,    VKPAD_PERIOD,    VKPAD_ASTERIX,VKPAD_MINUS,    VK_PAGE_UP,        VK_PAGE_DOWN},
-    {VKPAD_PLUS, VK_K107,      VKPAD_ENTER,  VK_UP,            VK_PLAY_PAUSE,VK_LEFT,          VK_HOME,        VK_END},
-    {VK_WAKEUP,     VK_SHIFT,      VK_RSHIFT,    VK_VOL_DN,        VK_VOL_UP,      VK_NEXT_TRK,    VK_PREV_TRK,    VK_MEDIA},
-    {VK_MAIL,     VK_WIN,      VK_W_FORWRD,    VK_W_STOP,        VK_W_BACK,      VK_W_REFRESH,    VK_W_MUTE,        VK_W_SRCH},
-    {VK_KCL,     VK_W_FAV,      VK_RWIN,        VK_MY_COMP,        VK_STOP,      VK_CAL,          VK_WEB,            VK_KCR},
-};
-#else
-static const unsigned char kb_map_normal[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = KB_MAP_NORMAL;
-#endif
-
-#ifndef            KB_MAP_NUM
-static const unsigned char kb_map_num[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = {
-    {VK_PAUSE,     VK_POWER,      VK_EURO,        VK_SLEEP,         VK_RCTRL,      VK_WAKEUP,    VK_CTRL,        VK_F5},
-    {VK_Q,         VK_TAB,      VK_A,            VK_ESC,            VK_Z,          VK_NCHG,          VK_TILDE,        VK_1},
-    {VK_W,         VK_CAPITAL,  VK_S,            VK_K45,            VK_X,          VK_CHG,          VK_F1,            VK_2},
-    {VK_E,         VK_F3,          VK_D,            VK_F4,            VK_C,          VK_ROMA,          VK_F2,            VK_3},
-    {VK_R,         VK_T,          VK_F,            VK_G,            VK_V,          VK_B,              VK_5,            VK_4},
-    {VK_U,         VK_Y,          VK_J,            VK_H,            VK_M,          VK_N,             VK_6,            VK_7},
-    {VK_I,         VK_RBRACE,      VK_K,            VK_F6,            VK_COMMA,      VK_K56,          VK_EQUAL,        VK_8},
-    {VK_O,         VK_F7,        VK_L,           VK_RMB,             VK_PERIOD,    VK_APP,          VK_F8,            VK_9},
-    {VK_P,         VK_LBRACE,      VK_SEMICOLON, VK_QUOTE,        VK_BACKSLASH, VK_SLASH,          VK_MINUS,        VK_0},
-    {VK_SCR_LOCK,VK_C9R1,      VK_FN,        VK_ALT,            VK_MMODE,      VK_RALT,          VK_C9R6,        VK_PRINTSCREEN},
-    {VK_K14,     VK_BACKSPACE,VK_BACKSLASH,    VK_F11,            VK_ENTER,      VK_F12,          VK_F9,            VK_F10},
-    {VKPAD_7,     VKPAD_4,      VKPAD_1,        VK_SPACE,        VK_NUM_LOCK,  VK_DOWN,          VK_DELETE,        VK_POWER},
-    {VKPAD_8,     VKPAD_5,      VKPAD_2,        VKPAD_0,        VKPAD_SLASH,  VK_RIGHT,          VK_INSERT,        VK_SLEEP},
-    {VKPAD_9,     VKPAD_6,      VKPAD_3,        VKPAD_PERIOD,    VKPAD_ASTERIX,VKPAD_MINUS,    VK_PAGE_UP,        VK_PAGE_DOWN},
-    {VKPAD_PLUS, VK_K107,      VKPAD_ENTER,  VK_UP,            VK_PLAY_PAUSE,VK_LEFT,          VK_HOME,        VK_END},
-    {VK_WAKEUP,     VK_SHIFT,      VK_RSHIFT,    VK_VOL_DN,        VK_VOL_UP,      VK_NEXT_TRK,    VK_PREV_TRK,    VK_MEDIA},
-    {VK_MAIL,     VK_WIN,      VK_W_FORWRD,    VK_W_STOP,        VK_W_BACK,      VK_W_REFRESH,    VK_W_MUTE,        VK_W_SRCH},
-    {VK_KCL,     VK_W_FAV,      VK_RWIN,        VK_MY_COMP,        VK_STOP,      VK_CAL,          VK_WEB,            VK_KCR},
-};
-#else
-static const unsigned char kb_map_num[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = KB_MAP_NUM;
-#endif
-
-#ifndef            KB_MAP_FN
-static const unsigned char kb_map_fn[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = {
-    {VK_PAUSE,     VK_POWER,      VK_EURO,        VK_SLEEP,         VK_RCTRL,      VK_WAKEUP,    VK_CTRL,        VK_F5},
-    {VK_Q,         VK_TAB,      VK_A,            VK_ESC,            VK_Z,          VK_NCHG,          VK_TILDE,        VK_1},
-    {VK_W,         VK_CAPITAL,  VK_S,            VK_K45,            VK_X,          VK_CHG,          VK_F1,            VK_2},
-    {VK_E,         VK_F3,          VK_D,            VK_F4,            VK_C,          VK_ROMA,          VK_F2,            VK_3},
-    {VK_R,         VK_T,          VK_F,            VK_G,            VK_V,          VK_B,              VK_5,            VK_4},
-    {VK_U,         VK_Y,          VK_J,            VK_H,            VK_M,          VK_N,             VK_6,            VK_7},
-    {VK_I,         VK_RBRACE,      VK_K,            VK_F6,            VK_COMMA,      VK_K56,          VK_EQUAL,        VK_8},
-    {VK_O,         VK_F7,        VK_L,           VK_RMB,             VK_PERIOD,    VK_APP,          VK_F8,            VK_9},
-    {VK_P,         VK_LBRACE,      VK_SEMICOLON, VK_QUOTE,        VK_BACKSLASH, VK_SLASH,          VK_MINUS,        VK_0},
-    {VK_SCR_LOCK,VK_C9R1,      VK_FN,        VK_ALT,            VK_MMODE,      VK_RALT,          VK_C9R6,        VK_PRINTSCREEN},
-    {VK_K14,     VK_BACKSPACE,VK_BACKSLASH,    VK_F11,            VK_ENTER,      VK_F12,          VK_F9,            VK_F10},
-    {VKPAD_7,     VKPAD_4,      VKPAD_1,        VK_SPACE,        VK_NUM_LOCK,  VK_DOWN,          VK_DELETE,        VK_POWER},
-    {VKPAD_8,     VKPAD_5,      VKPAD_2,        VKPAD_0,        VKPAD_SLASH,  VK_RIGHT,          VK_INSERT,        VK_SLEEP},
-    {VKPAD_9,     VKPAD_6,      VKPAD_3,        VKPAD_PERIOD,    VKPAD_ASTERIX,VKPAD_MINUS,    VK_PAGE_UP,        VK_PAGE_DOWN},
-    {VKPAD_PLUS, VK_K107,      VKPAD_ENTER,  VK_UP,            VK_PLAY_PAUSE,VK_LEFT,          VK_HOME,        VK_END},
-    {VK_WAKEUP,     VK_SHIFT,      VK_RSHIFT,    VK_VOL_DN,        VK_VOL_UP,      VK_NEXT_TRK,    VK_PREV_TRK,    VK_MEDIA},
-    {VK_MAIL,     VK_WIN,      VK_W_FORWRD,    VK_W_STOP,        VK_W_BACK,      VK_W_REFRESH,    VK_W_MUTE,        VK_W_SRCH},
-    {VK_KCL,     VK_W_FAV,      VK_RWIN,        VK_MY_COMP,        VK_STOP,      VK_CAL,          VK_WEB,            VK_KCR},
-
-};
-#else
-static const unsigned char kb_map_fn[ARRAY_SIZE(scan_pins)][ARRAY_SIZE(drive_pins)] = KB_MAP_FN;
-#endif
-
-kb_k_mp_t *    kb_p_map[4] = {
-        kb_map_normal,
-        kb_map_num,
-        kb_map_fn,
-        kb_map_fn,
-};
 
 
-///////////////////////////////////////////////////////////////////////
-//////////// load configuration from flash/OTP ////////////////////////
-///////////////////////////////////////////////////////////////////////
-#else //line 62
+_attribute_data_retention_ unsigned char *kb_p_map[1];
+_attribute_data_retention_ unsigned char *kb_k_mp;
 
-#endif
+
 
 u32    scan_pin_need;
 
 static unsigned char     kb_is_fn_pressed = 0;
 
-kb_k_mp_t * kb_k_mp;
+
+extern u8 *p_kb_map_normal;
+extern const unsigned int Kb_Drive_Pins_G10[];
+void kb_p_map_init(void)
+{
+    u8 len = app_custom_get_drive_len();
+    kb_p_map[0] = p_kb_map_normal;//p_kb_map_normal;
+	memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
+	//kb_k_mp = kb_p_map[0];
+}
 
 void kb_rmv_ghost_key(u32 * pressed_matrix){
     u32 mix_final = 0;
-    foreach_arr(i, drive_pins){
-        for(int j = (i+1); j < ARRAY_SIZE(drive_pins); ++j){
+	u8 len = app_custom_get_drive_len();
+    for(u8 i=0;i<len;i++){
+        for(int j = (i+1); j < len; ++j){
             u32 mix = (pressed_matrix[i] & pressed_matrix[j]);
-            // >=2 根线重合,  那就是 ghost key
             //four or three key at "#" is pressed at the same time, should remove ghost key
             if( mix && (!BIT_IS_POW2(mix) || (pressed_matrix[i] ^ pressed_matrix[j])) ){
                 // remove ghost keys
@@ -230,9 +158,10 @@ unsigned int key_debounce_filter( u32 mtrx_cur[], u32 filt_en ){
 #if (LONG_PRESS_KEY_POWER_OPTIMIZE)
     unsigned char matrix_differ = 0;
 #endif
-    static u32 mtrx_pre[ARRAY_SIZE(drive_pins)];
-    static u32 mtrx_last[ARRAY_SIZE(drive_pins)];
-    foreach_arr(i, drive_pins){
+    static u32 mtrx_pre[KB_DRIVE_PIN_MAX_NUM];
+    static u32 mtrx_last[KB_DRIVE_PIN_MAX_NUM];
+    u8 len = app_custom_get_drive_len();
+    for(u8 i=0;i<len;i++){
         u32 mtrx_tmp = mtrx_cur[i];
 #if (STUCK_KEY_PROCESS_ENABLE)
         stuckKeyPress[i] = mtrx_tmp ? 1 : 0;
@@ -270,9 +199,22 @@ unsigned int key_debounce_filter( u32 mtrx_cur[], u32 filt_en ){
 // key_code:   output keys array
 // key_max:    max keys should be returned
 static inline void kb_remap_key_row(int drv_ind, u32 m, int key_max, kb_data_t *kb_data){
+
+    u8 a[8][3]={{0},{0},{0},{0},{0},{0},{0},{0}};
+	u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
+	unsigned char kc;
+    u8 len = app_custom_get_drive_len();
+	if(len == KB_DRIVE_PIN_G10)
+        memcpy(a,kb_k_mp,8*3);
+	else
+		memcpy(b,kb_k_mp,8*6);
+	
     foreach_arr(i, scan_pins){
         if(m & 0x01){
-            unsigned char kc = kb_k_mp[i][drv_ind];
+			if(len == KB_DRIVE_PIN_G10)
+                kc = (a[i][drv_ind]);//(kb_k_mp[i][drv_ind]);
+            else
+				kc = (b[i][drv_ind]);//(kb_k_mp[i][drv_ind]);
 #if(KB_HAS_CTRL_KEYS)
 
             if(kc >= VK_CTRL && kc <= VK_RWIN)
@@ -303,7 +245,8 @@ static inline void kb_remap_key_row(int drv_ind, u32 m, int key_max, kb_data_t *
 static inline void kb_remap_key_code(u32 * pressed_matrix, int key_max, kb_data_t *kb_data, int numlock_status){
 
     kb_k_mp = kb_p_map[(numlock_status&1) | (kb_is_fn_pressed << 1)];
-    foreach_arr(i, drive_pins){
+	u8 len = app_custom_get_drive_len();
+    for(u8 i=0;i<len;i++){
         u32 m = pressed_matrix[i];
         if(!m) continue;
         kb_remap_key_row(i, m, key_max, kb_data);
@@ -315,9 +258,15 @@ static inline void kb_remap_key_code(u32 * pressed_matrix, int key_max, kb_data_
 
 
 u32 kb_scan_row(int drv_ind, unsigned char * gpio){
-    /*
-     * set as gpio mode if using spi flash pin
-     */
+    u8 a[8][3]={{0},{0},{0},{0},{0},{0},{0},{0}};
+	u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
+
+    u8 len = app_custom_get_drive_len();
+	if(len == KB_DRIVE_PIN_G10)
+        memcpy(a,kb_k_mp,8*3);
+	else
+		memcpy(b,kb_k_mp,8*6);
+	
     unsigned char sr = irq_disable();
 #if    (KB_KEY_FLASH_PIN_MULTI_USE)
     MSPI_AS_GPIO;
@@ -334,9 +283,19 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
         if(scan_pin_need & BIT(j)){
             int key = !gpio_read_cache (scan_pins[j], gpio);
             if(KB_LINE_HIGH_VALID != key) {
-                if (KB_HAS_FN_KEY && (kb_k_mp[j][drv_ind] == VK_FN)) {
+				if(len == KB_DRIVE_PIN_G10)
+				{
+				    if ((KB_HAS_FN_KEY && a[j][drv_ind]) == VK_FN) {
                     kb_is_fn_pressed = 1;
-                }
+                    }
+				}
+				else
+				{
+				    if ((KB_HAS_FN_KEY && b[j][drv_ind]) == VK_FN) {
+                    kb_is_fn_pressed = 1;
+                    }
+				}
+                
                 matrix |= (1 << j);
             }
         }
@@ -361,13 +320,14 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
     return matrix;
 }
 
-u32     matrix_buff[4][ARRAY_SIZE(drive_pins)];
-int        matrix_wptr, matrix_rptr;
+u32     matrix_buff[4][KB_DRIVE_PIN_MAX_NUM];
+int     matrix_wptr, matrix_rptr;
 
 
 u32 kb_key_pressed(unsigned char * gpio)
 {
-    foreach_arr(i,drive_pins){
+    u8 len = app_custom_get_drive_len();
+    for(u8 i=0;i<len;i++){
         gpio_write(drive_pins[i], KB_LINE_HIGH_VALID);
         gpio_set_output_en(drive_pins[i], 1);
     }
@@ -390,7 +350,8 @@ u32 kb_key_pressed(unsigned char * gpio)
         ret = ret_last;
         release_cnt--;
     }
-    foreach_arr(i,drive_pins){
+    for(u8 i=0;i<len;i++)
+    {
         gpio_write(drive_pins[i], 0);
         gpio_set_output_en(drive_pins[i], 0);
     }
@@ -403,12 +364,13 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
         kb_event.ctrl_key = 0;
         kb_is_fn_pressed = 0;
 
-        u32 pressed_matrix[ARRAY_SIZE(drive_pins)] = {0};
+        u32 pressed_matrix[KB_DRIVE_PIN_MAX_NUM] = {0};
         kb_k_mp = kb_p_map[0];
 
         kb_scan_row (0, gpio);
-        for (int i=0; i<=ARRAY_SIZE(drive_pins); i++) {
-            u32 r = kb_scan_row (i < ARRAY_SIZE(drive_pins) ? i : 0, gpio);
+		u8 len = app_custom_get_drive_len();
+        for (int i=0; i<=len; i++) {
+            u32 r = kb_scan_row (i < len ? i : 0, gpio);
             if (i) {
                 pressed_matrix[i - 1] = r;
             }
@@ -450,7 +412,8 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 
             /////////// push to matrix buffer /////////////////////////
             pd = matrix_buff[matrix_wptr&3];
-            for (int k=0; k<ARRAY_SIZE(drive_pins); k++) {
+			u8 len = app_custom_get_drive_len();
+            for (int k=0; k<len; k++) {
                 *pd++ = pressed_matrix[k];
             }
             matrix_wptr = (matrix_wptr + 1) & 7;
@@ -497,7 +460,18 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
         return 1;
 }
 
-
+void kb_wake_config(void)
+{
+    u8 len=0;
+	
+    len = app_custom_get_drive_len();
+	printf("len =%x\r\n",len);
+    for(u8 i=0;i<len;i++)
+    {
+	    cpu_set_gpio_wakeup (drive_pins[i], !KB_LINE_HIGH_VALID,1);  //drive pin pad high wakeup deepsleep
+    }
+		
+}
 
 u8 kb_powerdet(void)
 {
@@ -524,7 +498,7 @@ u8 kb_powerdet(void)
 
     return 1;
 }
-#endif
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////

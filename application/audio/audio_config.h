@@ -27,7 +27,7 @@
 
 #include  "application/audio/audio_common.h"
 #include  "tl_common.h"
-
+#include  "../../vendor/827x_ble_remote/app_config.h"
 
 #ifndef        TL_AUDIO_MODE
 #define        TL_AUDIO_MODE                                    AUDIO_DISABLE

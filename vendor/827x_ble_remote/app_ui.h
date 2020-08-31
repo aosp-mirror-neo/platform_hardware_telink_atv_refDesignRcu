@@ -27,6 +27,7 @@
 #ifndef APP_UI_H_
 #define APP_UI_H_
 
+#include "app_config.h"
 
 void app_ui_init_normal(void);
 void app_ui_init_deepRetn(void);
@@ -43,6 +44,7 @@ void proc_keyboard (u8 e, u8 *p, int n);
     void app_ota_signature();
     void app_enter_ota_mode(void *data);
     void app_ota_result(int result);
+    void app_schedule_ota(u8 *data);
 #endif
     int att_ccc_control(void* p);
 

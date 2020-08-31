@@ -7,9 +7,11 @@ C_SRCS += \
 ../vendor/827x_ble_remote/app.c \
 ../vendor/827x_ble_remote/app_att.c \
 ../vendor/827x_ble_remote/app_audio.c \
+../vendor/827x_ble_remote/app_custom.c \
 ../vendor/827x_ble_remote/app_flash_write.c \
 ../vendor/827x_ble_remote/app_ir.c \
 ../vendor/827x_ble_remote/app_phytest.c \
+../vendor/827x_ble_remote/app_test.c \
 ../vendor/827x_ble_remote/app_ui.c \
 ../vendor/827x_ble_remote/battery_check.c \
 ../vendor/827x_ble_remote/main.c \
@@ -19,9 +21,11 @@ OBJS += \
 ./vendor/827x_ble_remote/app.o \
 ./vendor/827x_ble_remote/app_att.o \
 ./vendor/827x_ble_remote/app_audio.o \
+./vendor/827x_ble_remote/app_custom.o \
 ./vendor/827x_ble_remote/app_flash_write.o \
 ./vendor/827x_ble_remote/app_ir.o \
 ./vendor/827x_ble_remote/app_phytest.o \
+./vendor/827x_ble_remote/app_test.o \
 ./vendor/827x_ble_remote/app_ui.o \
 ./vendor/827x_ble_remote/battery_check.o \
 ./vendor/827x_ble_remote/main.o \

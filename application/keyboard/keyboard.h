@@ -94,7 +94,7 @@ static inline void kb_set_key_invalid(kb_data_t *p){
 
 extern unsigned int kb_key_pressed(unsigned char * gpio);
 extern unsigned int kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio);
-
+extern void kb_wake_config(void);
 extern unsigned int    scan_pin_need;
 
 extern u8 kb_powerdet(void);
