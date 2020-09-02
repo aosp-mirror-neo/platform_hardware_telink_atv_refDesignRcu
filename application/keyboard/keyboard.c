@@ -439,6 +439,8 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
         if((TwoKeyPressFlag == 0x55) && (kb_event.cnt == 1))
         {
              printf("filter\r\n");
+			 extern void app_twokey_to_onekey(void);
+			 app_twokey_to_onekey();
              return 0;
         }
 
@@ -465,7 +467,7 @@ void kb_wake_config(void)
     u8 len=0;
 	
     len = app_custom_get_drive_len();
-	printf("len =%x\r\n",len);
+
     for(u8 i=0;i<len;i++)
     {
 	    cpu_set_gpio_wakeup (drive_pins[i], !KB_LINE_HIGH_VALID,1);  //drive pin pad high wakeup deepsleep

@@ -105,11 +105,11 @@ typedef enum
     _KEY_CODE_BACK          = 0x07,
     _KEY_CODE_HOME          = 0x0A,
     _KEY_CODE_GUIDE         = 0x0D,
-    _KEY_CODE_PROGRAM_UP    = 0x10,
-    _KEY_CODE_VOLUME_UP     = 0x13,
+    _KEY_CODE_VOLUME_UP     = 0x10,
+    _KEY_CODE_PROGRAM_UP    = 0x13,
     _KEY_CODE_MUTE          = 0x16,
-    _KEY_CODE_PROGRAM_DOWN  = 0x02,
-    _KEY_CODE_VOLUME_DOWN   = 0x05,
+    _KEY_CODE_VOLUME_DOWN   = 0x02,
+    _KEY_CODE_PROGRAM_DOWN  = 0x05,
     _KEY_CODE_YOUTUBE       = 0x08,
     _KEY_CODE_NETFLIX       = 0x0B,
     _KEY_CODE_APP003        = 0x0E,
@@ -218,16 +218,16 @@ static void _ctrl_led(u8 green_stat, u8 red_stat)
 static u8 _conv_key_to_ir(_tKey_Code key_code)
 {
     _tKey_Code key_codes[] = {
-        _KEY_CODE_POWER,        _KEY_CODE_INPUT,       _KEY_CODE_BOOKMARK,  _KEY_CODE_ASSISTANT,
-        _KEY_CODE_SETTINGS,     _KEY_CODE_DPAD_UP,     _KEY_CODE_DPAD_LEFT, _KEY_CODE_DPAD_CENTER,
-        _KEY_CODE_DPAD_RIGHT,   _KEY_CODE_DPAD_DOWN,   _KEY_CODE_BACK,      _KEY_CODE_HOME,
-        _KEY_CODE_GUIDE,        _KEY_CODE_PROGRAM_UP,  _KEY_CODE_VOLUME_UP, _KEY_CODE_MUTE,
-        _KEY_CODE_PROGRAM_DOWN, _KEY_CODE_VOLUME_DOWN, _KEY_CODE_YOUTUBE,   _KEY_CODE_NETFLIX,
-        _KEY_CODE_APP003,       _KEY_CODE_APP004,      _KEY_CODE_1,         _KEY_CODE_2,
-        _KEY_CODE_3,            _KEY_CODE_4,           _KEY_CODE_5,         _KEY_CODE_6,
-        _KEY_CODE_7,            _KEY_CODE_8,           _KEY_CODE_9,         _KEY_CODE_EXTRA_1,
-        _KEY_CODE_0,            _KEY_CODE_EXTRA_2,     _KEY_CODE_RED,       _KEY_CODE_GREEN,
-        _KEY_CODE_YELLOW,       _KEY_CODE_BLUE,
+        _KEY_CODE_POWER,       _KEY_CODE_INPUT,        _KEY_CODE_BOOKMARK,   _KEY_CODE_ASSISTANT,
+        _KEY_CODE_SETTINGS,    _KEY_CODE_DPAD_UP,      _KEY_CODE_DPAD_LEFT,  _KEY_CODE_DPAD_CENTER,
+        _KEY_CODE_DPAD_RIGHT,  _KEY_CODE_DPAD_DOWN,    _KEY_CODE_BACK,       _KEY_CODE_HOME,
+        _KEY_CODE_GUIDE,       _KEY_CODE_VOLUME_UP,    _KEY_CODE_PROGRAM_UP, _KEY_CODE_MUTE,
+        _KEY_CODE_VOLUME_DOWN, _KEY_CODE_PROGRAM_DOWN, _KEY_CODE_YOUTUBE,    _KEY_CODE_NETFLIX,
+        _KEY_CODE_APP003,      _KEY_CODE_APP004,       _KEY_CODE_1,          _KEY_CODE_2,
+        _KEY_CODE_3,           _KEY_CODE_4,            _KEY_CODE_5,          _KEY_CODE_6,
+        _KEY_CODE_7,           _KEY_CODE_8,            _KEY_CODE_9,          _KEY_CODE_EXTRA_1,
+        _KEY_CODE_0,           _KEY_CODE_EXTRA_2,      _KEY_CODE_RED,        _KEY_CODE_GREEN,
+        _KEY_CODE_YELLOW,      _KEY_CODE_BLUE,
     };
 
     u8 ir_code = 0x00;

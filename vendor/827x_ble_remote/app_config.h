@@ -36,7 +36,7 @@ extern "C" {
 
 #define IR_DATA_SECT_1_ADDR                   0x71000
 #define IR_DATA_SECT_2_ADDR                   0x72000
-#define MAC_DATA_SECT_ADDR                    0x73000
+#define MAC_DATA_SECT_ADDR                    0x6f000
 
 
 
@@ -66,7 +66,7 @@ extern "C" {
 #define REMOTE_G20                            2
 
 
-#define MP_TEST_MODE                          0
+#define MP_TEST_MODE                          1
 
 /////////////////// TEST MODE & DUT ////////////////////////////////
 #if (MP_TEST_MODE)
@@ -74,6 +74,7 @@ extern "C" {
 #define MODE_USER                             0x00
 
 #define DUT_INPUT_PORT                        GPIO_PB2
+#define PB2_INPUT_ENABLE                      1
 #endif
 /////////////////// DEEP SAVE FLG //////////////////////////////////
 #define USED_DEEP_ANA_REG                     DEEP_ANA_REG0 //u8,can save 8 bit info when deep

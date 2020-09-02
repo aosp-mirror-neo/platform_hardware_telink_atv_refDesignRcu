@@ -63,11 +63,7 @@ extern void app_pairing_led(void);
 extern void app_pairing_error(void);
 extern u8 app_repairing(void);
 extern void app_release_hid_key(void);
-
-
-
-
-
-
+extern void app_schedule_ota_enter_deep(void);
+extern void app_schedule_ota_wakeup_host(void);
 
 #endif /* APP_UI_H_ */

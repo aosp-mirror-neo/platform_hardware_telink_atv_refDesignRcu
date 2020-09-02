@@ -37,6 +37,7 @@ extern u8  my_PnPtrs [];
 extern u8 *p_kb_map_ble;
 extern u8 *p_kb_map_ir;
 extern u8 *p_kb_map_normal;
+extern u8 my_devName[9];
 
 _attribute_data_retention_  u8 device_type=1;
 
@@ -77,7 +78,6 @@ const unsigned char Kb_Map_Ir[] =  {\
 const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
 const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
 
-#define AA sizeof(Kb_Drive_Pins_G10)/sizeof(Kb_Drive_Pins_G10[0]);
 
 void app_custom_param_init(u8 device)
 {
@@ -96,37 +96,47 @@ void app_custom_param_init(u8 device)
 
 void app_custom_init(void)
 {
-#if 0
-	u8 buffer[20];
+	u8 buffer[64];
 	u8 addr_pos=0;
 	u8 device_name_len=0;
+	u8 device_ui_type=0;
 
-	
-	flash_read_page(APP_CUSTOM_ADDR, 7, my_PnPtrs);
-	addr_pos += 7;
+	flash_read_page(APP_CUSTOM_ADDR, 64, buffer);
 
-	flash_read_page(APP_CUSTOM_ADDR+addr_pos, 1, &device_name_len);
-	addr_pos += 1;
-
-	flash_read_page(APP_CUSTOM_ADDR+addr_pos, device_name_len, buffer);
-
-	if(memcmp(pREMOTE_G10,buffer,device_name_len)  == 0)
+	if(buffer[0] == 0xff)
 	{
-	    printf("device is G10\r\n");
+	    printf("default custom info\r\n");
 	    device_type = REMOTE_G10;
-	}
-	else if(memcmp(pREMOTE_G20,buffer,device_name_len) == 0)
-	{
-	    printf("device is G20\r\n");
-	    device_type = REMOTE_G20;	
+		memcpy(my_devName,pREMOTE_G10,9);
 	}
 	else
 	{
+	    memcpy(my_PnPtrs,&buffer[1],7);
+	    device_name_len = buffer[8];
+
+	    if(memcmp(pREMOTE_G10,&buffer[9],device_name_len)  == 0)
+	    {
+	        printf("device is G10\r\n");
+	        device_type = REMOTE_G10;
+			memcpy(my_devName,&buffer[9],device_name_len);
+	    }
+	    else if(memcmp(pREMOTE_G20,&buffer[9],device_name_len) == 0)
+	    {
+	        printf("device is G20\r\n");
+	        device_type = REMOTE_G20;
+			memcpy(my_devName,&buffer[9],device_name_len);
+	    }
+	    else
+	    {
 	    
+	    }
+		addr_pos = 9 + device_name_len;
+	    device_ui_type = buffer[addr_pos];
+		printf("device_ui_type=%x\r\n",device_ui_type);
+		for(u8 i=0;i<7;i++)
+			printf(" %x",my_PnPtrs[i]);
+
 	}
-#else
-    device_type = REMOTE_G10;
-#endif
 	app_custom_param_init(device_type);
 }
 
@@ -142,12 +152,11 @@ u8 app_custom_get_drive_len(void)
 	return len;
 }
 
-/*
 void app_custom_test(void)
 {
-    u8 buffer[]={0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,'R','e','m','o','t','e','G','1','0'};
+    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01};
 	flash_erase_sector(APP_CUSTOM_ADDR);
     flash_write_page(APP_CUSTOM_ADDR,sizeof(buffer),buffer);
 }
-*/
+
 

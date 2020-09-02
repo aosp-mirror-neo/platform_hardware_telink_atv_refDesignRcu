@@ -113,6 +113,8 @@ static _attribute_data_retention_ ir_app_parm_t  ir_app_parm={0};
 static _attribute_data_retention_ key_code_t ir_table[MAX_KEY_COUNT]={{0},{0},{0},{0},{0}};
 
 _attribute_data_retention_ u8 ir_flash_sector=0;
+_attribute_data_retention_ u8 ir_flash_erase_flag=0;
+
 
 void ir_test_init(void)
 {
@@ -533,18 +535,24 @@ int ir_flash_erase_timeoutcb(void)
 
 int ir_flash_eraseall_timeoutcb(void)
 {
+    u8 data[2];
     printf("ir_flash_eraseall_timeoutcb\r\n");
 
 	if(bls_ll_requestConnBrxEventDisable() > 200)
 	{
 	    printf("flash erase \r\n");
 		bls_ll_disableConnBrxEvent();
-	    flash_erase_sector(IR_DATA_SECT_1_ADDR);
-	    flash_erase_sector(IR_DATA_SECT_2_ADDR);
+		flash_read_page(IR_DATA_SECT_1_ADDR, 1, &data[0]);
+	    flash_read_page(IR_DATA_SECT_2_ADDR, 1, &data[1]);
+	    if(data[0] != 0xff)
+	        flash_erase_sector(IR_DATA_SECT_1_ADDR);
+		if(data[1] != 0xff)
+	        flash_erase_sector(IR_DATA_SECT_2_ADDR);
 		bls_ll_restoreConnBrxEvent();
 		printf("flash erase succ\r\n");
 		blt_soft_timer_delete(ir_flash_eraseall_timeoutcb);
 		ir_flash_sector = 0;
+		ir_flash_erase_flag = 0;
 	}
     
     return 0;
@@ -720,6 +728,11 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
         }
         case ATV_IR_CODE_IDX:
         {
+            if(ir_flash_erase_flag)
+            {
+                ir_app_parm.ir_programming.programming_start = 0;
+				printf("ir flash eraseall not succ\r\n");
+            }
             if ((ir_app_parm.ir_programming.programming_start == 1) && (len > 0))
             {
                 if (ir_app_parm.ir_programming.current_programming_key_id != INVALID_KEY_ID)

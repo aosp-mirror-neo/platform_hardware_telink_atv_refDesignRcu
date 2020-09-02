@@ -75,6 +75,9 @@ extern u8 lowbat;
 extern int ir_fallback_send(u8 key_down);
 extern void device_led_off(u8 led);
 extern int device_in_connection_state;
+extern u8 flag_schedule_ota;
+extern u8  device_timeout_state;
+extern u8 wakeup_src;
 
 static const u16 vk_consumer_map[] = {
 	G00GLE_MKEY_YOUTUBE,
@@ -360,7 +363,7 @@ extern u32 keyScanLongPressTick;
     }
 }
 
-    extern u32 tick_schedule_ota;
+    extern u8 flag_schedule_ota;
     extern u16 count_schedule_ota;
     void app_schedule_ota(u8 *data)
     {
@@ -376,7 +379,8 @@ extern u32 keyScanLongPressTick;
         }
         printf("app_schedule_ota:0x%d\n",count);
 
-        tick_schedule_ota = clock_time()|1;
+        flag_schedule_ota = 0x55;
+		analog_write(DEEP_ANA_REG2, 0);
     }
 
 _attribute_data_retention_    u8  ota_flag = 0;  //0:pause 1:continue
@@ -397,6 +401,66 @@ void app_ota_status(u8 status)
 	    ota_flag = 1;
     }
 }
+
+#define SCHE_OTA_1MIN    32000*60
+#define SCHE_OTA_1HOUR   32000*60*60
+void app_schedule_ota_enter_deep(void)
+{
+    u8 sch_ota_timer[7]= {0,0,2,3,5,8,13};
+    u8 data = analog_read(DEEP_ANA_REG2);
+	if(data == 0)
+	{
+        if((flag_schedule_ota == 0x55) && (device_timeout_state == 0x55))
+        {
+            printf("sch ota first\r\n");
+		    analog_write(DEEP_ANA_REG2, 1);
+	        cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,count_schedule_ota*SCHE_OTA_1MIN);
+	        //cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,10*32000);
+	    }
+		else
+		{
+		    printf("idle to sleep\r\n");
+			cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);
+		}
+	}
+	else
+	{
+	    if(wakeup_src == 2) 
+	    {
+	        printf("sch ota timer ++\r\n");
+	        data++;
+	    }
+		else
+			printf("sch ota timer maintain\r\n");
+		if(data >= 7) 
+		{
+		    printf("idle to sleep\r\n");
+			analog_write(DEEP_ANA_REG2, 0);
+            cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0); 
+		}
+		analog_write(DEEP_ANA_REG2, data);
+		printf("sch ota data =%x,time =%x\r\n",data,sch_ota_timer[data]);
+		cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,sch_ota_timer[data]*SCHE_OTA_1HOUR);
+		//cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,sch_ota_timer[data]*10*32000);
+	}
+}
+
+void app_schedule_ota_wakeup_host(void)
+{ 
+    u8 dat[2] = {0};
+	u8 report_data[4] = {SLAVE_REPORT_CMD,0x04,0x73,0x6f};
+
+    dat[0] = 0x73;
+    dat[1] = 0x6f;
+	if(wakeup_src == 2) //wake up for timer
+	{
+	    printf("app_schedule_ota_wakeup_host\r\n");
+        bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2); 
+        bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 4);
+		analog_write(DEEP_ANA_REG2, 0);
+	}	
+}
+
 #endif
 
 /////////////////////////////////////////////////////////////////////
@@ -469,6 +533,7 @@ typedef enum{
     APP_TWOKEYPRESS_PAIRING,
     APP_TWOKEYPRESS_FACTORYRESET,
     APP_TWOKEYPRESS_BUGREPORT,
+    APP_TWOKEYPRESS_ONEKEY
 }APP_TwoKeyPressMode;
 
 
@@ -709,22 +774,49 @@ void comb_key_stop_ir(void)
 #define FACTORY_RESET_TIMEOUT 100000
 
 _attribute_data_retention_     u8 factory_reset_flag = 0;
+_attribute_data_retention_     u8 factory_reset_temi_conn_flag = 0;
 
 int app_factory_reset_timer(void)
 {
-    if(google_voice_ctl == 0)
+    printf("app_factory_reset_timer_google_voice_ctl=%x\r\n",google_voice_ctl);
+    if((google_voice_ctl & FLAG_AUDIO_CLOSE) == 0)
     {
         printf("app_factory_reset_timer\r\n");
 		if(device_in_connection_state)
 		{
-	        bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN); 
+		    if(factory_reset_temi_conn_flag == 0)
+		    {
+	            bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN);
+		    }
+			else
+			{
+				if(blc_ll_getTxFifoNumber())
+				{
+				    factory_reset_temi_conn_flag++;
+					if(factory_reset_temi_conn_flag >= 20)
+					{
+					    ir_flash_factory();	
+		                flash_erase_sector(MAC_DATA_SECT_ADDR);
+		                flash_erase_sector(0x74000);
+	                    flash_erase_sector(0x75000);
+	                    blt_soft_timer_delete(app_factory_reset_timer);
+		                factory_reset_flag = 0;
+			            factory_reset_temi_conn_flag = 0;
+					}
+					return 0;
+				}
+			}
 		}
-		ir_flash_factory();	
-		flash_erase_sector(MAC_DATA_SECT_ADDR);
-		flash_erase_sector(0x74000);
-	    flash_erase_sector(0x75000);
-	    blt_soft_timer_delete(app_factory_reset_timer);
-		factory_reset_flag = 0;
+		else
+		{
+		    ir_flash_factory();	
+		    flash_erase_sector(MAC_DATA_SECT_ADDR);
+		    flash_erase_sector(0x74000);
+	        flash_erase_sector(0x75000);
+	        blt_soft_timer_delete(app_factory_reset_timer);
+		    factory_reset_flag = 0;
+			factory_reset_temi_conn_flag = 0;
+		}
     }
     return 0;
 }
@@ -808,6 +900,13 @@ void app_pairing_error(void)
     device_led_setup(led_cfg[LED_PAIR_ERROR]);
 }
 
+void app_twokey_to_onekey(void)
+{
+    TwoKeyPressMode = APP_TWOKEYPRESS_ONEKEY; 
+	if((is_pairing_mode == 0) && (is_adv_mode == 0))
+	    device_led_off(APP_LED_GREEN);
+}
+
 extern void advertise_tick_retime(void);
 void key_change_proc(void)
 {
@@ -826,6 +925,7 @@ void key_change_proc(void)
     {
         //retime
         advertise_tick_retime();
+		if(is_pairing_mode)    return;
 		TwoKeyPressFlag = 0x55;
 #if (STUCK_KEY_PROCESS_ENABLE)
         stuckkey_keypresstimer = clock_time() | 1;
@@ -1182,7 +1282,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
         deepback_post_proc();
     }
 #endif
-    if((keyScanLongPressTick == 0) && (TwoKeyPressMode != APP_TWOKEYPRESS_NONE))
+    if((keyScanLongPressTick == 0) && (TwoKeyPressMode != APP_TWOKEYPRESS_NONE) && (TwoKeyPressMode != APP_TWOKEYPRESS_ONEKEY))
     {
         device_led_off(APP_LED_GREEN);
 		TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
@@ -1191,7 +1291,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
     {
         keyScanLongPressTick = 0;
 		advertise_tick_retime();
-		
+		printf("twokey timeout and TwoKeyPressMode=%x\r\n",TwoKeyPressMode);
+		if(TwoKeyPressMode == APP_TWOKEYPRESS_ONEKEY) return;
         if(TwoKeyPressMode == APP_TWOKEYPRESS_PAIRING)
         {
             printf("trigger pair\r\n");

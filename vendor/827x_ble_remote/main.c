@@ -93,16 +93,11 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 #endif
 
 #if (MP_TEST_MODE)
+    GPIO_PB2_PULL_DOWN_100K;
     if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
     {
-        device_led_init();
-        device_led_on(APP_LED_GREEN);
-        device_led_on(APP_LED_RED);
-
         extern void app_phytest_init(void);
         app_phytest_init();
-
-        rf_set_power_level_index(RF_POWER_P7p80dBm);
 
         extern void app_trigger_phytest_mode(void);
         app_trigger_phytest_mode();

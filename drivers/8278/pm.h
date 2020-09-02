@@ -29,24 +29,24 @@
 #include "bsp.h"
 #include "gpio.h"
 
-#define PM_LONG_SUSPEND_EN                    0
+#define PM_LONG_SUSPEND_EN                  0
 
 #ifndef PM_TIM_RECOVER_MODE
-#define PM_TIM_RECOVER_MODE                   1
+#define PM_TIM_RECOVER_MODE                 1
 #endif
 
 
-#define XTAL_READY_CHECK_TIMING_OPTIMIZE      1
+#define XTAL_READY_CHECK_TIMING_OPTIMIZE    1
 
-#define    RAM_CRC_EN                         0
+#define    RAM_CRC_EN                       0
 
 
 //when timer wakeup,the DCDC delay time is accurate,but other wake-up sources wake up,
 //this time is ((PM_DCDC_DELAY_CYCLE+1)*2-1)*32us ~ (PM_DCDC_DELAY_CYCLE+1)*2*32us
-#define PM_DCDC_DELAY_DURATION                187   // delay_time_us = (PM_DCDC_DELAY_CYCLE+1)*2*32us
+#define PM_DCDC_DELAY_DURATION              187   // delay_time_us = (PM_DCDC_DELAY_CYCLE+1)*2*32us
                                                     // 2 * 1/16k = 125 uS, 3 * 1/16k = 187.5 uS  4*1/16k = 250 uS
 
-#define PM_XTAL_MANUAL_MODE_DELAY             200   //150  200
+#define PM_XTAL_MANUAL_MODE_DELAY           200   //150  200
 
 #if(PM_DCDC_DELAY_DURATION == 62)
 #define PM_DCDC_DELAY_CYCLE        0
@@ -65,7 +65,7 @@
 #define EMPTYRUN_TIME_US                    (EARLYWAKEUP_TIME_US_SUSPEND + 200)
 
 
-#define PM_EMPTYRUN_TIME_US            25
+#define PM_EMPTYRUN_TIME_US                 25
 
 
 
@@ -94,17 +94,17 @@
 #define DEEP_ANA_REG10                      0x39 //initial value =0xff
 
 
-#define SYS_NEED_REINIT_EXT32K                BIT(0)
+#define SYS_NEED_REINIT_EXT32K              BIT(0)
 
 
 //ana3b system used, user can not use
-#define SYS_DEEP_ANA_REG                     DEEP_ANA_REG1
-#define WAKEUP_STATUS_TIMER_CORE             ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_CORE)
-#define WAKEUP_STATUS_TIMER_PAD              ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
+#define SYS_DEEP_ANA_REG                    DEEP_ANA_REG1
+#define WAKEUP_STATUS_TIMER_CORE            ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_CORE)
+#define WAKEUP_STATUS_TIMER_PAD             ( WAKEUP_STATUS_TIMER | WAKEUP_STATUS_PAD)
 
-#define    ZB_POWER_DOWN                       1 //weather to power down the RF before suspend
-#define    AUDIO_POWER_DOWN                    1 //weather to power down the AUDIO before suspend
-#define    USB_POWER_DOWN                      1 //weather to power down the USB before suspend  //PA5/PA6 pad low wakeup need USB power on
+#define ZB_POWER_DOWN                       1 //weather to power down the RF before suspend
+#define AUDIO_POWER_DOWN                    1 //weather to power down the AUDIO before suspend
+#define USB_POWER_DOWN                      1 //weather to power down the USB before suspend  //PA5/PA6 pad low wakeup need USB power on
 
 /**
  * @brief sleep mode.
