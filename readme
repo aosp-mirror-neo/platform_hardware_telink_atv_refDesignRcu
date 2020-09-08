@@ -16,29 +16,15 @@
 
 ========== Instructions for adding SDK library files into the SDK ==========
 
-1. Download the library files from link below:
+1. Find the library files from link below:
 
    https://meta.box.lenovo.com/v/link/view/af115a5f96ab4601b204b6eb994f352c
 
    with password: telink123
 
    The current version of the library files are in folder "Google Ref RCU For ATV/Pro_Lib".
-   Please download the most recently dated tgz file.
 
-2. EXtract the tgz file and copy the .a files into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
-
-
-========== Instructions for adding OTA library file into the SDK ==========
-
-1. Find the library file from link below:
-
-   https://meta.box.lenovo.com/v/link/view/af115a5f96ab4601b204b6eb994f352c
-
-   with password: telink123
-
-   The current version of the library file is in folder "Google Ref RCU For ATV/OTA_Lib/V1.04".
-
-2. Download the libapp_ota.a file and copy it into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
+2. Download the .a files and copy them into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
 
 
 ========== Instructions for adding check_fw utility file into the SDK ==========
@@ -58,7 +44,7 @@
 
 ========== Instructions for building the SDK ==========
 
-1. cd into the "8278_ble_remote" directory under the SDK directory "Google_ATV_RCU_Reference_SDK".
+1. cd into the "8271_ble_remote" directory under the SDK directory "Google_ATV_RCU_Reference_SDK".
 2. Type "make" to build the SDK or "make clean" to clean the project. 
 
 

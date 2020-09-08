@@ -699,8 +699,8 @@ void google_get_rsp(void)
 		sendBuff[4] = read_assistant_model();				 //set assistant interaction model.  on-request,ptt,htt
 	    sendBuff[5] = 0x00;								 //audio frame size (2)
 		sendBuff[6] = read_audio_frame_size(); 			 //audio frame size (2)
-		sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
-		//sendBuff[7] = (read_audio_frame_size() > app_mtu_size)?1:0;	   //extra configuration (1)
+		//sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
+		sendBuff[7] = (read_audio_frame_size() > app_mtu_size)?1:0;	   //extra configuration (1)
 		sendBuff[8] = 0x00;								 //reserved(1)
 
 		}else{

@@ -37,10 +37,12 @@ extern u8  my_PnPtrs [];
 extern u8 *p_kb_map_ble;
 extern u8 *p_kb_map_ir;
 extern u8 *p_kb_map_normal;
-extern u8 my_devName[9];
+extern u8 my_devName[20];
+extern u8 my_devNamelen;
 
 _attribute_data_retention_  u8 device_type=1;
 
+_attribute_data_retention_  u8 key_setting_or_noti[2]={IR_DASHBOARD,G00GLE_MKEY_DASHBOARD};
 
 const unsigned char Kb_Map_Normal[8][3] = \
                         {\
@@ -79,6 +81,31 @@ const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
 const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
 
 
+#define IR_SETTING                     0X0F
+#define CR_SETTING                     0X0096
+
+#define IR_NOTIFICATION                0X0F
+#define CR_NOTIFICATION                0X0097
+
+void app_custom_ui_layout(u8 ui_layout)
+{
+    if((ui_layout != 0) && (ui_layout !=1) )
+		return;
+	
+    if(ui_layout == 1)
+    {
+        printf("notification key\r\n");
+        key_setting_or_noti[0] = IR_NOTIFICATION;
+		key_setting_or_noti[1] = CR_NOTIFICATION;
+    }
+	else
+	{
+	    printf("setting key\r\n");
+	    key_setting_or_noti[0] = IR_SETTING;
+		key_setting_or_noti[1] = CR_SETTING;
+	}
+}
+
 void app_custom_param_init(u8 device)
 {
     if(device == REMOTE_G10)
@@ -98,8 +125,8 @@ void app_custom_init(void)
 {
 	u8 buffer[64];
 	u8 addr_pos=0;
-	u8 device_name_len=0;
-	u8 device_ui_type=0;
+	u8 device_ui_layout_type=0;
+	u8 *pREMOTE_B046 = (u8 *)("RemoteB046");
 
 	flash_read_page(APP_CUSTOM_ADDR, 64, buffer);
 
@@ -107,32 +134,37 @@ void app_custom_init(void)
 	{
 	    printf("default custom info\r\n");
 	    device_type = REMOTE_G10;
+		/*
+		my_devNamelen = 9;
 		memcpy(my_devName,pREMOTE_G10,9);
+		printf("device_ui_layout_type=%x\r\n",buffer[0x12]);
+		app_custom_ui_layout(buffer[0x12]);
+		*/
+		my_devNamelen = 10;
+		memcpy(my_devName,pREMOTE_B046,10);
+		app_custom_ui_layout(0);
 	}
 	else
 	{
 	    memcpy(my_PnPtrs,&buffer[1],7);
-	    device_name_len = buffer[8];
+	    my_devNamelen = buffer[8];
+        device_type = buffer[0];
+		if((device_type != REMOTE_G10) && (device_type != REMOTE_G20))
+		{
+		    device_type = REMOTE_G10;
+		    my_devNamelen = 10;
+		    memcpy(my_devName,pREMOTE_B046,10);
+		    app_custom_ui_layout(0);
+			app_custom_param_init(device_type);
+			return;
+		}
 
-	    if(memcmp(pREMOTE_G10,&buffer[9],device_name_len)  == 0)
-	    {
-	        printf("device is G10\r\n");
-	        device_type = REMOTE_G10;
-			memcpy(my_devName,&buffer[9],device_name_len);
-	    }
-	    else if(memcmp(pREMOTE_G20,&buffer[9],device_name_len) == 0)
-	    {
-	        printf("device is G20\r\n");
-	        device_type = REMOTE_G20;
-			memcpy(my_devName,&buffer[9],device_name_len);
-	    }
-	    else
-	    {
-	    
-	    }
-		addr_pos = 9 + device_name_len;
-	    device_ui_type = buffer[addr_pos];
-		printf("device_ui_type=%x\r\n",device_ui_type);
+		memcpy(my_devName,&buffer[9],my_devNamelen);
+	   
+		addr_pos = 9 + my_devNamelen;
+	    device_ui_layout_type = buffer[addr_pos];
+		printf("device_type = %x ,device_ui_type=%x\r\n",device_type,device_ui_layout_type);
+		app_custom_ui_layout(device_ui_layout_type);
 		for(u8 i=0;i<7;i++)
 			printf(" %x",my_PnPtrs[i]);
 
@@ -154,7 +186,7 @@ u8 app_custom_get_drive_len(void)
 
 void app_custom_test(void)
 {
-    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01};
+    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x03,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01};
 	flash_erase_sector(APP_CUSTOM_ADDR);
     flash_write_page(APP_CUSTOM_ADDR,sizeof(buffer),buffer);
 }

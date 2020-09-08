@@ -97,7 +97,9 @@ static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
 
 static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 
-_attribute_data_retention_ u8 my_devName[9];
+_attribute_data_retention_ u8 my_devName[20];
+_attribute_data_retention_ u8 my_devNamelen;
+
 
 static u16 serviceChangeVal[2] = {0};
 
@@ -278,7 +280,7 @@ static const u8 reportMap[] =
     0xA1, 0x01,   // Collection (Application)
     0x85, HID_REPORT_ID_CONSUME_CONTROL_INPUT,   //     Report Id
     0x75,0x10,     //global, report size 16 bits
-    0x95,0x02,     //global, report count 1
+    0x95,0x02,     //global, report count 2
     0x15,0x01,     //global, min  0x01
     0x26,0x8c,0x02,  //global, max  0x28c
     0x19,0x01,     //local, min   0x01

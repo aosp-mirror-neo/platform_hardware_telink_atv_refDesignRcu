@@ -125,30 +125,6 @@ _attribute_data_retention_    my_fifo_t    blt_rxfifo = {
 _attribute_data_retention_ u8 flag_dle=0;
 extern u8 ir_flash_erase_flag;
 
-//////////////////////////////////////////////////////////////////////////////
-//     Adv Packet, Response Packet
-//////////////////////////////////////////////////////////////////////////////
-const u8    tbl_advData_g10[] = {
-     0x0a, 0x09, 'R', 'e', 'm', 'o', 't', 'e', 'G', '1', '0',
-     0x02, 0x01, 0x05,                             // BLE limited discoverable mode and BR/EDR not supported
-     0x03, 0x19, 0x80, 0x01,                     // 384, Generic Remote Control, Generic category
-     0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,        // incomplete list of service class UUIDs (0x1812, 0x180F)
-};
-
-const u8    tbl_scanRsp_g10[] = {
-         0x0a, 0x09, 'R', 'e', 'm', 'o', 't', 'e', 'G', '1', '0',
-    };
-
-const u8	tbl_advData_g20[] = {
-		 0x0a, 0x09, 'R', 'e', 'm', 'o', 't', 'e', 'G', '2', '0',
-		 0x02, 0x01, 0x05,							   // BLE limited discoverable mode and BR/EDR not supported
-		 0x03, 0x19, 0x80, 0x01,					 // 384, Generic Remote Control, Generic category
-		 0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,		// incomplete list of service class UUIDs (0x1812, 0x180F)
-	};
-	
-const u8	tbl_scanRsp_g20[] = {
-			 0x0a, 0x09, 'R', 'e', 'm', 'o', 't', 'e', 'G', '2', '0',
-		};
 
 _attribute_data_retention_    int device_in_connection_state=0;
 
@@ -176,13 +152,15 @@ _attribute_data_retention_    u16    service_change = 0;
 _attribute_data_retention_    u8  device_timeout_state=0;
 
 extern u8 is_pairing_mode;
-extern u8 is_adv_mode;
+extern u8 is_reconn_mode;
 extern void app_pairing_led(void);
 extern ble_sts_t    blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
 extern void is_flash_info_full(void);
 extern void battery_refresh(void);
 extern void device_led_off(u8 led);
 extern void app_connect_led(void);
+extern u8 my_devNamelen;
+extern u8 my_devName[20];
 
 void app_enter_deep_timeset(void)
 {
@@ -209,18 +187,48 @@ void app_switch_to_indirect_adv(u8 e, u8 *p, int n)
     app_pairing_led();
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//     Adv Packet, Response Packet
+//////////////////////////////////////////////////////////////////////////////
+const u8    tbl_advData_g10_part2[] = {
+     0x02, 0x01, 0x05,                          // BLE limited discoverable mode and BR/EDR not supported
+     0x03, 0x19, 0x80, 0x01,                    // 384, Generic Remote Control, Generic category
+     0x05, 0x02, 0x12, 0x18, 0x0F, 0x18,        // incomplete list of service class UUIDs (0x1812, 0x180F)
+};
+
 void app_set_advdata_rspdata(void)
 {
-    if(device_type == REMOTE_G10)
-    {
-        bls_ll_setAdvData( (u8 *)tbl_advData_g10, sizeof(tbl_advData_g10) );
-        bls_ll_setScanRspData( (u8 *)tbl_scanRsp_g10, sizeof(tbl_scanRsp_g10));
-    }
-	if(device_type == REMOTE_G20)
-    {
-        bls_ll_setAdvData( (u8 *)tbl_advData_g20, sizeof(tbl_advData_g20) );
-        bls_ll_setScanRspData( (u8 *)tbl_scanRsp_g20, sizeof(tbl_scanRsp_g20));
-    }
+    u8 tbl_scanRsp[30];
+	u8 tbl_advData[40];
+	u8 len=0;
+
+    tbl_scanRsp[0] = my_devNamelen+1;
+    tbl_scanRsp[1] = 0x09;
+	memcpy(&tbl_scanRsp[2],my_devName,my_devNamelen);
+
+    tbl_advData[0] = tbl_scanRsp[0];
+	tbl_advData[1] = 0x09;
+	memcpy(&tbl_advData[2],my_devName,my_devNamelen);
+	len = 2 + my_devNamelen;
+
+	memcpy(&tbl_advData[len],tbl_advData_g10_part2,sizeof(tbl_advData_g10_part2));
+	len += sizeof(tbl_advData_g10_part2);
+
+    bls_ll_setAdvData( (u8 *)tbl_advData, len);
+    bls_ll_setScanRspData( (u8 *)tbl_scanRsp, my_devNamelen+2);
+
+    printf("adv data=\r\n");
+	for(u8 i=0;i<len;i++)
+	{
+	   printf(" %x ",tbl_advData[i]);
+	}
+	
+	printf("\r\nscan data=\r\n");
+	for(u8 i=0;i<my_devNamelen+2;i++)
+	{
+	   printf(" %x ",tbl_scanRsp[i]);
+	}
+
 }
 
 void direct_adv_led(u8 e, u8 *p, int n)
@@ -228,7 +236,7 @@ void direct_adv_led(u8 e, u8 *p, int n)
     printf("direct_adv_led\r\n");
 	bls_ll_setAdvEnable(1);  //must: set adv enable
     app_pairing_led();
-	
+
 }
 
 void     app_adv_interval_downgrade(void)
@@ -345,9 +353,27 @@ void mtu_exchange_loop(void)
 			blc_ll_exchangeDataLength(LL_LENGTH_REQ,(TX_FIFO_SIZE-18));
 		}
 		bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
-		app_service_change();
+		//app_service_change();
     }
 }
+
+_attribute_data_retention_    u32    bat_check_tick=0;
+
+void bat_exchange_loop(void)
+{
+    if(clock_time_exceed(bat_check_tick, 5000000 ))
+    { 
+        if(device_in_connection_state == 1)
+        {
+           printf("bat_exchange_loop\r\n");
+           bat_check_tick = clock_time() | 1;
+		    battery_refresh();
+        }
+    }
+}
+
+
+
 
 void ir_flash_erase_loop(void)
 {
@@ -497,15 +523,16 @@ int app_host_event_callback (u32 h, u8 *para, int n)
                 
                 device_in_connection_state = 1;
 				is_pairing_mode = 0;
-	            is_adv_mode = 0;
+	            is_reconn_mode = 0;
             }
             else if(p->re_connect == SMP_FAST_CONNECT){  //auto connect
                 printf("auto connect \r\n");
                 device_in_connection_state = 1;
 			    is_pairing_mode = 0;
-	            is_adv_mode = 0;
+	            is_reconn_mode = 0;
             }
 			mtuExchange_check_tick = clock_time() | 1;
+			battery_refresh();
         }
         break;
 
@@ -593,7 +620,7 @@ void    task_connect (u8 e, u8 *p, int n)
 {
     printf("connect\r\n");
 	
-	//app_save_peer_mac_info(p);
+	app_save_peer_mac_info(p);
     bls_l2cap_setMinimalUpdateReqSendingTime_after_connCreate(1000);
     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 
@@ -601,7 +628,7 @@ void    task_connect (u8 e, u8 *p, int n)
 
 	//interval_update_tick = clock_time() | 1; //none zero
     
-    battery_refresh();
+    //battery_refresh();
 	app_connect_led();
     bls_ll_setAdvEnable(0); 
 }
@@ -786,10 +813,10 @@ void blt_pm_proc(void)
 			if(delay3s_to_sleep_tick && clock_time_exceed(delay3s_to_sleep_tick,3000*1000))
 			{
 			     printf("adv timeout\r\n");
-			     cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
-			    //app_schedule_ota_enter_deep();
+			     //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+			     app_schedule_ota_enter_deep();
 			}
-			 if((is_pairing_mode == 0) && (is_adv_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg ) 
+			 if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg ) 
 			 {
 			      if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
 				  	   time =  ADV_IDLE_ENTER_DEEP_TIME;
@@ -798,8 +825,8 @@ void blt_pm_proc(void)
 				  if(clock_time_exceed(advertise_begin_tick ,  time* 1000000))
 				  {
                       printf("idle to sleep\r\n");
-				      cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
-					  //app_schedule_ota_enter_deep();
+				      //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+					  app_schedule_ota_enter_deep();
 				  }
 			 }
 #if 0
@@ -884,6 +911,7 @@ _attribute_data_retention_ u8 wakeup_src=1;  //1:wakeup for pad  2:wake up for t
 u8 app_wakeup_src(void)
 {
     u8 flag = analog_read(0X44);
+	printf("app_wakeup_src src=%x\r\n",flag);
 	if(flag & 0x08)
 		return 1;  //wakeup for pad
 	else
@@ -974,7 +1002,7 @@ void user_init_normal(void)
 	
     is_pairing_mode = 0;
     device_in_connection_state = 0;
-	is_adv_mode = 0;
+	is_reconn_mode = 0;
 
     ////////////////// config adv packet /////////////////////
 #if (BLE_REMOTE_SECURITY_ENABLE)
@@ -1161,7 +1189,7 @@ void interval_update_loop(void)
 u32 tick_loop;
 
 _attribute_data_retention_ u8 flag_schedule_ota=0;
-_attribute_data_retention_ u16 count_schedule_ota;
+_attribute_data_retention_ u16 count_schedule_ota=0;
 
 void main_loop (void)
 {
@@ -1169,6 +1197,7 @@ void main_loop (void)
     tick_loop ++;
     mtu_exchange_loop();
 	ir_flash_erase_loop();
+	//bat_exchange_loop();
     //interval_update_loop();
 
 #if (BLT_TEST_SOFT_TIMER_ENABLE)

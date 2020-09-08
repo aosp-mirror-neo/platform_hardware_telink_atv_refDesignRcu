@@ -27,7 +27,7 @@
 #ifndef APP_OTA_H_
 #define APP_OTA_H_
 
-//slave to master
+
 #define CMD_REPORT_VERSION                    0xfe00
 #define CMD_CONTROL                           0xfe01
 #define CMD_OTA_RESULT                        0xfe02
@@ -35,7 +35,7 @@
 #define OTA_PROTECT_VOLTAGE                   2300    //mv
 
 
-#define SLAVE_REPORT_CMD                      0xfe
+#define CLIENT_REPORT_CMD                     0xfe
 
 //report type
 enum{
