@@ -561,6 +561,7 @@ void google_cmd_v0p4_proc(){
 
     if(google_voice_ctl & FLAG_AUDIO_CLOSE){
         //audio stop. google voice auido end
+        printf("google_cmd_v0p4_proc_close\r\n");
         ble_sts_t ret;
         u8 sendData = ATV_MIC_CHAR_CTL_AUDIO_STOP;
         ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, &sendData, 1);
@@ -624,13 +625,14 @@ void google_cmd_v1p0_proc(){
     //audio stop
     if(google_voice_ctl & FLAG_AUDIO_CLOSE){
         //audio stop. google voice auido end
-
+        //printf("google_cmd_v1p0_proc_close\r\n");
         ble_sts_t ret;
         u8 sendBuff[2] = {0};
         sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_STOP;
         sendBuff[1] = audio_stop_reason;
 
         ret  = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2);
+		printf("google_cmd_v1p0_proc_close ret=%x\r\n",ret);
         if(ret == BLE_SUCCESS){
 
             printf("ATV_MIC_CHAR_CTL_AUDIO_STOP:0x%x\n",audio_stop_reason);
@@ -716,7 +718,7 @@ void google_get_rsp(void)
     }
 	ble_sts_t ret;
     ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 9);
-
+    printf("google_get_rsp _ret=%x\r\n",ret);
     if(ret == BLE_SUCCESS){
         if(google_voice_ver == 10)
 	    {
@@ -729,7 +731,7 @@ void google_get_rsp(void)
 
 _attribute_data_retention_ u8 notify_get_rsp_en = 0;
 _attribute_data_retention_ u32 notify_get_rsp_tick = 0;
-#define GET_RSP_DELAY_TIME 5000000   //500ms
+#define GET_RSP_DELAY_TIME 6000000   //500ms
 void google_cmd_proc(){
 
 //    if(app_active_remote_timer && clock_time_exceed(app_active_remote_timer, APP_AUDIO_GOOGLE_TIMEOUT1)){
@@ -787,7 +789,9 @@ void google_cmd_proc(){
             }
         }
 		else
+		{
 			google_get_rsp();
+		}
         
     }
 

@@ -39,6 +39,7 @@ extern u8 *p_kb_map_ir;
 extern u8 *p_kb_map_normal;
 extern u8 my_devName[20];
 extern u8 my_devNamelen;
+extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 
 _attribute_data_retention_  u8 device_type=1;
 
@@ -84,8 +85,8 @@ const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD
 #define IR_SETTING                     0X0F
 #define CR_SETTING                     0X0096
 
-#define IR_NOTIFICATION                0X0F
-#define CR_NOTIFICATION                0X0097
+#define IR_NOTIFICATION                0X10
+#define CR_NOTIFICATION                0X009f
 
 void app_custom_ui_layout(u8 ui_layout)
 {
@@ -141,8 +142,9 @@ void app_custom_init(void)
 		app_custom_ui_layout(buffer[0x12]);
 		*/
 		my_devNamelen = 10;
+		device_ui_layout_type = 0;
 		memcpy(my_devName,pREMOTE_B046,10);
-		app_custom_ui_layout(0);
+		app_custom_ui_layout(device_ui_layout_type);
 	}
 	else
 	{
@@ -170,6 +172,9 @@ void app_custom_init(void)
 
 	}
 	app_custom_param_init(device_type);
+
+    my_FWRevtrs[3] = (device_type) + 48;
+    my_FWRevtrs[5] = device_ui_layout_type + 48;
 }
 
 

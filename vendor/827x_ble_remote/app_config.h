@@ -34,8 +34,8 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 #include  "application/usbstd/usbkeycode.h"
 
-#define IR_DATA_SECT_1_ADDR                   0x71000
-#define IR_DATA_SECT_2_ADDR                   0x72000
+#define IR_DATA_SECT_0_ADDR                   0x71000
+#define IR_DATA_SECT_1_ADDR                   0x72000
 #define MAC_DATA_SECT_ADDR                    0x6f000
 
 

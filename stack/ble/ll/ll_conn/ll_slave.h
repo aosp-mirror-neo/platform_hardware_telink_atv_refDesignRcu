@@ -234,5 +234,10 @@ static inline void    blt_restore_dma_tx_rptr()
 }
 
 
+extern u8 extended_reject_en;
+static inline void blt_extended_reject_enable(u8 en){
+	extended_reject_en = en;
+}
+
 
 #endif /* LL_SLAVE_H_ */

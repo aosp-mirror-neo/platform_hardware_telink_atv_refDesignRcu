@@ -67,8 +67,8 @@ typedef void (*ota_scheduleCb_t)(u8 *data);
 
 void bls_ota_init_handle(u16 handle);
 
-void google_ota_pause();
-void google_ota_continue();
+unsigned char google_ota_pause();
+unsigned char google_ota_continue();
 void bls_ota_registerotaSignatureCmdCb(ota_signatureCb_t cb);
 void bls_ota_registerotaFWdecryptionCb(ota_FWdecryptionCb_t cb);
 void bls_ota_registerotaNewStartCb(ota_newStartCb_t cb);

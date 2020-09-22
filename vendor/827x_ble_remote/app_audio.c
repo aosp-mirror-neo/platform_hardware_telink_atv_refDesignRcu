@@ -90,6 +90,7 @@ _attribute_data_retention_    u8        key_htt_press = 0;
     void ui_enable_mic (int en)
     {
         ui_mic_enable = en;
+		printf("ui_mic_enable=%x\r\n",ui_mic_enable);
 		if(ui_mic_enable)
 		{
 		    app_ota_status(0);

@@ -242,9 +242,9 @@ static void _ctrl_google_voice(bool is_start)
 {
     if (is_start)
     {
-        google_voice_codec_used = CODEC_USED_8K; //8k
-        google_voice_packet_length = VOICE_V0P4_ADPCM_PACKET_LEN ; // 2 is just for 4*n
-        google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM_UNIT_SIZE*2;  //512.
+        google_voice_codec_used = CODEC_USED_16K;
+        google_voice_packet_length = VOICE_V0P4_ADPCM_PACKET_LEN;
+        google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM_UNIT_SIZE;
 
         app_audio_send_index = 0;
 
@@ -280,6 +280,9 @@ void test_entry_mode(void)
     }
 
 	app_factory_reset();
+#if (!REMOVE_BY_GOOGLE_REQ)
+    if (test_get_mode() == MODE_USER) test_set_mode(MODE_TEST);
+#endif
 
     _stat = TEST_STAT_ROOT;
     _ctrl_led(_ON, _ON);

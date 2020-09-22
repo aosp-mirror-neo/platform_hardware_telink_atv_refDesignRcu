@@ -448,42 +448,41 @@ static const u8 my_TestCharVal[19] = {
 };
 #endif
 
-
-      static const u8 my_IrUUID[16]      = {TELINK_IR_UUID_SERVICE};
-      static const u8 my_Ir_ProgControlUUID[16]   = {TELINK_IR_PROG_CONTROL_UUID_SERVICE};
-      static const u8 my_Ir_KeyIdUUID[16]          = {TELINK_IR_KEY_ID_UUID_SERVICE};
-      static const u8 my_Ir_CodeUUID[16]          = {TELINK_IR_CODE_UUID_SERVICE};
-      static const u8 my_Ir_SuppressUUID[16]      = {TELINK_IR_SUPPRESS_UUID_SERVICE};
-      static const u8 my_Ir_KeyEventUUID[16]      = {TELINK_IR_KEY_EVENT_UUID_SERVICE};
-
+static const u8 my_IrUUID[16]      = {TELINK_IR_UUID_SERVICE};
+static const u8 my_Ir_ProgControlUUID[16]   = {TELINK_IR_PROG_CONTROL_UUID_SERVICE};
+static const u8 my_Ir_KeyIdUUID[16]          = {TELINK_IR_KEY_ID_UUID_SERVICE};
+static const u8 my_Ir_CodeUUID[16]          = {TELINK_IR_CODE_UUID_SERVICE};
+static const u8 my_Ir_SuppressUUID[16]      = {TELINK_IR_SUPPRESS_UUID_SERVICE};
+static const u8 my_Ir_KeyEventUUID[16]      = {TELINK_IR_KEY_EVENT_UUID_SERVICE};
 
 
-      static const u8 my_Ir_ProgControl_CharVal[19] = {
-          CHAR_PROP_WRITE,
-          U16_LO(IR_PROG_OUT_CONTROL_H), U16_HI(IR_PROG_OUT_CONTROL_H),
-          TELINK_IR_PROG_CONTROL_UUID_SERVICE
-      };
-      static const u8 my_Ir_Key_Id_CharVal[19] = {
-          CHAR_PROP_WRITE,
-          U16_LO(IR_KEY_ID_H), U16_HI(IR_KEY_ID_H),
-          TELINK_IR_KEY_ID_UUID_SERVICE
-      };
-      static const u8 my_Ir_Code_CharVal[19] = {
-          CHAR_PROP_WRITE,
-          U16_LO(IR_CODE_H), U16_HI(IR_CODE_H),
-          TELINK_IR_CODE_UUID_SERVICE
-      };
-      static const u8 my_Ir_Suppress_CharVal[19] = {
-          CHAR_PROP_WRITE,
-          U16_LO(IR_SUPPRESS_H), U16_HI(IR_SUPPRESS_H),
-          TELINK_IR_SUPPRESS_UUID_SERVICE
-      };
-      static const u8 my_Ir_Key_Event_CharVal[19] = {
-          CHAR_PROP_NOTIFY,
-          U16_LO(IR_KEY_EVENT_H), U16_HI(IR_KEY_EVENT_H),
-          TELINK_IR_KEY_EVENT_UUID_SERVICE
-      };
-	  u8	  ir_data[1] = {0};
+
+static const u8 my_Ir_ProgControl_CharVal[19] = {
+    CHAR_PROP_WRITE,
+    U16_LO(IR_PROG_OUT_CONTROL_H), U16_HI(IR_PROG_OUT_CONTROL_H),
+    TELINK_IR_PROG_CONTROL_UUID_SERVICE
+};
+static const u8 my_Ir_Key_Id_CharVal[19] = {
+    CHAR_PROP_WRITE,
+    U16_LO(IR_KEY_ID_H), U16_HI(IR_KEY_ID_H),
+    TELINK_IR_KEY_ID_UUID_SERVICE
+};
+static const u8 my_Ir_Code_CharVal[19] = {
+    CHAR_PROP_WRITE,
+    U16_LO(IR_CODE_H), U16_HI(IR_CODE_H),
+    TELINK_IR_CODE_UUID_SERVICE
+};
+static const u8 my_Ir_Suppress_CharVal[19] = {
+    CHAR_PROP_WRITE,
+    U16_LO(IR_SUPPRESS_H), U16_HI(IR_SUPPRESS_H),
+    TELINK_IR_SUPPRESS_UUID_SERVICE
+};
+static const u8 my_Ir_Key_Event_CharVal[19] = {
+    CHAR_PROP_NOTIFY,
+    U16_LO(IR_KEY_EVENT_H), U16_HI(IR_KEY_EVENT_H),
+    TELINK_IR_KEY_EVENT_UUID_SERVICE
+};
+u8	  ir_data[1] = {0};
 
 
 #if BLE_AUDIO_ENABLE
@@ -875,8 +874,8 @@ void init_device_info (void)
     //u8 my_FWRevtrs []     = {'V','1','.','1','.','1'};
     //u8 my_SWRevtrs []     = {'V','1','.','0','2'};
     my_FWRevtrs[1] = ((FW_VERSION>>28)&0x0f) + 48;
-    my_FWRevtrs[3] = ((FW_VERSION>>24)&0x0f) + 48;
-    my_FWRevtrs[5] = ((FW_VERSION>>20)&0x0f) + 48;
+    //my_FWRevtrs[3] = ((FW_VERSION>>24)&0x0f) + 48;
+    //my_FWRevtrs[5] = ((FW_VERSION>>20)&0x0f) + 48;
 
     my_SWRevtrs[1] = ((FW_VERSION>>8)&0x0f) + 48;
     my_SWRevtrs[3] = ((FW_VERSION>>4)&0x0f) + 48;

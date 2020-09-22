@@ -66,6 +66,7 @@ void device_led_off(u8 led)
     if(led >= APP_DEVICE_LED_COUNT) return;
     gAppDeviceLedCtrl[led].isEnable = false;
     gAppDeviceLedCtrl[led].isOn = false;
+	gAppDeviceLedCtrl[led].count = 0;
     gpio_write(gAppDeviceLedCtrl[led].gpio, !gAppDeviceLedCtrl[led].onLevel);
 }
 
