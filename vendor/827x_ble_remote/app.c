@@ -58,7 +58,7 @@
 
 
 #define     ADV_INTERNAL_SWITCH_TIME            30   //30s
-#define     ADV_IDLE_ENTER_DEEP_TIME            120  //120 s
+#define     ADV_IDLE_ENTER_DEEP_TIME            33   //33s
 #define     ADV_RECONN_ENTER_DEEP_COUNT         1
 #define     ADV_IDLE_ENTER_DEEP_COUNT           5
 #define     CONN_IDLE_ENTER_DEEP_TIME           30   //60 s
@@ -135,10 +135,10 @@ _attribute_data_retention_    u32    latest_user_event_tick;
 _attribute_data_retention_    u32    lowBattDet_tick   = 0;
 
 _attribute_data_retention_    u32    mtuExchange_check_tick=0;
-_attribute_data_retention_    u32    mtuExchange_check_timer=13000000;
+_attribute_data_retention_    u32    mtuExchange_check_timer=12000000;
 
 
-//_attribute_data_retention_    u32    ir_flash_erase_tick=0;
+_attribute_data_retention_    u32    ir_flash_erase_tick=0;
 
 _attribute_data_retention_    u32    delay3s_to_sleep_tick=0;
 
@@ -149,6 +149,7 @@ _attribute_data_retention_    u16    service_change = 0;
 _attribute_data_retention_    u8  device_timeout_state=0;
 _attribute_data_retention_    u8 flag_schedule_ota=0;
 _attribute_data_retention_    u16 count_schedule_ota=0;
+u8  mac_public[6];
 
 extern u8 is_pairing_mode;
 extern u8 is_reconn_mode;
@@ -161,6 +162,7 @@ extern void app_connect_led(void);
 extern u8 my_devNamelen;
 extern u8 my_devName[20];
 extern u8 ir_flash_erase_flag;
+extern void ir_flash_set_flag(u8 flag);
 
 void app_enter_deep_timeset(void)
 {
@@ -173,21 +175,6 @@ void advertise_tick_retime(void)
     advertise_downgrade_flag = 0;
 	enterdeep_time_count = 0;
 }
-
-/*
-void app_switch_to_indirect_adv(u8 e, u8 *p, int n)
-{
-    printf("app_switch_to_indirect_adv\r\n");
-    bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                        ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
-                        0,  NULL,
-                        MY_APP_ADV_CHANNEL,
-                        ADV_FP_NONE);
-
-    bls_ll_setAdvEnable(1);  //must: set adv enable
-    app_pairing_led();
-}
-*/
 
 //////////////////////////////////////////////////////////////////////////////
 //     Adv Packet, Response Packet
@@ -241,7 +228,7 @@ void direct_adv(u8 e, u8 *p, int n)
 }
 
 
-void app_adv_internal_downgrade_direct(void)
+void app_adv_interval_downgrade_direct(void)
 {
     smp_param_save_t  bondInfo;
 	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
@@ -250,7 +237,8 @@ void app_adv_internal_downgrade_direct(void)
     {
        printf("app_adv_internal_downgrade_direct\r\n");
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-       u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+
+       u8 status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                         bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                         MY_APP_ADV_CHANNEL,
@@ -259,7 +247,7 @@ void app_adv_internal_downgrade_direct(void)
     }
 }
 
-void app_adv_internal_downgrade_indirect(void)
+void app_adv_interval_downgrade_indirect(void)
 {
     printf("app_adv_internal_downgrade_indirect\r\n");
 	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
@@ -278,47 +266,15 @@ void app_adv_interval_downgrade_register(app_adv_interval_downgradeCb_t cb)
 }
 
 
-void app_set_adv_internal_downgrade_indirect(void)
+void app_set_adv_interval_downgrade_indirect(void)
 {
-    app_adv_interval_downgrade_register(app_adv_internal_downgrade_indirect);
+    app_adv_interval_downgrade_register(app_adv_interval_downgrade_indirect);
 }
 
-void app_set_adv_internal_downgrade_direct(void)
+void app_set_adv_interval_downgrade_direct(void)
 {
-    app_adv_interval_downgrade_register(app_adv_internal_downgrade_direct);
+    app_adv_interval_downgrade_register(app_adv_interval_downgrade_direct);
 }
-
-/*
-void     app_adv_interval_downgrade(void)
-{
-    smp_param_save_t  bondInfo;
-    printf("app_adv_interval_downgrade\r\n");
-	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-	//direct adv
-    if(bond_number)   //at least 1 bonding device exist
-    {
-       printf("direct adv\r\n");
-       bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-  
-	   u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                                        bondInfo.peer_addr_type,  bondInfo.peer_addr,
-                                        MY_APP_ADV_CHANNEL,
-                                        ADV_FP_NONE);
-       if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
-    }
-	//indirect adv
-	else
-	{
-	    printf("indirect adv\r\n");
-	    bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
-                        ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
-                        0,  NULL,
-                        MY_APP_ADV_CHANNEL,
-                        ADV_FP_NONE);
-	}
-}
-*/
 
 void app_adv_indirect(void)
 {
@@ -331,9 +287,9 @@ void app_adv_indirect(void)
 		0,	NULL,
 		MY_APP_ADV_CHANNEL,
 		ADV_FP_NONE);
-	bls_ll_setAdvEnable(1);  
+    bls_ll_setAdvEnable(1);
+    app_set_adv_interval_downgrade_indirect();
 }
-
 
 void app_adv_direct(void)
 {
@@ -344,7 +300,7 @@ void app_adv_direct(void)
 	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     if(bond_number)   //at least 1 bonding device exist
     {
-       app_set_adv_internal_downgrade_direct();
+       app_set_adv_interval_downgrade_direct();
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
   
 	   u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
@@ -357,8 +313,8 @@ void app_adv_direct(void)
     }
 	else
 	{
-	    app_set_adv_internal_downgrade_indirect();
-		bls_ll_setAdvEnable(1);  //adv enable
+        app_set_adv_interval_downgrade_indirect();
+        bls_ll_setAdvEnable(1);  //adv enable
 	}
 }
 
@@ -393,42 +349,32 @@ void mtu_exchange_loop(void)
     if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, mtuExchange_check_timer ))
     { 
         mtuExchange_check_tick = 0;
-		app_schedule_ota_wakeup_host();
+        app_schedule_ota_send_notify_to_continue_ota();
         if((flag_dle&0x10) == 0)
         {
             printf("mtu_exchange_loop_mtu\r\n");
             blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
         }
-		if((flag_dle&0x10) == 0x10)
+        if((flag_dle&0x10) == 0x10)
         {
             printf("mtu_exchange_loop_mtu\r\n");
-			if(app_mtu_size < MTU_SIZE_SETTING)
+            if(app_mtu_size < MTU_SIZE_SETTING)
                 blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, MTU_SIZE_SETTING);
         }
-		if((flag_dle&0x01) == 0)
-		{
-		    printf("mtu_exchange_loop_dle\r\n");
-			blc_ll_exchangeDataLength(LL_LENGTH_REQ,(TX_FIFO_SIZE-18));
-		}
-		bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
-		//app_service_change();
+        if((flag_dle&0x01) == 0)
+        {
+            printf("mtu_exchange_loop_dle\r\n");
+            blc_ll_exchangeDataLength(LL_LENGTH_REQ,(TX_FIFO_SIZE-18));
+        }
+        if((flag_dle & 0x80) == 0)
+        {
+            printf("mtu_exchange_loop_update conn parm\r\n");
+            bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
+        }
+        //app_service_change();
     }
 }
 
-/*
-void ir_flash_erase_loop(void)
-{
-    if(ir_flash_erase_tick && clock_time_exceed(ir_flash_erase_tick, 8000000 ))
-    { 
-        ir_flash_erase_tick = 0;
-  
-        printf("ir_flash_erase_loop\r\n");
-		ir_flash_erase();
-		extern u8 ir_flash_sector;
-		printf("ir_flash_sector=%x\r\n",ir_flash_sector);
-    }
-}
-*/
 
 /*
 int app_terminate_timeout(void)
@@ -443,7 +389,6 @@ int app_terminate_timeout(void)
 int app_enable_adv_timeout(void)
 {
      printf("app_enable_adv_timeout\r\n");
-	 //bls_ll_setAdvEnable(1);
 	 app_adv_indirect();
 	 return -1;
 }
@@ -503,13 +448,13 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 			 if(device_in_connection_state == 0)
 			 {
 			     printf("slave_terminate\r\n");
-			     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+                 //enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 				 bls_ll_setAdvEnable(0);
 				 blt_soft_timer_add(&app_enable_adv_timeout, 1000000);
 			 }
 			 else
 			 {
-			     printf("host terminate\r\n");
+                 printf("master terminate\r\n");
                  bls_ll_setAdvEnable(0);
 			 	 enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
 				 ir_flash_factory();
@@ -543,8 +488,6 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 #endif
 
     advertise_tick_retime();
-
-
 }
 
 
@@ -607,7 +550,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 				mtuExchange_check_timer = 12000000;
                 if(ir_flash_erase_flag == 0x55)
                 {
-                    ir_flash_eraseall();
+                    ir_flash_set_flag(0);
+                    ir_flash_erase_flag = 0;
                 }
             }
             else if(p->re_connect == SMP_FAST_CONNECT){  //auto connect
@@ -653,16 +597,16 @@ int app_peer_mac_flash_erase_timeoutcb(void)
 {
     printf("app_peer_mac_flash_erase_timeoutcb\r\n");
 
-	if(bls_ll_requestConnBrxEventDisable() > 120)
-	{
-	    printf("flash erase \r\n");
-		bls_ll_disableConnBrxEvent();
-	    flash_erase_sector(MAC_DATA_SECT_ADDR);
-		bls_ll_restoreConnBrxEvent();
-		printf("flash erase succ\r\n");
-		write_peer_mac_info(peer_mac);
-		return -1;
-	}
+    if(bls_ll_requestConnBrxEventDisable() > 120)
+    {
+        printf("app_peer_mac_flash_erase \r\n");
+        bls_ll_disableConnBrxEvent();
+        flash_erase_sector(MAC_DATA_SECT_ADDR);
+        bls_ll_restoreConnBrxEvent();
+        printf("app_peer_mac_flash_erase succ\r\n");
+        write_peer_mac_info(peer_mac);
+        return -1;
+    }
     
     return 0;
 }
@@ -868,7 +812,8 @@ void blt_pm_proc(void)
                 if(advertise_downgrade_flag == 0)
                 {
                     advertise_downgrade_flag = 0xaa;
-                    app_adv_interval_downgradeCb();
+                    if(app_adv_interval_downgradeCb)
+                        app_adv_interval_downgradeCb();
                 }
             }
             //adv 2min, deepsleep
@@ -988,7 +933,9 @@ _attribute_ram_code_ void user_init_battery_power_check(void)
     #endif
 }
 
-_attribute_data_retention_ u8 wakeup_src=1;  //1:wakeup for pad  2:wake up for timer
+_attribute_data_retention_ u8 wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
+_attribute_data_retention_ u8 power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is power down
+_attribute_data_retention_ u8 wakeup_key_send_flag=1;     //2: already send wake up packet
 
 u8 app_wakeup_src(void)
 {
@@ -999,8 +946,88 @@ u8 app_wakeup_src(void)
 	    return 2;  //wakeup for not pad
 }
 
+typedef struct{
+    u32 dma_len;            //won't be a fixed number as previous, should adjust with the mouse package number
 
-u8  mac_public[6];
+    u8  type;               //RA(1)_TA(1)_RFU(2)_TYPE(4)
+    u8  rf_len;             //LEN(6)_RFU(2)
+    u8  advA[6];            //address
+    u8  data[31];           //0-31 byte
+}rf_packet_adv_ind_module_t;
+
+extern u8 wakeup_key[2];
+
+void app_tx_power_wakeup(u8 keyid)
+{
+    rf_packet_adv_ind_module_t tx_power_wakeup;
+    smp_param_save_t  bondInfo;
+
+    printf("app_tx_power_wakeup\r\n");
+    rf_set_ble_access_code_adv();
+    rf_set_ble_crc_adv();
+    bls_smp_param_loadByIndex(0, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+
+    tx_power_wakeup.rf_len = 25;
+    tx_power_wakeup.dma_len = tx_power_wakeup.rf_len + 2;
+    tx_power_wakeup.type = ADV_TYPE_CONNECTABLE_UNDIRECTED;
+
+    memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
+    tx_power_wakeup.data[0] = 0x12;
+    tx_power_wakeup.data[1] = 0xff;
+    tx_power_wakeup.data[2] = 0xff;
+    tx_power_wakeup.data[3] = 0xff;
+    tx_power_wakeup.data[4] = 'A';
+    tx_power_wakeup.data[5] = 'm';
+    tx_power_wakeup.data[6] = 'l';
+    tx_power_wakeup.data[7] = 'o';
+    tx_power_wakeup.data[8] = 'g';
+    tx_power_wakeup.data[9] = 'i';
+    tx_power_wakeup.data[10] = 'c';
+    if(keyid == wakeup_key[0])
+    {
+        tx_power_wakeup.data[11] = 0x01;
+    }
+    else if(keyid == wakeup_key[1])
+    {
+        tx_power_wakeup.data[11] = 0x02;
+    }
+
+    memcpy(&(tx_power_wakeup.data[12]), bondInfo.peer_addr, 6);
+
+    u8 index=0;
+    if(read_wakeup_keyindex_info(&index) == 0)
+    {
+        tx_power_wakeup.data[18] = index;
+    }
+    else
+        tx_power_wakeup.data[18] = 0;
+    printf("tx_power_wakeup.data[18]=%x\r\n",tx_power_wakeup.data[18]);
+    for(u8 i=0;i<3;i++)
+    {
+        rf_set_ble_channel(37+i);
+
+        rf_start_stx (&tx_power_wakeup, 100);
+
+        while(rf_tx_finish()!=0x01);
+
+        rf_tx_finish_clear_flag();
+    }
+    index++;
+    write_wakeup_keyindex_info(index);
+}
+
+void app_delay_set(void)
+{
+    google_get_rsp_delay();
+
+    if((flag_dle & 0x80) == 0)
+    {
+        printf("reset update conn parm \r\n");
+        mtuExchange_check_tick = clock_time() | 1;
+        mtuExchange_check_timer = 500000;
+    }
+}
+
 void user_init_normal(void)
 {
     //random number generator must be initiated here( in the beginning of user_init_nromal)
@@ -1034,7 +1061,6 @@ void user_init_normal(void)
         blc_ll_init2MPhyCodedPhy_feature();            //enable 2M/coded PHY
     #endif
 
-
     ////// Host Initialization  //////////
     blc_gap_peripheral_init();    //gap initialization
     extern void my_att_init ();
@@ -1064,9 +1090,11 @@ void user_init_normal(void)
     if(analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG)
 	{
 	    printf("power on deep\r\n");
+        power_down_flag = 2;
 	}
 	else
 	{
+        power_down_flag = 1;
 		printf("power on for power down\r\n");
 		if(kb_powerdet())
         {
@@ -1097,10 +1125,9 @@ void user_init_normal(void)
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
     } 
 
-	
     if(bond_number)   //set direct adv
     {  
-        app_adv_interval_downgrade_register(app_adv_internal_downgrade_direct);
+        app_set_adv_interval_downgrade_direct();
         printf("peer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
         if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
         {
@@ -1125,7 +1152,7 @@ void user_init_normal(void)
     else   //set indirect adv
 #endif
     {
-        app_adv_interval_downgrade_register(app_adv_internal_downgrade_indirect);
+        app_set_adv_interval_downgrade_indirect();
         enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
         u8 status = bls_ll_setAdvParam(  MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                                          ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
@@ -1153,8 +1180,6 @@ void user_init_normal(void)
     bls_app_registerEventCallback (BLT_EV_FLAG_TERMINATE, &ble_remote_terminate);
 
     bls_app_registerEventCallback (BLT_EV_FLAG_LL_REJECT_IND, &ble_ll_reject);
-
-
 
     bls_app_registerEventCallback (BLT_EV_FLAG_CONN_PARA_REQ, &task_conn_update_req);
     bls_app_registerEventCallback (BLT_EV_FLAG_CONN_PARA_UPDATE, &task_conn_update_done);
@@ -1194,7 +1219,6 @@ void user_init_normal(void)
 
 #endif
 
-
 #if (BLE_REMOTE_OTA_ENABLE)
     ////////////////// OTA relative ////////////////////////
     bls_ota_clearNewFwDataArea(); //must
@@ -1214,10 +1238,12 @@ void user_init_normal(void)
     //user data init
     init_ccc_value();
     printf("flag_ccc_data:0x%x\n",flag_ccc_data);
+    app_ir_programming_end_register(app_delay_set);
     is_flash_info_full();
 
 	init_peer_mac();
 	ir_param_init();
+    init_wakeup_keyindex();
 	extern void init_device_info (void);
 	init_device_info();
 }
@@ -1244,16 +1270,24 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 #endif
 }
 
-
 /////////////////////////////////////////////////////////////////////
 // main loop flow
 /////////////////////////////////////////////////////////////////////
 
+void ir_flash_erase_loop(void)
+{
+    if(ir_flash_erase_tick && clock_time_exceed(ir_flash_erase_tick, 8000000 ))
+    {
+        ir_flash_erase_tick = 0;
+        printf("ir_flash_erase_loop\r\n");
+        ir_flash_erase();
+    }
+}
 
 void main_loop (void)
 {
     mtu_exchange_loop();
-	//ir_flash_erase_loop();
+    ir_flash_erase_loop();
 
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_process(MAINLOOP_ENTRY);
@@ -1290,10 +1324,7 @@ void main_loop (void)
             #endif
         }
     #endif
-
-
     proc_keyboard (0,0, 0);
-
 
 #if (BLT_APP_LED_ENABLE)
     device_led_process();

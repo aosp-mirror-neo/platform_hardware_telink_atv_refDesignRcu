@@ -262,7 +262,7 @@ void battery_percent(void)
              bak_batpercent = my_batVal[0];
              if(device_in_connection_state)
              {
-                 printf("bat notify\r\n");
+                 //printf("bat notify\r\n");
                  bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
              }
 
@@ -276,7 +276,7 @@ void battery_percent(void)
              bak_batpercent = my_batVal[0];
              if(device_in_connection_state)
              {
-                 printf("bat notify\r\n");
+                 //printf("bat notify\r\n");
                  bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
              }
 			 //printf("batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);

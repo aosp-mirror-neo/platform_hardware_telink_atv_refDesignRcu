@@ -31,8 +31,6 @@
 #define FLASH_FLAG                   0xFFA5
 
 
-#define CCC_DATA_AREA                0x70000
-
 #define IR_FLASH_LENGTH              0x500  //(256*5)
 
 //ccc data flag
@@ -51,4 +49,8 @@ void flash_check_area(unsigned long addr, u8 used_sector, u8 used_block, unsigne
 extern void init_peer_mac(void);
 extern u8 is_peer_mac_flash_info_full(void);
 extern void write_peer_mac_info(u8 *mac);
+extern void write_wakeup_keyindex_info(u8 index);
+extern u8 read_wakeup_keyindex_info(u8 *index);
+extern u8 is_wakeup_keyindex_flash_info_full(void);
+extern void init_wakeup_keyindex(void);
 #endif /* APP_INFO_H_ */

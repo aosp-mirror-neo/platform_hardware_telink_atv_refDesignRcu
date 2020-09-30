@@ -65,5 +65,6 @@ extern u8 app_repairing(void);
 extern void app_release_hid_key(void);
 extern void app_schedule_ota_enter_deep(void);
 extern void app_schedule_ota_wakeup_host(void);
+extern void app_schedule_ota_send_notify_to_continue_ota(void);
 
 #endif /* APP_UI_H_ */

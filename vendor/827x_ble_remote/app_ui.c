@@ -76,11 +76,15 @@ extern int device_in_connection_state;
 extern u8 flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8 wakeup_src;
-
+extern u8 wakeup_key[2];
+extern u8 power_down_flag;
+extern u8 wakeup_key_send_flag;
 extern int ir_fallback_send(u8 key_down);
 extern void device_led_off(u8 led);
 extern void app_enter_deep_timeset(void);
-extern void app_set_adv_internal_downgrade_indirect(void);
+extern void app_set_adv_interval_downgrade_indirect(void);
+extern void app_tx_power_wakeup(u8 keyid);
+extern u8  app_custom_is_wakeup_key(u8 keyid);
 
 static const u16 vk_consumer_map[] = {
 	G00GLE_MKEY_YOUTUBE,
@@ -467,7 +471,7 @@ void app_schedule_ota_enter_deep(void)
 	}
 }
 
-void app_schedule_ota_wakeup_host(void)
+void app_schedule_ota_send_notify_to_continue_ota(void)
 { 
     u8 dat[2] = {0};
 	u8 report_data[4] = {CLIENT_REPORT_CMD,0x04,0x73,0x6f};
@@ -477,12 +481,27 @@ void app_schedule_ota_wakeup_host(void)
     dat[1] = 0x6f;
 	if((wakeup_src == 2) && (data))//wake up for timer
 	{
-	    printf("app_schedule_ota_wakeup_host\r\n");
+	    printf("app_schedule_ota_send_notify_to_continue_ota\r\n");
         bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2); 
         bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 4);
 		analog_write(DEEP_ANA_REG2, 0);
 	}	
 }
+
+void app_schedule_ota_wakeup_host(void)
+{
+    u8 data = analog_read(DEEP_ANA_REG2);
+
+	if((wakeup_src == 2) && (data) && (power_down_flag == 2))
+    {
+        printf("app_schedule_ota_wakeup_host\r\n");
+    }
+}
+
+
+
+
+
 
 #endif
 
@@ -602,13 +621,13 @@ int app_ir_bugreport_key_delay_timer(void)
      extern u32 stuckkey_keypresstimer;
 #endif
 
-
+extern void app_adv_indirect(void);
 u8 app_repairing(void)
 {
     if(repairing_flag == 0x55)
     {
          printf("app_repairing\r\n");
-         bls_ll_setAdvEnable(1);
+		 app_adv_indirect();
          repairing_flag = 0;
 		 notify_get_rsp_en = 0;
          return 1;
@@ -995,6 +1014,10 @@ void key_change_proc(void)
         //retime
         printf("kb_event.cnt == 2_step1\r\n");
         advertise_tick_retime();
+        if(wakeup_key_send_flag == 1)
+        {
+            wakeup_key_send_flag = 2;
+        }
 		if(is_pairing_mode)    return;
 		TwoKeyPressFlag = 0x55;
 #if (STUCK_KEY_PROCESS_ENABLE)
@@ -1111,6 +1134,30 @@ void key_change_proc(void)
 #if (STUCK_KEY_PROCESS_ENABLE)
           stuckkey_keypresstimer = clock_time() | 1;
 #endif
+
+          if(device_in_connection_state == 0)
+		  {
+		      u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
+			  if(bond_number == 1)
+			  {
+		          if((power_down_flag == 2) || (wakeup_src == 1))
+		          {
+		              if(wakeup_key_send_flag == 1)
+		              {
+                          if(app_custom_is_wakeup_key(key0) == 1)
+                          {
+                              app_tx_power_wakeup(key0);
+							  wakeup_key_send_flag = 2;
+                          }
+
+		              }
+		          }
+			  }
+		  }
+		  if(wakeup_key_send_flag == 1)
+		  {
+		      wakeup_key_send_flag = 2;
+		  }
 
 #if (BLE_AUDIO_ENABLE)
           if(device_in_connection_state)
@@ -1390,7 +1437,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
 			notify_get_rsp_en = 1;
             if( device_in_connection_state == 0)
             {
-                app_set_adv_internal_downgrade_indirect();
+                app_set_adv_interval_downgrade_indirect();
 				extern void app_adv_indirect(void);
                 app_adv_indirect();
             }

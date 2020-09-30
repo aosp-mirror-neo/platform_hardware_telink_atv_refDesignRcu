@@ -109,7 +109,7 @@ static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 _attribute_data_retention_ u8 my_PnPtrs []       = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
 	
 
- _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','.','1'};
+ _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','1'};
  _attribute_data_retention_ u8 my_SWRevtrs []     = {'V','1','.','0','2'};
  static const u8 my_HWRevtrs []     = {'V','1','.','0'};
  static const u8 my_ManuNametrs []  = {'T','e','l','i','n','k'};

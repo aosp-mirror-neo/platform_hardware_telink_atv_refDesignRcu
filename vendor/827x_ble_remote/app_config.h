@@ -34,10 +34,17 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 #include  "application/usbstd/usbkeycode.h"
 
-#define IR_DATA_SECT_0_ADDR                   0x71000
-#define IR_DATA_SECT_1_ADDR                   0x72000
-#define MAC_DATA_SECT_ADDR                    0x6f000
+#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
+#define IR_DATA_SECT_0_ADDR                   0x6c000
+#define IR_DATA_SECT_1_ADDR                   0x6d000
+#define IR_DATA_SECT_2_ADDR                   0x6e000
+#define IR_DATA_SECT_3_ADDR                   0x6f000
+#define CCC_DATA_AREA                         0x70000
+#define MAC_DATA_SECT_ADDR                    0x71000
 
+#define IR_DATA_SECT_MAX_NUM                  12   //Each sector can be written 3 times ,4*3
+#define IR_DATA_SECT_NUM                      4
+#define IR_DATA_NEED_ERASE_NUM                6
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////

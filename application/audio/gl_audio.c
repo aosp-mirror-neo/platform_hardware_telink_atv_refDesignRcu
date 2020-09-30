@@ -731,7 +731,7 @@ void google_get_rsp(void)
 
 _attribute_data_retention_ u8 notify_get_rsp_en = 0;
 _attribute_data_retention_ u32 notify_get_rsp_tick = 0;
-#define GET_RSP_DELAY_TIME 6000000   //500ms
+_attribute_data_retention_ u32 notify_get_rsp_delay_time = 6000000;
 void google_cmd_proc(){
 
 //    if(app_active_remote_timer && clock_time_exceed(app_active_remote_timer, APP_AUDIO_GOOGLE_TIMEOUT1)){
@@ -781,10 +781,11 @@ void google_cmd_proc(){
 
         if(notify_get_rsp_en)
         {
-            if(notify_get_rsp_tick && clock_time_exceed(notify_get_rsp_tick,GET_RSP_DELAY_TIME))
+            if(notify_get_rsp_tick && clock_time_exceed(notify_get_rsp_tick,notify_get_rsp_delay_time))
             {
                 notify_get_rsp_en = 0;
 				notify_get_rsp_tick = 0;
+				notify_get_rsp_delay_time = 6000000;
                 google_get_rsp();
             }
         }
@@ -792,7 +793,6 @@ void google_cmd_proc(){
 		{
 			google_get_rsp();
 		}
-        
     }
 
     if(google_voice_ver == 10){
@@ -801,6 +801,16 @@ void google_cmd_proc(){
         google_cmd_v0p4_proc();
     }
 }
+
+void google_get_rsp_delay(void)
+{
+    if(notify_get_rsp_en)
+    {
+        notify_get_rsp_tick = clock_time()|1;
+        notify_get_rsp_delay_time = 300000;
+    }
+}
+
 void google_voice_data_notify_v0p4_proc(){
 
     //////////////////////////////////////////////////////////////////

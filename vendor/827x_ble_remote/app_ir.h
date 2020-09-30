@@ -43,10 +43,12 @@ typedef enum{
 typedef enum{
     KEY_IDX_VOLUP,
     KEY_IDX_VOLDN,
-    KEY_IDX_POWER,
     KEY_IDX_MUTE,
+    KEY_IDX_POWER,
     KEY_IDX_INPUT
 }ATV_IR_KEY_IDX;
+
+typedef void (*app_ir_programming_end_Cb_t)(void);
 
 extern void programming_key_set(u8 data);
 extern u8 ir_key_is_suppress(u8 key_idx);
@@ -61,4 +63,5 @@ extern void ir_flash_factory(void);
 extern void ir_param_init(void);
 extern void ir_flash_erase(void);
 extern void ir_flash_eraseall(void);
+extern void app_ir_programming_end_register(app_ir_programming_end_Cb_t cb);
 #endif

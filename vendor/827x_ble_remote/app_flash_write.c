@@ -356,5 +356,54 @@ void init_peer_mac(void)
 	
 }
 
+void write_wakeup_keyindex_info(u8 index){
+
+    u8 dat[4] ={0xA5,0xff,0,0};
+
+	dat[2] = index;
+    u8 ret = flash_write_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
+    printf("write_wakeup_keyindex_info:0x%x\r\n",ret);
+}
+
+u8 read_wakeup_keyindex_info(u8 *index){
+
+    u8 dat[4] ={0};
+    u8 ret = flash_read_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
+    if(!ret){
+		*index = dat[2];
+    }
+    //return 0:Success,1:flash is empty,2:sector data error
+    return ret;
+}
+
+u8 is_wakeup_keyindex_flash_info_full(void)
+{
+    if(flash_pos_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4) == 0x03)
+    {
+		return 1;
+    }
+	return 0;
+}
+
+void init_wakeup_keyindex(void)
+{
+    u8 index=0;
+    if(read_wakeup_keyindex_info(&index) == 0)
+    {
+        if(is_wakeup_keyindex_flash_info_full())
+        {
+            flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
+			flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR+0x1000);
+            write_wakeup_keyindex_info(index);
+        }
+		printf("wakeup_keyindex=%x\r\n",index);
+    }
+	else
+	{
+		printf("no_wakeup_keyindex\r\n");
+	}
+}
+
+
 
 

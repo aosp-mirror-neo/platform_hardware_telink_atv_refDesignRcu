@@ -44,6 +44,7 @@ extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 _attribute_data_retention_  u8 device_type=1;
 
 _attribute_data_retention_  u8 key_setting_or_noti[2]={IR_DASHBOARD,G00GLE_MKEY_DASHBOARD};
+_attribute_data_retention_  u8 wakeup_key[2]={0xff,0xff};
 
 const unsigned char Kb_Map_Normal[8][3] = \
                         {\
@@ -77,6 +78,17 @@ const unsigned char Kb_Map_Ir[] =  {\
                         IR_UP,         IR_VOL_UP,      IR_HBOMAX,    \
                         IR_LEFT,       IR_CHN_UP,      VK_NONE,      \
                         IR_CENTER,     IR_MUTE,        VK_NONE    };
+
+const unsigned short int Kb_Map_Correspend_Index[] =  {\
+						0x0030,	       0x0045,	       0x0081,	 \
+						0x01bb,	       0x0043,		   0x009d,	 \
+						0x022a,        0x0224, 	       0x0077,	 \
+						0x0221,        0x0223, 	       0x0078,	 \
+						0x0096,        0x008d,	       0x0079,	 \
+						0x0042,		   0x0080,	       0x007a,	 \
+						0x0044,	       0x009c,	       VK_NONE,  \
+						0x0041,	       0x00e2, 	       VK_NONE	  };
+
 
 const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
 const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
@@ -125,9 +137,10 @@ void app_custom_param_init(u8 device)
 void app_custom_init(void)
 {
 	u8 buffer[64];
-	u8 addr_pos=0;
+	u8 addr_pos=0,i;
 	u8 device_ui_layout_type=0;
 	u8 *pREMOTE_B046 = (u8 *)("RemoteB046");
+	u16 key[2];
 
 	flash_read_page(APP_CUSTOM_ADDR, 64, buffer);
 
@@ -145,6 +158,10 @@ void app_custom_init(void)
 		device_ui_layout_type = 0;
 		memcpy(my_devName,pREMOTE_B046,10);
 		app_custom_ui_layout(device_ui_layout_type);
+		/*
+		wakeup_key[0] = 0;
+		wakeup_key[1] = 11;
+		*/
 	}
 	else
 	{
@@ -158,6 +175,8 @@ void app_custom_init(void)
 		    memcpy(my_devName,pREMOTE_B046,10);
 		    app_custom_ui_layout(0);
 			app_custom_param_init(device_type);
+			my_FWRevtrs[3] = (device_type) + 48;
+            my_FWRevtrs[4] = device_ui_layout_type + 48;
 			return;
 		}
 
@@ -170,13 +189,43 @@ void app_custom_init(void)
 		for(u8 i=0;i<7;i++)
 			printf(" %x",my_PnPtrs[i]);
 
+		//wakeup key
+		if((buffer[addr_pos+1] != 0xff) && (buffer[addr_pos+2] != 0xff))
+		{
+		    key[0] = ((u16)((u16)buffer[addr_pos+1]<<8 | buffer[addr_pos+2]));
+			key[1] = ((u16)((u16)buffer[addr_pos+3]<<8 | buffer[addr_pos+4]));
+            for(i=0;i<sizeof(Kb_Map_Correspend_Index)/sizeof(Kb_Map_Correspend_Index[0]);i++)
+            {
+			    if(Kb_Map_Correspend_Index[i] == key[0])
+			    {
+			        wakeup_key[0] = i;
+			    }
+				if(Kb_Map_Correspend_Index[i] == key[1])
+			    {
+			        wakeup_key[1] = i;
+			    }
+            }
+			printf("wakeup_key key1_index=%x, kye2_index=%x\r\n",wakeup_key[0],wakeup_key[1]);
+		}
 	}
 	app_custom_param_init(device_type);
 
     my_FWRevtrs[3] = (device_type) + 48;
-    my_FWRevtrs[5] = device_ui_layout_type + 48;
+    my_FWRevtrs[4] = device_ui_layout_type + 48;
+
 }
 
+u8  app_custom_is_wakeup_key(u8 keyid)
+{
+    if((wakeup_key[0] == 0xff) || (wakeup_key[1] == 0xff))
+	    return 0;
+    if((keyid == wakeup_key[0]) || (keyid == wakeup_key[1]))
+    {
+	    printf("wakeup_key =%x\r\n",keyid);
+		return 1;
+    }
+	return 0;
+}
 
 u8 app_custom_get_drive_len(void)
 {
@@ -191,7 +240,7 @@ u8 app_custom_get_drive_len(void)
 
 void app_custom_test(void)
 {
-    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x03,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01};
+    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01,0x00,0x30,0x00,0x78};
 	flash_erase_sector(APP_CUSTOM_ADDR);
     flash_write_page(APP_CUSTOM_ADDR,sizeof(buffer),buffer);
 }

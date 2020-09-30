@@ -174,6 +174,7 @@ u8 read_audio_frame_size();
 void set_audio_frame_size(u8 frame_size);
 
 void app_audio_task(void);
+extern void google_get_rsp_delay(void);
 
 #endif
 

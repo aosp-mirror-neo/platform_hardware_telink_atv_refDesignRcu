@@ -105,6 +105,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 #endif
 
     if(!deepRetWakeUp){//read flash size
+        //app_custom_test();
     	app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
@@ -135,7 +136,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
         user_init_normal ();
     }
-
 
     irq_enable();
    
