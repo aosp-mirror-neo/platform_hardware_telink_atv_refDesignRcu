@@ -127,13 +127,13 @@ void kb_p_map_init(void)
 {
     u8 len = app_custom_get_drive_len();
     kb_p_map[0] = p_kb_map_normal;//p_kb_map_normal;
-	memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
-	//kb_k_mp = kb_p_map[0];
+    memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
+    //kb_k_mp = kb_p_map[0];
 }
 
 void kb_rmv_ghost_key(u32 * pressed_matrix){
     u32 mix_final = 0;
-	u8 len = app_custom_get_drive_len();
+    u8 len = app_custom_get_drive_len();
     for(u8 i=0;i<len;i++){
         for(int j = (i+1); j < len; ++j){
             u32 mix = (pressed_matrix[i] & pressed_matrix[j]);
@@ -201,20 +201,20 @@ unsigned int key_debounce_filter( u32 mtrx_cur[], u32 filt_en ){
 static inline void kb_remap_key_row(int drv_ind, u32 m, int key_max, kb_data_t *kb_data){
 
     u8 a[8][3]={{0},{0},{0},{0},{0},{0},{0},{0}};
-	u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
-	unsigned char kc;
+    u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
+    unsigned char kc;
     u8 len = app_custom_get_drive_len();
-	if(len == KB_DRIVE_PIN_G10)
+    if(len == KB_DRIVE_PIN_G10)
         memcpy(a,kb_k_mp,8*3);
-	else
-		memcpy(b,kb_k_mp,8*6);
-	
+    else
+        memcpy(b,kb_k_mp,8*6);
+    
     foreach_arr(i, scan_pins){
         if(m & 0x01){
-			if(len == KB_DRIVE_PIN_G10)
+            if(len == KB_DRIVE_PIN_G10)
                 kc = (a[i][drv_ind]);//(kb_k_mp[i][drv_ind]);
             else
-				kc = (b[i][drv_ind]);//(kb_k_mp[i][drv_ind]);
+                kc = (b[i][drv_ind]);//(kb_k_mp[i][drv_ind]);
 #if(KB_HAS_CTRL_KEYS)
 
             if(kc >= VK_CTRL && kc <= VK_RWIN)
@@ -245,7 +245,7 @@ static inline void kb_remap_key_row(int drv_ind, u32 m, int key_max, kb_data_t *
 static inline void kb_remap_key_code(u32 * pressed_matrix, int key_max, kb_data_t *kb_data, int numlock_status){
 
     kb_k_mp = kb_p_map[(numlock_status&1) | (kb_is_fn_pressed << 1)];
-	u8 len = app_custom_get_drive_len();
+    u8 len = app_custom_get_drive_len();
     for(u8 i=0;i<len;i++){
         u32 m = pressed_matrix[i];
         if(!m) continue;
@@ -259,14 +259,14 @@ static inline void kb_remap_key_code(u32 * pressed_matrix, int key_max, kb_data_
 
 u32 kb_scan_row(int drv_ind, unsigned char * gpio){
     u8 a[8][3]={{0},{0},{0},{0},{0},{0},{0},{0}};
-	u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
+    u8 b[8][6]={{0},{0},{0},{0},{0},{0},{0},{0}};
 
     u8 len = app_custom_get_drive_len();
-	if(len == KB_DRIVE_PIN_G10)
+    if(len == KB_DRIVE_PIN_G10)
         memcpy(a,kb_k_mp,8*3);
-	else
-		memcpy(b,kb_k_mp,8*6);
-	
+    else
+        memcpy(b,kb_k_mp,8*6);
+    
     unsigned char sr = irq_disable();
 #if    (KB_KEY_FLASH_PIN_MULTI_USE)
     MSPI_AS_GPIO;
@@ -283,18 +283,18 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
         if(scan_pin_need & BIT(j)){
             int key = !gpio_read_cache (scan_pins[j], gpio);
             if(KB_LINE_HIGH_VALID != key) {
-				if(len == KB_DRIVE_PIN_G10)
-				{
-				    if ((KB_HAS_FN_KEY && a[j][drv_ind]) == VK_FN) {
+                if(len == KB_DRIVE_PIN_G10)
+                {
+                    if ((KB_HAS_FN_KEY && a[j][drv_ind]) == VK_FN) {
                     kb_is_fn_pressed = 1;
                     }
-				}
-				else
-				{
-				    if ((KB_HAS_FN_KEY && b[j][drv_ind]) == VK_FN) {
+                }
+                else
+                {
+                    if ((KB_HAS_FN_KEY && b[j][drv_ind]) == VK_FN) {
                     kb_is_fn_pressed = 1;
                     }
-				}
+                }
                 
                 matrix |= (1 << j);
             }
@@ -368,7 +368,7 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
         kb_k_mp = kb_p_map[0];
 
         kb_scan_row (0, gpio);
-		u8 len = app_custom_get_drive_len();
+        u8 len = app_custom_get_drive_len();
         for (int i=0; i<=len; i++) {
             u32 r = kb_scan_row (i < len ? i : 0, gpio);
             if (i) {
@@ -412,7 +412,7 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 
             /////////// push to matrix buffer /////////////////////////
             pd = matrix_buff[matrix_wptr&3];
-			u8 len = app_custom_get_drive_len();
+            u8 len = app_custom_get_drive_len();
             for (int k=0; k<len; k++) {
                 *pd++ = pressed_matrix[k];
             }
@@ -439,8 +439,8 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
         if((TwoKeyPressFlag == 0x55) && (kb_event.cnt == 1))
         {
              printf("filter\r\n");
-			 extern void app_twokey_to_onekey(void);
-			 app_twokey_to_onekey();
+             extern void app_twokey_to_onekey(void);
+             app_twokey_to_onekey();
              return 0;
         }
 
@@ -465,14 +465,14 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 void kb_wake_config(void)
 {
     u8 len=0;
-	
+
     len = app_custom_get_drive_len();
 
     for(u8 i=0;i<len;i++)
     {
-	    cpu_set_gpio_wakeup (drive_pins[i], !KB_LINE_HIGH_VALID,1);  //drive pin pad high wakeup deepsleep
+        cpu_set_gpio_wakeup (drive_pins[i], !KB_LINE_HIGH_VALID,1);  //drive pin pad high wakeup deepsleep
     }
-		
+
 }
 
 u8 kb_powerdet(void)

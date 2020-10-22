@@ -40,8 +40,7 @@ extern void ui_enable_mic(int en);
 extern u8        buffer_mic_pkt_wptr;
 extern u8        buffer_mic_pkt_rptr;
 
-extern u16         atv_char_ctl_ccc;
-extern u16         atv_char_rx_ccc;
+
 _attribute_data_retention_ u16 atv_char_ctl_ccc = 0;
 _attribute_data_retention_ u16 atv_char_rx_ccc = 0;
 
@@ -187,17 +186,17 @@ void google_voice_dpad_select(){
 }
 
 //google voice  v1.0 api
-u8 app_audio_key_start(u8 start_reasion){
+u8 app_audio_key_start(u8 start_reason){
 
     printf("app_audio_key_start\n");
     if(!atv_char_rx_ccc) return 1;                        //ATVV_CHAR_AUDIO ccc is disabled
     if(google_voice_ver != 10) return 2;                //google voice version error
-    //if(start_reasion > used_assistant_model) return 3;    //Unavailable model
+    //if(start_reason > used_assistant_model) return 3;    //Unavailable model
     //if(!enable_rsp_gaps_rsp)    return 3;
 
     u8 sendBuff[20]  = {0};
 
-    switch(start_reasion){
+    switch(start_reason){
         case REASON_PTT:
         {
             printf("audio_start_reason = REASON_PTT\n");
@@ -205,7 +204,7 @@ u8 app_audio_key_start(u8 start_reasion){
         }
         case REASON_HTT:
         {
-            if(start_reasion == REASON_HTT){
+            if(start_reason == REASON_HTT){
                 audio_start_reason = REASON_HTT;
                 printf("audio_start_reason = REASON_HTT\n");
             }
@@ -632,7 +631,7 @@ void google_cmd_v1p0_proc(){
         sendBuff[1] = audio_stop_reason;
 
         ret  = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2);
-		printf("google_cmd_v1p0_proc_close ret=%x\r\n",ret);
+        printf("google_cmd_v1p0_proc_close ret=%x\r\n",ret);
         if(ret == BLE_SUCCESS){
 
             printf("ATV_MIC_CHAR_CTL_AUDIO_STOP:0x%x\n",audio_stop_reason);
@@ -694,34 +693,34 @@ void google_get_rsp(void)
     u8 sendBuff[9] = {0};
     if(google_voice_ver == 10){
 
-		sendBuff[0] = ATV_MIC_CHAR_CTL_CAPS_RESP;
-	    sendBuff[1] = U16_HI(GOOGLE_VOICE_VERSION_1P0);	 //major version
-		sendBuff[2] = U16_LO(GOOGLE_VOICE_VERSION_1P0);	 //minor version
-		sendBuff[3] = CODEC_SUPPORTED_8K16K;				 //codecs supported (1)
-		sendBuff[4] = read_assistant_model();				 //set assistant interaction model.  on-request,ptt,htt
-	    sendBuff[5] = 0x00;								 //audio frame size (2)
-		sendBuff[6] = read_audio_frame_size(); 			 //audio frame size (2)
-		//sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
-		sendBuff[7] = (read_audio_frame_size() > app_mtu_size)?1:0;	   //extra configuration (1)
-		sendBuff[8] = 0x00;								 //reserved(1)
+        sendBuff[0] = ATV_MIC_CHAR_CTL_CAPS_RESP;
+        sendBuff[1] = U16_HI(GOOGLE_VOICE_VERSION_1P0);     //major version
+        sendBuff[2] = U16_LO(GOOGLE_VOICE_VERSION_1P0);     //minor version
+        sendBuff[3] = CODEC_SUPPORTED_8K16K;                //codecs supported (1)
+        sendBuff[4] = read_assistant_model();               //set assistant interaction model.  on-request,ptt,htt
+        sendBuff[5] = 0x00;                                 //audio frame size (2)
+        sendBuff[6] = read_audio_frame_size();              //audio frame size (2)
+        //sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
+        sendBuff[7] = (read_audio_frame_size() > app_mtu_size)?1:0;       //extra configuration (1)
+        sendBuff[8] = 0x00;                                 //reserved(1)
 
-		}else{
-		sendBuff[0] = ATV_MIC_CHAR_CTL_CAPS_RESP;
-		sendBuff[1] = U16_HI(GOOGLE_VOICE_VERSION_0P4);	 //major version
-		sendBuff[2] = U16_LO(GOOGLE_VOICE_VERSION_0P4);	 //minor version
-		sendBuff[3] = 0x00;								 //codecs_supported high
-		sendBuff[4] = CODEC_SUPPORTED_8K;					 //CODEC_SUPPORTED_8K16K;
-		sendBuff[5] = 0x00;								 //frame lengths high
-		sendBuff[6] = 0x86;								 //frame lengths low -- 134Byts
-		sendBuff[7] = 0x00;								 //packet lengths high
-		sendBuff[8] = 0x14;								 //packet lengths low -- 20 Bytes
+        }else{
+        sendBuff[0] = ATV_MIC_CHAR_CTL_CAPS_RESP;
+        sendBuff[1] = U16_HI(GOOGLE_VOICE_VERSION_0P4);     //major version
+        sendBuff[2] = U16_LO(GOOGLE_VOICE_VERSION_0P4);     //minor version
+        sendBuff[3] = 0x00;                                 //codecs_supported high
+        sendBuff[4] = CODEC_SUPPORTED_8K;                   //CODEC_SUPPORTED_8K16K;
+        sendBuff[5] = 0x00;                                 //frame lengths high
+        sendBuff[6] = 0x86;                                 //frame lengths low -- 134Byts
+        sendBuff[7] = 0x00;                                 //packet lengths high
+        sendBuff[8] = 0x14;                                 //packet lengths low -- 20 Bytes
     }
-	ble_sts_t ret;
+    ble_sts_t ret;
     ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 9);
     printf("google_get_rsp _ret=%x\r\n",ret);
     if(ret == BLE_SUCCESS){
         if(google_voice_ver == 10)
-	    {
+        {
             printf("read_audio_frame_size():%d\n",sendBuff[6]);
         }
         printf("send FLAG_GOOGLE_CAPS_RESP_ver:%d\n",google_voice_ver);
@@ -784,15 +783,15 @@ void google_cmd_proc(){
             if(notify_get_rsp_tick && clock_time_exceed(notify_get_rsp_tick,notify_get_rsp_delay_time))
             {
                 notify_get_rsp_en = 0;
-				notify_get_rsp_tick = 0;
-				notify_get_rsp_delay_time = 6000000;
+                notify_get_rsp_tick = 0;
+                notify_get_rsp_delay_time = 6000000;
                 google_get_rsp();
             }
         }
-		else
-		{
-			google_get_rsp();
-		}
+        else
+        {
+            google_get_rsp();
+        }
     }
 
     if(google_voice_ver == 10){

@@ -49,7 +49,7 @@ typedef enum{
 }ATV_IR_KEY_IDX;
 
 typedef void (*app_ir_programming_end_Cb_t)(void);
-
+extern void ir_flash_set_flag(u8 flag);
 extern void programming_key_set(u8 data);
 extern u8 ir_key_is_suppress(u8 key_idx);
 extern u8 ir_fallback_send_key_code(u8 button_idx, bool key_down);
@@ -57,7 +57,6 @@ extern u8 ir_key_is_suppress(u8 key_idx);
 extern int ir_repeat_delay_release_time(void);
 extern u8 is_programming_key_send(void);
 extern int ir_type_read(void);
-extern void ir_test_init(void);
 extern void ir_table_init(void);
 extern void ir_flash_factory(void);
 extern void ir_param_init(void);

@@ -302,7 +302,7 @@ void is_flash_info_full(void)
     if(flash_pos_info(CCC_DATA_AREA,1,4) == 0x03)
     {
         flash_erase_sector(CCC_DATA_AREA);
-		write_ccc_info(&flag_ccc_data);
+        write_ccc_info(&flag_ccc_data);
     }
 }
 
@@ -319,8 +319,8 @@ u8 read_peer_mac_info(u8 *mac){
     u8 dat[8] ={0};
     u8 ret = flash_read_info(MAC_DATA_SECT_ADDR,1,8,8,dat);
     if(!ret){
-		for(u8 i=0;i<6;i++)
-			mac[i] = dat[2+i];
+        for(u8 i=0;i<6;i++)
+            mac[i] = dat[2+i];
     }
     //return 0:Success,1:flash is empty,2:sector data error
     return ret;
@@ -330,9 +330,9 @@ u8 is_peer_mac_flash_info_full(void)
 {
     if(flash_pos_info(MAC_DATA_SECT_ADDR,1,8) == 0x03)
     {
-		return 1;
+        return 1;
     }
-	return 0;
+    return 0;
 }
 
 void init_peer_mac(void)
@@ -341,26 +341,26 @@ void init_peer_mac(void)
     {
         printf("peer_mac =\r\n");
         for(u8 i=0;i<6;i++)
-		    printf(" %x",peer_mac[i]);
+            printf(" %x",peer_mac[i]);
          printf("\r\n");
-		if(is_peer_mac_flash_info_full())
+        if(is_peer_mac_flash_info_full())
         {
             flash_erase_sector(MAC_DATA_SECT_ADDR);
-	        write_peer_mac_info(peer_mac);
+            write_peer_mac_info(peer_mac);
         }
     }
-	else
-	{
-		printf("no_peer_mac\r\n");
-	}
-	
+    else
+    {
+        printf("no_peer_mac\r\n");
+    }
+    
 }
 
 void write_wakeup_keyindex_info(u8 index){
 
     u8 dat[4] ={0xA5,0xff,0,0};
 
-	dat[2] = index;
+    dat[2] = index;
     u8 ret = flash_write_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
     printf("write_wakeup_keyindex_info:0x%x\r\n",ret);
 }
@@ -370,7 +370,7 @@ u8 read_wakeup_keyindex_info(u8 *index){
     u8 dat[4] ={0};
     u8 ret = flash_read_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
     if(!ret){
-		*index = dat[2];
+        *index = dat[2];
     }
     //return 0:Success,1:flash is empty,2:sector data error
     return ret;
@@ -380,9 +380,9 @@ u8 is_wakeup_keyindex_flash_info_full(void)
 {
     if(flash_pos_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4) == 0x03)
     {
-		return 1;
+        return 1;
     }
-	return 0;
+    return 0;
 }
 
 void init_wakeup_keyindex(void)
@@ -393,15 +393,15 @@ void init_wakeup_keyindex(void)
         if(is_wakeup_keyindex_flash_info_full())
         {
             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
-			flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR+0x1000);
+            flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR+0x1000);
             write_wakeup_keyindex_info(index);
         }
-		printf("wakeup_keyindex=%x\r\n",index);
+        printf("wakeup_keyindex=%x\r\n",index);
     }
-	else
-	{
-		printf("no_wakeup_keyindex\r\n");
-	}
+    else
+    {
+        printf("no_wakeup_keyindex\r\n");
+    }    
 }
 
 

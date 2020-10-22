@@ -58,7 +58,7 @@
 
 
 #define     ADV_INTERNAL_SWITCH_TIME            30   //30s
-#define     ADV_IDLE_ENTER_DEEP_TIME            33   //33s
+#define     ADV_IDLE_ENTER_DEEP_TIME            120  //120
 #define     ADV_RECONN_ENTER_DEEP_COUNT         1
 #define     ADV_IDLE_ENTER_DEEP_COUNT           5
 #define     CONN_IDLE_ENTER_DEEP_TIME           30   //60 s
@@ -149,6 +149,10 @@ _attribute_data_retention_    u16    service_change = 0;
 _attribute_data_retention_    u8  device_timeout_state=0;
 _attribute_data_retention_    u8 flag_schedule_ota=0;
 _attribute_data_retention_    u16 count_schedule_ota=0;
+
+_attribute_data_retention_    u8 app_slave_terminate=0;
+
+
 u8  mac_public[6];
 
 extern u8 is_pairing_mode;
@@ -173,7 +177,7 @@ void advertise_tick_retime(void)
 {
     advertise_begin_tick = clock_time();
     advertise_downgrade_flag = 0;
-	enterdeep_time_count = 0;
+    enterdeep_time_count = 0;
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -188,51 +192,51 @@ const u8    tbl_advData_g10_part2[] = {
 void app_set_advdata_rspdata(void)
 {
     u8 tbl_scanRsp[30];
-	u8 tbl_advData[40];
-	u8 len=0;
+    u8 tbl_advData[40];
+    u8 len=0;
 
     tbl_scanRsp[0] = my_devNamelen+1;
     tbl_scanRsp[1] = 0x09;
-	memcpy(&tbl_scanRsp[2],my_devName,my_devNamelen);
+    memcpy(&tbl_scanRsp[2],my_devName,my_devNamelen);
 
     tbl_advData[0] = tbl_scanRsp[0];
-	tbl_advData[1] = 0x09;
-	memcpy(&tbl_advData[2],my_devName,my_devNamelen);
-	len = 2 + my_devNamelen;
+    tbl_advData[1] = 0x09;
+    memcpy(&tbl_advData[2],my_devName,my_devNamelen);
+    len = 2 + my_devNamelen;
 
-	memcpy(&tbl_advData[len],tbl_advData_g10_part2,sizeof(tbl_advData_g10_part2));
-	len += sizeof(tbl_advData_g10_part2);
+    memcpy(&tbl_advData[len],tbl_advData_g10_part2,sizeof(tbl_advData_g10_part2));
+    len += sizeof(tbl_advData_g10_part2);
 
     bls_ll_setAdvData( (u8 *)tbl_advData, len);
     bls_ll_setScanRspData( (u8 *)tbl_scanRsp, my_devNamelen+2);
 
     printf("adv data=\r\n");
-	for(u8 i=0;i<len;i++)
-	{
-	   printf(" %x ",tbl_advData[i]);
-	}
-	
-	printf("\r\nscan data=\r\n");
-	for(u8 i=0;i<my_devNamelen+2;i++)
-	{
-	   printf(" %x ",tbl_scanRsp[i]);
-	}
+    for(u8 i=0;i<len;i++)
+    {
+       printf(" %x ",tbl_advData[i]);
+    }
+
+    printf("\r\nscan data=\r\n");
+    for(u8 i=0;i<my_devNamelen+2;i++)
+    {
+       printf(" %x ",tbl_scanRsp[i]);
+    }
 
 }
 
 void direct_adv(u8 e, u8 *p, int n)
 {
     printf("direct_adv\r\n");
-	is_reconn_mode = 0x55;
-	bls_ll_setAdvEnable(1);  //must: set adv enable
+    is_reconn_mode = 0x55;
+    bls_ll_setAdvEnable(1);  //must: set adv enable
 }
 
 
 void app_adv_interval_downgrade_direct(void)
 {
     smp_param_save_t  bondInfo;
-	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-	//direct adv
+    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+    //direct adv
     if(bond_number)   //at least 1 bonding device exist
     {
        printf("app_adv_internal_downgrade_direct\r\n");
@@ -250,7 +254,7 @@ void app_adv_interval_downgrade_direct(void)
 void app_adv_interval_downgrade_indirect(void)
 {
     printf("app_adv_internal_downgrade_indirect\r\n");
-	bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+    bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
                         ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
                         0,  NULL,
                         MY_APP_ADV_CHANNEL,
@@ -259,10 +263,10 @@ void app_adv_interval_downgrade_indirect(void)
 
 typedef void (*app_adv_interval_downgradeCb_t)(void);
 
-_attribute_data_retention_ app_adv_interval_downgradeCb_t 	app_adv_interval_downgradeCb = NULL;
+_attribute_data_retention_ app_adv_interval_downgradeCb_t     app_adv_interval_downgradeCb = NULL;
 void app_adv_interval_downgrade_register(app_adv_interval_downgradeCb_t cb)
 {
-	app_adv_interval_downgradeCb = cb;
+    app_adv_interval_downgradeCb = cb;
 }
 
 
@@ -280,13 +284,13 @@ void app_adv_indirect(void)
 {
     printf("app_adv_indirect\r\n");
 
-	app_set_advdata_rspdata();
+    app_set_advdata_rspdata();
 
     bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-		ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
-		0,	NULL,
-		MY_APP_ADV_CHANNEL,
-		ADV_FP_NONE);
+        ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
+        0,    NULL,
+        MY_APP_ADV_CHANNEL,
+        ADV_FP_NONE);
     bls_ll_setAdvEnable(1);
     app_set_adv_interval_downgrade_indirect();
 }
@@ -294,28 +298,28 @@ void app_adv_indirect(void)
 void app_adv_direct(void)
 {
     printf("app_adv_direct\r\n");
-	is_reconn_mode = 0x55;
+    is_reconn_mode = 0x55;
     smp_param_save_t  bondInfo;
-	bls_ll_setAdvEnable(0);  //adv enable
-	u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+    bls_ll_setAdvEnable(0);  //adv enable
+    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     if(bond_number)   //at least 1 bonding device exist
     {
        app_set_adv_interval_downgrade_direct();
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-  
-	   u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+
+       u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                         bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                         MY_APP_ADV_CHANNEL,
                                         ADV_FP_NONE);
        if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
-	   bls_ll_setAdvEnable(1);  //adv enable
+       bls_ll_setAdvEnable(1);  //adv enable
     }
-	else
-	{
+    else
+    {
         app_set_adv_interval_downgrade_indirect();
         bls_ll_setAdvEnable(1);  //adv enable
-	}
+    }
 }
 
 u8 effective_rx_dle = 0;
@@ -338,8 +342,8 @@ void app_service_change(void)
     {
         printf("app_service_change\r\n");
         bls_att_pushIndicateData(GenericAttribute_ServiceChanged_DP_H,service_data,sizeof(service_data));
-		analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~OTA_FLG));
-		service_change = 0;
+        analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~OTA_FLG));
+        service_change = 0;
     }
 }
 
@@ -375,30 +379,34 @@ void mtu_exchange_loop(void)
     }
 }
 
-
-/*
-int app_terminate_timeout(void)
-{
-     printf("app_terminate_timeout\r\n");
-     ble_sts_t status = bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN);
-	 printf("status=%x\r\n",status);
-	 bls_ll_setAdvEnable(1);
-	 return -1;
-}
-*/
 int app_enable_adv_timeout(void)
 {
      printf("app_enable_adv_timeout\r\n");
-	 app_adv_indirect();
-	 return -1;
+     is_pairing_mode = 0x55;
+     app_pairing_led();
+     app_adv_indirect();
+     enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+     if(google_voice_ctl){
+         google_voice_ctl = 0;
+     }
+     if(ui_mic_enable){
+        ui_enable_mic (0);
+     }
+     return -1;
 }
 
+ble_sts_t app_terminate(u8 reason)
+{
+    app_slave_terminate = 0x55;
+    ble_sts_t status = bls_ll_terminateConnection(reason);
+    return status;
+}
 
 int app_terminate_timeout(void)
 {
-     ble_sts_t status = bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN);
-	 printf("status=%x\r\n",status);
-	 return -1;
+     ble_sts_t status = app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN);
+     printf("app_terminate_timeout status=%x\r\n",status);
+     return -1;
 }
 
 void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
@@ -406,15 +414,17 @@ void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
      printf("ble_ll_reject\r\n");
      if(device_in_connection_state == 0)
      {
-         ble_sts_t status = bls_ll_terminateConnection(HCI_ERR_REMOTE_USER_TERM_CONN);
-		 printf("status=%x\r\n",status);
+         blt_soft_timer_add(&app_enable_adv_timeout, 1000000);
+         ble_sts_t status = app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN);
+         printf("status=%x\r\n",status);
          if(google_voice_ctl & FLAG_GOOGLE_CAPS_RESP)
-		 	google_voice_ctl &= ~FLAG_GOOGLE_CAPS_RESP;
+             google_voice_ctl &= ~FLAG_GOOGLE_CAPS_RESP;
      }
 }
 
 void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
+
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     printf("ble_remote_terminate  bond_number=%x,*p=%x\r\n",bond_number,*p);
 
@@ -422,57 +432,87 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
     {
         if(*p == HCI_ERR_CONN_TIMEOUT){
             printf("HCI_ERR_CONN_TIMEOUT\r\n");
-			device_timeout_state=0x55;
-			is_pairing_mode = 0;
-	        is_reconn_mode = 0;
-			if(flag_schedule_ota == 0x55)
-			{
-			    enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
-			    bls_ll_setAdvEnable(0);
+            device_timeout_state=0x55;
+            is_pairing_mode = 0;
+            is_reconn_mode = 0;
+            if(flag_schedule_ota == 0x55)
+            {
+                enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+                bls_ll_setAdvEnable(0);
             }
-			else
-			{
-			    enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
-			    app_adv_direct();
-			}
+            else
+            {
+                enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+                app_adv_direct();
+            }
         }
         else if(*p == HCI_ERR_REMOTE_USER_TERM_CONN){  //0x13
 
              printf("remote  user terminate\r\n");
-             u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-             printf("bond_number_1=%x\r\n",bond_number);
-             if(bond_number)
-                 bls_smp_param_deleteByIndex(0);
-             bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-             printf("bond_number_1=%x\r\n",bond_number);
-			 if(device_in_connection_state == 0)
-			 {
-			     printf("slave_terminate\r\n");
-                 //enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
-				 bls_ll_setAdvEnable(0);
-				 blt_soft_timer_add(&app_enable_adv_timeout, 1000000);
-			 }
-			 else
-			 {
-                 printf("master terminate\r\n");
-                 bls_ll_setAdvEnable(0);
-			 	 enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
-				 ir_flash_factory();
-			 }
+             #if 0
+             device_timeout_state=0x55;
+             if(is_pairing_mode)
+                 is_pairing_mode = 0;
+             if(is_reconn_mode)
+                 is_reconn_mode = 0;
+             bls_ll_setAdvEnable(0);
+             if(app_slave_terminate == 0x55)
+             {
+                  enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+                  app_slave_terminate = 0;
+                  printf("slave terminate\r\n");
+             }
+             else
+             {
+                 if(device_in_connection_state == 0)
+                 {
+                     enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+                 }
+                 else
+                 {
+                     if(flag_schedule_ota == 0x55)
+                     {
+                         enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+                         bls_ll_setAdvEnable(0);
+                     }
+                     else
+                     {
+                         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+                         if(bond_number)
+                         {
+                              enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+                         }
+                         else
+                             enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+
+                        sleep_us(600000);
+                        app_adv_direct();
+                     }
+                 }
+             }
+             #else
+             device_timeout_state=0x55;
+             if(is_pairing_mode)
+                 is_pairing_mode = 0;
+             if(is_reconn_mode)
+                 is_reconn_mode = 0;
+             bls_ll_setAdvEnable(0);
+             enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+             #endif
         }
         else if(*p == HCI_ERR_CONN_TERM_MIC_FAILURE){
-			  is_pairing_mode = 0;
-	          is_reconn_mode = 0;
-			  app_pairing_error();
-		      enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
-			  bls_ll_setAdvEnable(0);
+              is_pairing_mode = 0;
+              is_reconn_mode = 0;
+              app_pairing_error();
+              enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+              bls_ll_setAdvEnable(0);
               printf("HCI_ERR_CONN_TERM_MIC_FAILURE\r\n");
         }
     }
 
     device_in_connection_state = 0;
-	mtuExchange_check_tick = 0;
-	flag_dle = 0;
+    mtuExchange_check_tick = 0;
+    flag_dle = 0;
 
 #if (BLE_REMOTE_PM_ENABLE)
      //user has push terminate pkt to ble TX buffer before deepsleep
@@ -533,7 +573,7 @@ int app_host_event_callback (u32 h, u8 *para, int n)
         {
             gap_smp_paringFailEvt_t* p = (gap_smp_paringFailEvt_t*)para;
             printf("----- Pairing failed:rsn:0x%x -----\n", p->reason);
-			app_pairing_error();
+            app_pairing_error();
         }
         break;
 
@@ -541,13 +581,13 @@ int app_host_event_callback (u32 h, u8 *para, int n)
         {
             gap_smp_connEncDoneEvt_t* p = (gap_smp_connEncDoneEvt_t*)para;
             printf("----- Connection encryption done -----\n");
-
+            blt_soft_timer_delete(app_terminate_timeout);
             //TODO
             //enable_rsp_gaps_rsp = 1;
 
             if(p->re_connect == SMP_STANDARD_PAIR){  //first paring
                 printf("first pairing\r\n");
-				mtuExchange_check_timer = 12000000;
+                mtuExchange_check_timer = 12000000;
                 if(ir_flash_erase_flag == 0x55)
                 {
                     ir_flash_set_flag(0);
@@ -559,12 +599,12 @@ int app_host_event_callback (u32 h, u8 *para, int n)
                 printf("auto connect \r\n");
             }
             device_in_connection_state = 1;
-		    is_pairing_mode = 0;
-	        is_reconn_mode = 0;
-			app_connect_led();
-			mtuExchange_check_tick = clock_time() | 1;
-			notify_get_rsp_tick = clock_time()|1;
-			battery_refresh();
+            is_pairing_mode = 0;
+            is_reconn_mode = 0;
+            app_connect_led();
+            mtuExchange_check_tick = clock_time() | 1;
+            notify_get_rsp_tick = clock_time()|1;
+            battery_refresh();
         }
         break;
 
@@ -574,8 +614,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             gap_gatt_mtuSizeExchangeEvt_t *pEvt = (gap_gatt_mtuSizeExchangeEvt_t *)para;
             printf("MTU Peer MTU(%d)/Effect ATT MTU(%d).\n", pEvt->peer_MTU, pEvt->effective_MTU);
             app_mtu_size = U16_LO(pEvt->effective_MTU);
-			flag_dle |= 0x10;
-			/*
+            flag_dle |= 0x10;
+            /*
             if(!flag_dle){
                 blc_ll_exchangeDataLength(LL_LENGTH_REQ,pEvt->effective_MTU);
             }
@@ -613,55 +653,55 @@ int app_peer_mac_flash_erase_timeoutcb(void)
 
 void app_peer_mac_flash_erase(void)
 {
-	blt_soft_timer_add(&app_peer_mac_flash_erase_timeoutcb, PEER_MAC_FLASH_ERASE_TIMEOUT);
+    blt_soft_timer_add(&app_peer_mac_flash_erase_timeoutcb, PEER_MAC_FLASH_ERASE_TIMEOUT);
 }
 
 
 void app_save_peer_mac_info(u8 *mac)
 {
-	/*
+    /*
     for(u8 i=0;i<6;i++)
-	{
-	    printf(" %x",mac[i]);
-	}
-	printf("\r\n");
-	*/
-	if((peer_mac[0] == 0) && (peer_mac[1] == 0))
-	{
-	    memcpy(peer_mac,mac,6); 
-		write_peer_mac_info(peer_mac);
-		
-	}
-	else
-	{
+    {
+        printf(" %x",mac[i]);
+    }
+    printf("\r\n");
+    */
+    if((peer_mac[0] == 0) && (peer_mac[1] == 0))
+    {
+        memcpy(peer_mac,mac,6);
+        write_peer_mac_info(peer_mac);
+    }
+    else
+    {
         if(memcmp(mac,peer_mac,6))
-	    {
-	        printf("new mac\r\n");
-	        memcpy(peer_mac,mac,6); 
-			ir_table_init();
-			ir_flash_erase_flag = 0x55;
-	        if(is_peer_mac_flash_info_full() == 0)
-	           write_peer_mac_info(peer_mac);
-	        else
-	   	       app_peer_mac_flash_erase();
-	    }
+        {
+            printf("new mac\r\n");
+            memcpy(peer_mac,mac,6);
+            ir_table_init();
+            ir_flash_erase_flag = 0x55;
+            if(is_peer_mac_flash_info_full() == 0)
+               write_peer_mac_info(peer_mac);
+            else
+                  app_peer_mac_flash_erase();
+        }
     }
 }
 
 void    task_connect (u8 e, u8 *p, int n)
 {
     printf("connect\r\n");
-	
-	app_save_peer_mac_info(p);
+
+    app_save_peer_mac_info(p);
     bls_l2cap_setMinimalUpdateReqSendingTime_after_connCreate(1000);
     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 
     latest_user_event_tick = clock_time();
+    blt_soft_timer_add(&app_terminate_timeout, 2000000);
 }
 
 void    task_conn_update_req (u8 e, u8 *p, int n)
 {
-       printf("task_conn_update_req\r\n");
+    printf("task_conn_update_req\r\n");
 }
 
 void    task_conn_update_done (u8 e, u8 *p, int n)
@@ -707,7 +747,7 @@ void blt_pm_proc(void)
     {
          printf("stuck key\r\n");
          stuckkey_keypresstimer = 0;
-		 u8 len = app_custom_get_drive_len();
+         u8 len = app_custom_get_drive_len();
          {
             for(int i=0; i<len;i++)
             {
@@ -717,22 +757,22 @@ void blt_pm_proc(void)
                      printf("stuck key i=%x\r\n",i);
                      cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 1);
                  }
-				 else
-				 {
-					cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
-				 }
+                 else
+                 {
+                    cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
+                 }
             }
-			
-			app_release_hid_key();
 
-			printf("deep\r\n");
+            app_release_hid_key();
+
+            printf("deep\r\n");
             cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
-			printf("into deep fail\r\n");
+            printf("into deep fail\r\n");
          }
     }
 #endif
 
-    if(ui_mic_enable || google_voice_ctl || ota_is_working)
+    if((ui_mic_enable || google_voice_ctl || ota_is_working) && (device_in_connection_state))
     {
         //printf("ota_is_working ui_mic_enable=%x google_voice_ctl=%x ota_is_working=%x,\r\n",ui_mic_enable,google_voice_ctl,ota_is_working);
         bls_pm_setSuspendMask (SUSPEND_DISABLE);
@@ -773,7 +813,7 @@ void blt_pm_proc(void)
         int user_task_flg = ota_is_working || scan_pin_need || key_not_released || device_led_busy();
 
         if(user_task_flg){
-			  // printf("ota_is_working scan_pin_need=%x google_voice_ctl=%x key_not_released=%x,device_led_busy()=%x\r\n",ui_mic_enable,scan_pin_need,key_not_released,device_led_busy());
+              // printf("ota_is_working scan_pin_need=%x google_voice_ctl=%x key_not_released=%x,device_led_busy()=%x\r\n",ui_mic_enable,scan_pin_need,key_not_released,device_led_busy());
             bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
 
             #if (LONG_PRESS_KEY_POWER_OPTIMIZE)
@@ -828,34 +868,34 @@ void blt_pm_proc(void)
                         printf("adv 10 mins\r\n");
                     else
                         printf("adv 2 mins\r\n");
-					delay3s_to_sleep_tick = clock_time()|1;
-					device_led_off(APP_LED_GREEN);
-					app_pairing_error();
+                    delay3s_to_sleep_tick = clock_time()|1;
+                    device_led_off(APP_LED_GREEN);
+                    app_pairing_error();
                 }
                 else
                 {
                     advertise_begin_tick = clock_time();
                 }
             }
-			if(blc_ll_getCurrentState() == BLS_LINK_STATE_ADV && delay3s_to_sleep_tick && clock_time_exceed(delay3s_to_sleep_tick,3000*1000))
-			{
-			     printf("adv timeout\r\n");
-			     //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
-			     app_schedule_ota_enter_deep();
-			}
-			 if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg ) 
-			 {
-			      if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
-				  	   time =  ADV_IDLE_ENTER_DEEP_TIME;
-				  else
-				  	   time = 3;
-				  if(clock_time_exceed(advertise_begin_tick ,  time* 1000000))
-				  {
-                      printf("idle to sleep\r\n");
-				      //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
-					  app_schedule_ota_enter_deep();
-				  }
-			 }
+            if(blc_ll_getCurrentState() == BLS_LINK_STATE_ADV && delay3s_to_sleep_tick && clock_time_exceed(delay3s_to_sleep_tick,3000*1000))
+            {
+                 printf("adv timeout\r\n");
+                 //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+                 app_schedule_ota_enter_deep();
+            }
+            if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg )
+            {
+                 if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
+                        time =  ADV_IDLE_ENTER_DEEP_TIME;
+                 else
+                        time = 3;
+                 if(clock_time_exceed(advertise_begin_tick ,  time* 1000000))
+                 {
+                     printf("idle to sleep\r\n");
+                     //cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);  //deepsleep
+                     app_schedule_ota_enter_deep();
+                 }
+            }
 #if 0
             //conn 60s no event(key/voice/led), enter deepsleep
             else if( device_in_connection_state && !user_task_flg && \
@@ -940,22 +980,22 @@ _attribute_data_retention_ u8 wakeup_key_send_flag=1;     //2: already send wake
 u8 app_wakeup_src(void)
 {
     u8 flag = analog_read(0X44);
-	if(flag & 0x08)
-		return 1;  //wakeup for pad
-	else
-	    return 2;  //wakeup for not pad
+    if(flag & 0x08)
+        return 1;  //wakeup for pad
+    else
+        return 2;  //wakeup for not pad
 }
 
 typedef struct{
     u32 dma_len;            //won't be a fixed number as previous, should adjust with the mouse package number
 
-    u8  type;               //RA(1)_TA(1)_RFU(2)_TYPE(4)
-    u8  rf_len;             //LEN(6)_RFU(2)
-    u8  advA[6];            //address
-    u8  data[31];           //0-31 byte
+    u8    type;               //RA(1)_TA(1)_RFU(2)_TYPE(4)
+    u8    rf_len;             //LEN(6)_RFU(2)
+    u8    advA[6];            //address
+    u8    data[31];           //0-31 byte
 }rf_packet_adv_ind_module_t;
 
-extern u8 wakeup_key[2];
+extern u8 wakeup_key[5];
 
 void app_tx_power_wakeup(u8 keyid)
 {
@@ -983,15 +1023,23 @@ void app_tx_power_wakeup(u8 keyid)
     tx_power_wakeup.data[8] = 'g';
     tx_power_wakeup.data[9] = 'i';
     tx_power_wakeup.data[10] = 'c';
-    if(keyid == wakeup_key[0])
+    if(keyid == 0xff)
     {
-        tx_power_wakeup.data[11] = 0x01;
+        tx_power_wakeup.data[11] = 0x01;  //schedule ota wakeup packet
     }
-    else if(keyid == wakeup_key[1])
+    else
     {
-        tx_power_wakeup.data[11] = 0x02;
+        if(keyid == wakeup_key[0])
+            tx_power_wakeup.data[11] = 1;
+        else if(keyid == wakeup_key[1])
+            tx_power_wakeup.data[11] = 2;
+        else if(keyid == wakeup_key[2])
+            tx_power_wakeup.data[11] = 3;
+        else if(keyid == wakeup_key[3])
+            tx_power_wakeup.data[11] = 5;
+        else if(keyid == wakeup_key[4])
+            tx_power_wakeup.data[11] = 0x10;
     }
-
     memcpy(&(tx_power_wakeup.data[12]), bondInfo.peer_addr, 6);
 
     u8 index=0;
@@ -1012,8 +1060,11 @@ void app_tx_power_wakeup(u8 keyid)
 
         rf_tx_finish_clear_flag();
     }
-    index++;
-    write_wakeup_keyindex_info(index);
+    if(keyid != 0xff)
+    {
+        index++;
+        write_wakeup_keyindex_info(index);
+    }
 }
 
 void app_delay_set(void)
@@ -1078,8 +1129,8 @@ void user_init_normal(void)
         //Hid device on android7.0/7.1 or later version
         // New paring: send security_request immediately after connection complete
         // reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
-        blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
-        //blc_smp_configSecurityRequestSending(SecReq_NOT_SEND, SecReq_NOT_SEND, 4000);
+        //blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
+        blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000);
     #else
         blc_smp_setSecurityLevel(No_Security);
     #endif
@@ -1088,15 +1139,15 @@ void user_init_normal(void)
     app_set_advdata_rspdata();
 
     if(analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG)
-	{
-	    printf("power on deep\r\n");
+    {
+        printf("power on deep\r\n");
         power_down_flag = 2;
-	}
-	else
-	{
+    }
+    else
+    {
         power_down_flag = 1;
-		printf("power on for power down\r\n");
-		if(kb_powerdet())
+        printf("power on for power down\r\n");
+        if(kb_powerdet())
         {
             printf("press and hold back key\r\n");
             u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
@@ -1106,11 +1157,12 @@ void user_init_normal(void)
             bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
             printf("bond_number_1=%x\r\n",bond_number);
         }
-	}
-	
+    }
+    app_schedule_ota_wakeup_host();
+
     is_pairing_mode = 0;
     device_in_connection_state = 0;
-	is_reconn_mode = 0;
+    is_reconn_mode = 0;
 
     ////////////////// config adv packet /////////////////////
 #if (BLE_REMOTE_SECURITY_ENABLE)
@@ -1126,13 +1178,13 @@ void user_init_normal(void)
     } 
 
     if(bond_number)   //set direct adv
-    {  
+    {
         app_set_adv_interval_downgrade_direct();
         printf("peer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
         if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
         {
             printf("ana read = ota succ\r\n");
-			service_change = 0x55;  
+            service_change = 0x55;
         }
         enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
         //set direct adv
@@ -1241,11 +1293,11 @@ void user_init_normal(void)
     app_ir_programming_end_register(app_delay_set);
     is_flash_info_full();
 
-	init_peer_mac();
-	ir_param_init();
+    init_peer_mac();
+    ir_param_init();
     init_wakeup_keyindex();
-	extern void init_device_info (void);
-	init_device_info();
+    extern void init_device_info (void);
+    init_device_info();
 }
 
 

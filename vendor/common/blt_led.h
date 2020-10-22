@@ -41,8 +41,8 @@ typedef struct{
     u8 firston;
     u16 onTime_ms;
     u16 offTime_ms;
-	u8 repeatCount; 
-	u8  iskeepon;
+    u8 repeatCount; 
+    u8  iskeepon;
 } led_cfg_t;
 
 typedef struct{

@@ -66,12 +66,12 @@ void device_led_off(u8 led)
     if(led >= APP_DEVICE_LED_COUNT) return;
     gAppDeviceLedCtrl[led].isEnable = false;
     gAppDeviceLedCtrl[led].isOn = false;
-	gAppDeviceLedCtrl[led].count = 0;
+    gAppDeviceLedCtrl[led].count = 0;
     gpio_write(gAppDeviceLedCtrl[led].gpio, !gAppDeviceLedCtrl[led].onLevel);
 }
 
 void device_led_init(void){  
-	device_led_config(APP_LED_GREEN, 1,  GPIO_LED);
+    device_led_config(APP_LED_GREEN, 1,  GPIO_LED);
     device_led_config(APP_LED_RED, 1, GPIO_LED2);
 }
 
@@ -81,11 +81,10 @@ int device_led_busy(void)
     for(u8 i=0;i<APP_DEVICE_LED_COUNT;i++)
     {
         if(gAppDeviceLedCtrl[i].count != 0)
-		    j++;
-			
+            j++;
     }
     if(j) return 1;
-	else  return 0;
+    else  return 0;
 }
 
 void device_led_setup(led_cfg_t led_cfg)
@@ -93,18 +92,18 @@ void device_led_setup(led_cfg_t led_cfg)
     u8 led = led_cfg.led;
 
     if(led >= APP_DEVICE_LED_COUNT) return;
-	device_led_off(led);
-	if(led_cfg.firston)
-	{
-	    device_led_on(led);
-	}
-	if((led_cfg.repeatCount == 0) && !led_cfg.firston)
-	{
-	    if(led_cfg.offTime_ms == 0)
-	    {
-	        device_led_on(led);
-	    }
-	}
+    device_led_off(led);
+    if(led_cfg.firston)
+    {
+        device_led_on(led);
+    }
+    if((led_cfg.repeatCount == 0) && !led_cfg.firston)
+    {
+        if(led_cfg.offTime_ms == 0)
+        {
+            device_led_on(led);
+        }
+    }
     gAppDeviceLedCtrl[led].isEnable = true;
     gAppDeviceLedCtrl[led].isKeepOn = led_cfg.iskeepon;
     gAppDeviceLedCtrl[led].count = led_cfg.repeatCount;
@@ -139,7 +138,7 @@ void led_proc(void)
                 gAppDeviceLedCtrl[i].isEnable = false;
                 return ;
             }
-		}
+        }
         if(!gAppDeviceLedCtrl[i].isOn && gAppDeviceLedCtrl[i].onTimer != 0
             && clock_time_exceed(gAppDeviceLedCtrl[i].timer, gAppDeviceLedCtrl[i].offTimer*1000)){
             gAppDeviceLedCtrl[i].timer = clock_time() | 1;

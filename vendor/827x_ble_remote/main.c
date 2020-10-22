@@ -106,7 +106,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     if(!deepRetWakeUp){//read flash size
         //app_custom_test();
-    	app_custom_init();
+        app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
         #if FIRMWARE_CHECK_ENABLE
@@ -116,7 +116,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
             }
         #endif
     }
-	
+
     blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
 
     if( deepRetWakeUp ){
@@ -124,11 +124,11 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         user_init_deepRetn ();
     }
     else{
-		extern u8 wakeup_src;  //1:wakeup for pad  2:wake up for timer
+        extern u8 wakeup_src;  //1:wakeup for pad  2:wake up for timer
         extern u8 app_wakeup_src(void);
-	
-		wakeup_src = app_wakeup_src();
-	    printf("wakeup_src=%x\r\n",wakeup_src);
+
+        wakeup_src = app_wakeup_src();
+        printf("wakeup_src=%x\r\n",wakeup_src);
         #if FIRMWARES_SIGNATURE_ENABLE
             blt_firmware_signature_check();
         #endif

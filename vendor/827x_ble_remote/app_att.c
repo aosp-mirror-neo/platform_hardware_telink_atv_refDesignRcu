@@ -107,7 +107,7 @@ static u8 serviceChangeCCC[2] = {0,0};
 
 static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 _attribute_data_retention_ u8 my_PnPtrs []       = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
-	
+
 
  _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','1'};
  _attribute_data_retention_ u8 my_SWRevtrs []     = {'V','1','.','0','2'};
@@ -444,7 +444,7 @@ static const u8 my_OtaCharVal[19] = {
 static const u8 my_TestCharVal[19] = {
     CHAR_PROP_READ | CHAR_PROP_WRITE | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,
     U16_LO(TEST_MODE_DP_H), U16_HI(TEST_MODE_DP_H),
-	TEST_MODE_TEST_DATA_UUID,
+    TEST_MODE_TEST_DATA_UUID,
 };
 #endif
 
@@ -482,7 +482,7 @@ static const u8 my_Ir_Key_Event_CharVal[19] = {
     U16_LO(IR_KEY_EVENT_H), U16_HI(IR_KEY_EVENT_H),
     TELINK_IR_KEY_EVENT_UUID_SERVICE
 };
-u8	  ir_data[1] = {0};
+u8      ir_data[1] = {0};
 
 
 #if BLE_AUDIO_ENABLE
@@ -742,7 +742,7 @@ int app_ir_callback(void *p)
 
         /////////////////////////////////// 4. HID Service /////////////////////////////////////////////////
         // 0015 - 002F
-		// primary                  (21)
+        // primary                  (21)
         {HID_CONTROL_POINT_DP_H - HID_PS_H + 1, ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_hidServiceUUID), 0},
 
         // include battery service  (22)
@@ -814,14 +814,14 @@ int app_ir_callback(void *p)
         * GOOGLE AUDIO service
         ********************************************************************************************/
         // 0039 - 0041
-		// primary                  (57)
+        // primary                  (57)
         {9,ATT_PERMISSIONS_READ,2,16, (u8*)(&my_primaryServiceUUID), (u8*)(&ATVV_Server_UUID), 0},
 
-		// TX                       (58-59)
+        // TX                       (58-59)
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_MicCharTx),(u8*)(&my_characterUUID),(u8*)(my_MicCharTx), 0},
         {0,ATT_PERMISSIONS_RDWR,16,sizeof(atv_char_tx_data),(u8*)(&ATVV_Char_UUID_TX),(u8*)(&atv_char_tx_data), &app_auido_google_callback},    //value
 
-		// RX                       (60-62)
+        // RX                       (60-62)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_MicCharRx),(u8*)(&my_characterUUID),(u8*)(my_MicCharRx), 0},
         {0,ATT_PERMISSIONS_READ,16,sizeof(atv_char_rx_data),(u8*)(&ATVV_Char_UUID_RX),(u8*)(&atv_char_rx_data), 0},
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(atv_char_rx_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&atv_char_rx_ccc), &att_ccc_control},

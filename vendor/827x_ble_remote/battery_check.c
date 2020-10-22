@@ -237,7 +237,7 @@ _attribute_data_retention_ u8 lowbat=0;
 void battery_refresh(void)
 {
     printf("battery_refresh\r\n");
-     bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);	
+     bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
 }
 
 void battery_percent(void)
@@ -266,7 +266,7 @@ void battery_percent(void)
                  bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
              }
 
-			 //printf("batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
+             //printf("batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
         }
     }
     else
@@ -279,7 +279,7 @@ void battery_percent(void)
                  //printf("bat notify\r\n");
                  bls_att_pushNotifyData(BATT_LEVEL_INPUT_DP_H,&my_batVal[0],1);
              }
-			 //printf("batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
+             //printf("batt_vol_mv=%d,my_batVal=%d \r\n",batt_vol_mv,my_batVal[0]);
         }
     }
 }
@@ -411,12 +411,12 @@ _attribute_ram_code_ int app_battery_power_check(u16 threshold_deep_vol_mv, u16 
     battery_percent();
     if((batt_vol_mv < threshold_deep_vol_mv + 200) && (batt_vol_mv > threshold_deep_vol_mv))
     {
-	    lowbat = 0x55;
+        lowbat = 0x55;
     }
-	else
-	{
-	    lowbat = 0;
-	}
+    else
+    {
+        lowbat = 0;
+    }
     if(batt_vol_mv < threshold_deep_vol_mv){
 
         u8 analog_used_deep_reg = analog_read(USED_DEEP_ANA_REG);

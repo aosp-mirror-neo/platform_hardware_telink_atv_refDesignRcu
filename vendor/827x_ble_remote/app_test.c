@@ -93,7 +93,7 @@
 typedef enum
 {
     _KEY_CODE_POWER         = 0x00,
-	_KEY_CODE_INPUT         = 0x03,
+    _KEY_CODE_INPUT         = 0x03,
     _KEY_CODE_BOOKMARK      = 0x06,
     _KEY_CODE_ASSISTANT     = 0xC0,
     _KEY_CODE_SETTINGS      = 0x0C,
@@ -152,6 +152,7 @@ extern u16 waveform_logic_0_2nd;
 extern u16 waveform_logic_1_1st;
 extern u16 waveform_logic_1_2nd;
 extern u8 app_audio_send_index;
+extern _attribute_data_retention_ u32 app_audio_transfer_timer;
 extern _attribute_data_retention_ u8 bak_batpercent;
 
 static tTest_State _stat = TEST_STAT_USERMODE;
@@ -249,6 +250,8 @@ static void _ctrl_google_voice(bool is_start)
         app_audio_send_index = 0;
 
         google_mic_enable();
+
+        app_audio_transfer_timer = 0;
     }
     else
     {
@@ -279,10 +282,7 @@ void test_entry_mode(void)
         rc_ir_init();
     }
 
-	app_factory_reset();
-#if (!REMOVE_BY_GOOGLE_REQ)
-    if (test_get_mode() == MODE_USER) test_set_mode(MODE_TEST);
-#endif
+    app_factory_reset();
 
     _stat = TEST_STAT_ROOT;
     _ctrl_led(_ON, _ON);
@@ -291,7 +291,7 @@ void test_entry_mode(void)
 tTest_State test_get_state(void)
 {
     if (_stat > TEST_STAT_USERMODE) _stat = TEST_STAT_USERMODE;
-	return _stat;
+    return _stat;
 }
 
 u8 test_get_mode(void)
@@ -318,7 +318,7 @@ void test_set_mode(u8 mode)
 void test_proc_key(void)
 {
     if (kb_event.cnt == 1)
-	{
+    {
         _tKey_Code key_code = _KEY_CODE_POWER;
 
         key_code = kb_event.keycode[0];
@@ -328,8 +328,8 @@ void test_proc_key(void)
         if (_stat == TEST_STAT_ROOT)
         {
             switch (key_code)
-			{
-			case _KEY_CODE_DPAD_CENTER:
+            {
+            case _KEY_CODE_DPAD_CENTER:
                 {
                     u8 version_major = 0x00, version_minor = 0x00;
 
@@ -420,10 +420,10 @@ void test_proc_key(void)
             else if (key_code == _KEY_CODE_BACK) _stat = TEST_STAT_ROOT;
         }
 
-		_key = key_code;
+        _key = key_code;
     }
     else
-	{
+    {
         if (_stat == TEST_STAT_ROOT && _key == _KEY_CODE_HOME) _stat = TEST_STAT_CURRENT;
         else
         {
@@ -506,7 +506,7 @@ int test_write_cb(void *p)
         }
         break;
 
-	case _RF_CMD_DEV_UI_LAYOUT_REQ:
+    case _RF_CMD_DEV_UI_LAYOUT_REQ:
         {
             u8 device_name_len = 0;
             u8 device_ui_layout = 0x00;

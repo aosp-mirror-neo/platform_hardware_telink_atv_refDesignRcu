@@ -164,7 +164,7 @@ extern u32 notify_get_rsp_tick;
 
 void google_voice_on_request();
 void google_voice_dpad_select();
-u8 app_audio_key_start(u8 start_reasion);
+u8 app_audio_key_start(u8 start_reason);
 void google_voice_start();
 void active_mic_open();
 
