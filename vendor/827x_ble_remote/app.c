@@ -449,7 +449,7 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
         else if(*p == HCI_ERR_REMOTE_USER_TERM_CONN){  //0x13
 
              printf("remote  user terminate\r\n");
-             #if 0
+             #if 1
              device_timeout_state=0x55;
              if(is_pairing_mode)
                  is_pairing_mode = 0;
@@ -1130,7 +1130,7 @@ void user_init_normal(void)
         // New paring: send security_request immediately after connection complete
         // reConnect:  send security_request 1000mS after connection complete. If master start paring or encryption before 1000mS timeout, slave do not send security_request.
         //blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000); //if not set, default is:  send "security request" immediately after link layer connection established(regardless of new connection or reconnection )
-        blc_smp_configSecurityRequestSending(SecReq_IMM_SEND, SecReq_PEND_SEND, 1000);
+        blc_smp_configSecurityRequestSending(SecReq_NOT_SEND, SecReq_NOT_SEND, 1000);
     #else
         blc_smp_setSecurityLevel(No_Security);
     #endif
