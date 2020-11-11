@@ -76,7 +76,7 @@ extern int device_in_connection_state;
 extern u8 flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8 wakeup_src;
-extern u8 wakeup_key[5];
+extern u8 wakeup_key[15];
 extern u8 power_down_flag;
 extern u8 wakeup_key_send_flag;
 extern int ir_fallback_send(u8 key_down);
@@ -87,6 +87,12 @@ extern void app_tx_power_wakeup(u8 keyid);
 extern u8  app_custom_is_wakeup_key(u8 keyid);
 extern ble_sts_t app_terminate(u8 reason);
 static const u16 vk_consumer_map[] = {
+    G00GLE_MKEY_INFO,
+    G00GLE_MKEY_SUBTITLE,
+    G00GLE_MKEY_RED,
+    G00GLE_MKEY_GREEN,
+    G00GLE_MKEY_YELLOW,
+    G00GLE_MKEY_BLUE,
     G00GLE_MKEY_YOUTUBE,
     G00GLE_MKEY_NETFLIX,
     G00GLE_MKEY_DISNEY,
@@ -148,6 +154,10 @@ static const u16 vk_consumer_map[] = {
 
 #endif
 
+void app_pairing_error(void)
+{
+    device_led_setup(led_cfg[LED_PAIR_ERROR]);
+}
 
 extern u32 keyScanLongPressTick;
 
@@ -190,6 +200,7 @@ extern u32 keyScanLongPressTick;
 #if (BLE_REMOTE_OTA_ENABLE)
     #include "app_ota.h"
     extern u8  mac_public[6];
+    u8 FW_dec_flag = 0;
 
     void app_ota_ver_check(void){
         printf("CMD_OTA_FW_VERSION\n");
@@ -282,6 +293,9 @@ extern u32 keyScanLongPressTick;
         }
         ota_ctl_flag |= OTA_START;
         ota_flag = 1;
+
+        FW_dec_flag = 0;    //clear firmware decryption flag
+
         //add user code
         printf("ota start red led on\r\n");
         device_led_setup(led_cfg[LED_OTA_START]);
@@ -290,81 +304,62 @@ extern u32 keyScanLongPressTick;
 
     }
 
+void app_debug_ota_result(int result)
+{
 
+    #if(0 && BLT_APP_LED_ENABLE)  //this is only for debug
 
-    void app_debug_ota_result(int result)
-    {
+    gpio_set_output_en(GPIO_LED, 1);
 
-        #if(0 && BLT_APP_LED_ENABLE)  //this is only for debug
+    if(result == OTA_SUCCESS){  //led for debug: OTA success
+         gpio_write(GPIO_LED, 1);
+         sleep_us(500000);
+         gpio_write(GPIO_LED, 0);
+         sleep_us(500000);
+         gpio_write(GPIO_LED, 1);
+         sleep_us(500000);
+         gpio_write(GPIO_LED, 0);
+         sleep_us(500000);
+     }
+     gpio_set_output_en(GPIO_LED, 0);
+     #endif
+ }
 
-            gpio_set_output_en(GPIO_LED, 1);
+ void app_ota_result(int result)
+ {
+     printf("google_ota_result result=%x\r\n",result);
+     u8 report_data[3];
+     report_data[0] = CLIENT_REPORT_CMD;
+     report_data[1] = TYPE_OTA_RESULT;
+     report_data[2] = (u8)result;
+     if(device_in_connection_state)
+     {
+         u16 i = 0;
+         while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
+         sleep_us(100);
+         i++;
+         }
 
-            if(result == OTA_SUCCESS){  //led for debug: OTA success
-                gpio_write(GPIO_LED, 1);
-                sleep_us(500000);
-                gpio_write(GPIO_LED, 0);
-                sleep_us(500000);
-                gpio_write(GPIO_LED, 1);
-                sleep_us(500000);
-                gpio_write(GPIO_LED, 0);
-                sleep_us(500000);
-            }
-            else{  //OTA fail
+         i = 0;
+         while(app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN) &&  i < 2000){
+         sleep_us(100);
+         i++;
+         }
 
-                #if 0 //this is only for debug,  can not use this in application code
-                    irq_disable();
-                    WATCHDOG_DISABLE;
-
-
-
-                    while(1){
-                        gpio_write(GPIO_LED, 1);
-                        sleep_us(200000);
-                        gpio_write(GPIO_LED, 0);
-                        sleep_us(200000);
-                    }
-
-                #endif
-
-            }
-
-            gpio_set_output_en(GPIO_LED, 0);
-        #endif
-    }
-
-    void app_ota_result(int result)
-    {
-       printf("google_ota_result result=%x\r\n",result);
-       u8 report_data[3];
-       report_data[0] = CLIENT_REPORT_CMD;
-       report_data[1] = TYPE_OTA_RESULT;
-       report_data[2] = (u8)result;
-
-       u16 i = 0;
-       while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
-       sleep_us(100);
-       i++;
-       }
-
-       i = 0;
-       while(app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN) &&  i < 2000){
-       sleep_us(100);
-       i++;
-       }
-
-       i = 0;
-       while(blc_ll_getTxFifoNumber() &&  i < 400){
-       sleep_us(10000);//printf("waiting TX fifo is empty\n"); //waiting TX fifo is empty
-       i++;
-       if(result == 0)
-       {
-           printf("ota end red led off\r\n");
-           device_led_setup(led_cfg[LED_OTA_END]);
-           printf("ota_suc and write_ana\r\n");
-           analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | OTA_FLG);
-           printf("analog_read(USED_DEEP_ANA_REG)=%x\r\n",analog_read(USED_DEEP_ANA_REG));
-       }
-    }
+         i = 0;
+         while(blc_ll_getTxFifoNumber() &&  i < 400){
+         sleep_us(10000);//printf("waiting TX fifo is empty\n"); //waiting TX fifo is empty
+         i++;
+         }
+     }
+     if(result == 0)
+     {
+         printf("ota end red led off\r\n");
+         device_led_setup(led_cfg[LED_OTA_END]);
+         printf("ota_suc and write_ana\r\n");
+         analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | OTA_FLG);
+         printf("analog_read(USED_DEEP_ANA_REG)=%x\r\n",analog_read(USED_DEEP_ANA_REG));
+     }
 }
 
 extern u16 count_schedule_ota;
@@ -388,6 +383,20 @@ void app_schedule_ota(u8 *data)
     analog_write(DEEP_ANA_REG2, 0);
 }
 
+int app_ota_timeoutcb(void)
+{
+    printf("app_ota_timeoutcb\r\n");
+    terminate_google_ota_proc(OTA_TIMEOUT);
+    return -1;
+}
+
+void app_ota_timeout(void)
+{
+    extern u8 google_ota_start_flag;
+    google_ota_start_flag = 0;
+    app_pairing_error();
+    blt_soft_timer_add(&app_ota_timeoutcb, 1000000);
+}
 
 void app_ota_status(u8 status)
 {
@@ -490,16 +499,20 @@ void app_schedule_ota_wakeup_host(void)
 {
     u8 data = analog_read(DEEP_ANA_REG2);
     u8 i;
+    u8 flag=0;
 
     if((wakeup_src == 2) && (data) && (power_down_flag == 2))
     {
-        for(i=0;i<5;i++)
+        for(i=0;i<15;i++)
         {
-            if(wakeup_key[i] == 0xff)
-                return;
+            if(wakeup_key[i] != 0xff)
+                flag++;
         }
-        printf("app_schedule_ota_wakeup_host\r\n");
-        app_tx_power_wakeup(0xff);
+        if(flag)
+        {
+            printf("app_schedule_ota_wakeup_host\r\n");
+            app_tx_power_wakeup(0xff);
+        }
     }
 }
 
@@ -723,6 +736,10 @@ void app_key_send_store(void)
             if(key_value == CR_DASHBOARD)
             {
                 consumer_key[0] = key_setting_or_noti[1];
+            }
+            else if(key_value == CR_GUIDE)
+            {
+                consumer_key[0] = key_guide_or_livetv[1];
             }
             else
                 consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
@@ -977,11 +994,6 @@ void app_pairing_led(void)
     device_led_setup(led_cfg[LED_SHINE_PAIRING]);
 }
 
-void app_pairing_error(void)
-{
-    device_led_setup(led_cfg[LED_PAIR_ERROR]);
-}
-
 void app_twokey_to_onekey(void)
 {
     if(TwoKeyPressMode != APP_TWOKEYPRESS_NONE)
@@ -1055,7 +1067,7 @@ void key_change_proc(void)
             LongPressTick = 4000000;
             TwoKeyPressMode = APP_TWOKEYPRESS_FACTORYRESET;
         }
-        else if ( (key0 == 0x17 && key1 == 0x15) || (key0 == 0x15 && key1 == 0x07)) //Bug report
+        else if ( (key0 == 0x07 && key1 == 0x15) || (key0 == 0x15 && key1 == 0x07)) //Bug report
         {
             printf("bug report start\r\n");
             comb_key_stop_ir();
@@ -1086,6 +1098,8 @@ void key_change_proc(void)
                     {
                         if(key0 == 12)
                             key_value = key_setting_or_noti[0];
+                        else if(key0 == 13)
+                            key_value = key_guide_or_livetv[0];
                         else
                             key_value = p_kb_map_ir[key0];
                         key_type = IR_KEY;
@@ -1203,6 +1217,10 @@ void key_change_proc(void)
                     {
                         consumer_key[0] = key_setting_or_noti[1];
                     }
+                    else if(key_value == CR_GUIDE)
+                    {
+                        consumer_key[0] = key_guide_or_livetv[1];
+                    }
                     else
                         consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
                     consumer_key[1] = 0;
@@ -1235,6 +1253,8 @@ void key_change_proc(void)
                  key_value = 0x46;
              else if(key0 == 12)
                  key_value = key_setting_or_noti[0];
+             else if(key0 == 13)
+                 key_value = key_guide_or_livetv[0];
              else
                  key_value = p_kb_map_ir[key0];
              if((key_value == IR_BACK) &&(is_pairing_mode == 0x55))
@@ -1267,6 +1287,7 @@ void key_change_proc(void)
     else   //kb_event.cnt == 0,  key release
     {
         printf("key release\r\n");
+        advertise_tick_retime();
         if(audio_start_reason == REASON_HTT){
             printf("key release_audio_start_reason:0x%x\n",audio_start_reason);
             google_voice_ctl |= FLAG_AUDIO_CLOSE;
@@ -1435,6 +1456,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
             notify_get_rsp_en = 1;
             if( device_in_connection_state == 0)
             {
+                ir_table_init();
                 ir_flash_set_flag(0);
                 app_set_adv_interval_downgrade_indirect();
                 extern void app_adv_indirect(void);

@@ -45,6 +45,8 @@ void proc_keyboard (u8 e, u8 *p, int n);
     void app_enter_ota_mode(void *data);
     void app_ota_result(int result);
     void app_schedule_ota(u8 *data);
+
+    void app_ota_decryption(u8 *data);
 #endif
     int att_ccc_control(void* p);
 
@@ -66,5 +68,5 @@ extern void app_release_hid_key(void);
 extern void app_schedule_ota_enter_deep(void);
 extern void app_schedule_ota_wakeup_host(void);
 extern void app_schedule_ota_send_notify_to_continue_ota(void);
-
+extern void app_ota_timeout(void);
 #endif /* APP_UI_H_ */

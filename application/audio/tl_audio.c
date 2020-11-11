@@ -732,6 +732,15 @@ void mic_encoder_data_read_ok (void)
 }
 
 #elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)                        //RCU,GATT GOOGLE
+/**
+ * @brief       dynamic bandwidth adjustment(google voice v1.0)
+ * @param[in]   packets: number of saved adpcm packets
+ * @param[in]   rptr: current read pointer position
+ * @param[in]   threshold1: CODEC_USED_16K to CODEC_USED_8K threshold
+ * @param[in]   threshold2: CODEC_USED_8K to CODEC_USED_16K threshold
+ * @param[in]   hold_time: time to maintain 8k voice
+ * @return      None
+ */
 u32 hold_8k_time = 0;
 void dynamic_bandwidth_adjustment(int packets,u16 rptr,int threshold1,int threshold2,int hold_time){
     if(google_voice_codec_used == CODEC_USED_16K){
@@ -755,6 +764,11 @@ void dynamic_bandwidth_adjustment(int packets,u16 rptr,int threshold1,int thresh
     }
 }
 
+/**
+ * @brief   check the voice buffer and encode pcm data into adpcm data.
+ * @param   none
+ * @return  none
+ */
 void    proc_mic_encoder (void)
 {
     static u16    buffer_mic_rptr;

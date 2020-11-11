@@ -183,8 +183,17 @@ extern "C" {
 #define CR_VOL_DN                             0x81
 
 
-#define CR_MEDIA_KEY_INDEX                    CR_YOUTUBE
+#define CR_MEDIA_KEY_INDEX                    CR_INFO//CR_YOUTUBE
 
+//G20
+#define CR_INFO                               0xe6
+#define CR_SUBTITLE                           0xe7
+#define CR_RED                                0xe8
+#define CR_GREEN                              0xe9
+#define CR_YELLOW                             0xea
+#define CR_BLUE                               0xeb
+
+//G10
 #define CR_YOUTUBE                            0xec
 #define CR_NETFLIX                            0xed
 #define CR_DISNEY                             0xee
@@ -259,6 +268,13 @@ extern "C" {
 #define T_VK_CH_UP                            0xd0
 #define T_VK_CH_DN                            0xd1
 
+//G20
+#define IR_INFO                               0x29
+#define IR_SUBTITLE                           0x58
+#define IR_RED                                0x4b
+#define IR_GREEN                              0x4a
+#define IR_YELLOW                             0x49
+#define IR_BLUE                               0x4c
 
 
 #define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}

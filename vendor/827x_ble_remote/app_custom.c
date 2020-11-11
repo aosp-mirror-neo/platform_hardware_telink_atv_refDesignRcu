@@ -28,7 +28,7 @@
 #include "app_config.h"
 #include "app_custom.h"
 
-#define APP_CUSTOM_ADDR 0x78000
+#define APP_CUSTOM_ADDR           0x78000
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
@@ -44,7 +44,10 @@ extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 _attribute_data_retention_  u8 device_type=1;
 
 _attribute_data_retention_  u8 key_setting_or_noti[2]={IR_DASHBOARD,G00GLE_MKEY_DASHBOARD};
-_attribute_data_retention_  u8 wakeup_key[5]={0xff,0xff,0xff,0xff,0xff};
+_attribute_data_retention_  u8 key_guide_or_livetv[2]={IR_GUIDE,G00GLE_MKEY_GUIDE};
+_attribute_data_retention_  u8 key_subtitle_or_teletext[2]={IR_SUBTITLE,G00GLE_MKEY_SUBTITLE};
+_attribute_data_retention_  u8 wakeup_key[15];
+_attribute_data_retention_  u8 wakeup_key_pos=0;
 
 const unsigned char Kb_Map_Normal[8][3] = \
                         {\
@@ -80,14 +83,11 @@ const unsigned char Kb_Map_Ir[] =  {\
                         IR_CENTER,     IR_MUTE,        VK_NONE    };
 
 const unsigned short int Kb_Map_Correspend_Index[] =  {\
-                        0x0030,           0x0045,           0x0081,     \
-                        0x01bb,           0x0043,           0x009d,     \
-                        0x022a,           0x0224,           0x0077,     \
-                        0x0221,           0x0223,           0x0078,     \
-                        0x0096,           0x008d,           0x0079,     \
-                        0x0042,           0x0080,           0x007a,     \
-                        0x0044,           0x009c,           VK_NONE,    \
-                        0x0041,           0x00e2,           VK_NONE      };
+                        6,                VOICE,            12,     \
+                        12,               21,               7,      \
+                        10,               13,               0,      \
+                        3,                13,               8,      \
+                        11,               14,               17   };
 
 
 const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
@@ -100,12 +100,14 @@ const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD
 #define IR_NOTIFICATION                0X10
 #define CR_NOTIFICATION                0X009f
 
+#define IR_LIVE                        0X61
+#define CR_LIVE                        0X0089
+
 void app_custom_ui_layout(u8 ui_layout)
 {
-    if((ui_layout != 0) && (ui_layout !=1) )
-        return;
-
-    if(ui_layout == 1)
+    if(ui_layout == 0xff)
+        ui_layout = 0;
+    if((ui_layout&1) == 1)
     {
         printf("notification key\r\n");
         key_setting_or_noti[0] = IR_NOTIFICATION;
@@ -117,6 +119,31 @@ void app_custom_ui_layout(u8 ui_layout)
         key_setting_or_noti[0] = IR_SETTING;
         key_setting_or_noti[1] = CR_SETTING;
     }
+    if((ui_layout&0x02) == 0x02)
+    {
+        printf("live tv key\r\n");
+        key_guide_or_livetv[0] = IR_LIVE;
+        key_guide_or_livetv[1] = CR_LIVE;
+    }
+    else
+    {
+        printf("tv guide key\r\n");
+        key_guide_or_livetv[0] = IR_GUIDE;
+        key_guide_or_livetv[1] = G00GLE_MKEY_GUIDE;
+    }
+    if((ui_layout&0x04) == 0x04)
+    {
+        printf("teletext key\r\n");
+        key_subtitle_or_teletext[0] = IR_NOTIFICATION;
+        key_subtitle_or_teletext[1] = CR_NOTIFICATION;
+    }
+    else
+    {
+        printf("subtitle key\r\n");
+        key_subtitle_or_teletext[0] = IR_SETTING;
+        key_subtitle_or_teletext[1] = CR_SETTING;
+    }
+
 }
 
 void app_custom_param_init(u8 device)
@@ -140,28 +167,23 @@ void app_custom_init(void)
     u8 addr_pos=0,i,j;
     u8 device_ui_layout_type=0;
     u8 *pREMOTE_B046 = (u8 *)("RemoteB046");
-    u16 key[5];
+    u32 wakeupmask=0;
 
     flash_read_page(APP_CUSTOM_ADDR, 64, buffer);
-
+    for(i=0;i<15;i++)
+        wakeup_key[i] = 0xff;
     if(buffer[0] == 0xff)
     {
         printf("default custom info\r\n");
         device_type = REMOTE_G10;
-        /*
-        my_devNamelen = 9;
-        memcpy(my_devName,pREMOTE_G10,9);
-        printf("device_ui_layout_type=%x\r\n",buffer[0x12]);
-        app_custom_ui_layout(buffer[0x12]);
-        */
         my_devNamelen = 10;
-        device_ui_layout_type = 0;
         memcpy(my_devName,pREMOTE_B046,10);
-        app_custom_ui_layout(device_ui_layout_type);
-        /*
-        wakeup_key[0] = 0;
-        wakeup_key[1] = 11;
-        */
+        app_custom_ui_layout(0);
+        app_custom_param_init(device_type);
+        my_FWRevtrs[3] = (device_type) + 0x30;
+        my_FWRevtrs[4] = 0x30;
+        wakeup_key_pos = 24;
+        return;
     }
     else
     {
@@ -175,45 +197,53 @@ void app_custom_init(void)
             memcpy(my_devName,pREMOTE_B046,10);
             app_custom_ui_layout(0);
             app_custom_param_init(device_type);
-            my_FWRevtrs[3] = (device_type) + 48;
-            my_FWRevtrs[4] = device_ui_layout_type + 48;
+            my_FWRevtrs[3] = (device_type) + 0x30;
+            my_FWRevtrs[4] = 0x30;
+            wakeup_key_pos = 24;
             return;
         }
-
-        memcpy(my_devName,&buffer[9],my_devNamelen);
+        if(my_devNamelen>16)
+            memcpy(my_devName,&buffer[9],16);
+        else
+            memcpy(my_devName,&buffer[9],my_devNamelen);
 
         addr_pos = 9 + my_devNamelen;
         device_ui_layout_type = buffer[addr_pos];
-        printf("device_type = %x ,device_ui_type=%x\r\n",device_type,device_ui_layout_type);
-        app_custom_ui_layout(device_ui_layout_type);
+
+        addr_pos = addr_pos+1;
+
         for(i=0;i<7;i++)
             printf(" %x",my_PnPtrs[i]);
 
         //wakeup key
-        if((buffer[addr_pos+1] != 0xff) && (buffer[addr_pos+2] != 0xff))
+        wakeupmask = ((u32)(((u32)buffer[addr_pos]<<24) | ((u32)buffer[addr_pos+1]<<16) | ((u32)buffer[addr_pos+2]<<8) | ((u32)buffer[addr_pos+3])));
+        if(wakeupmask != 0xffffffff)
         {
-            for(j=0;j<5;j++)
-                key[j] = ((u16)((u16)buffer[addr_pos+1+2*j]<<8 | buffer[addr_pos+2+2*j]));
-            for(i=0;i<sizeof(Kb_Map_Correspend_Index)/sizeof(Kb_Map_Correspend_Index[0]);i++)
+            j=0;
+            for(i=0;i<15;i++)
             {
-                for(j=0;j<5;j++)
+                if(wakeupmask&0x01)
                 {
-                    if(Kb_Map_Correspend_Index[i] == key[j])
-                    {
-                        wakeup_key[j] = i;
-                        break;
-                    }
+                    wakeup_key[j] = Kb_Map_Correspend_Index[i];
+                    j++;
                 }
+                wakeupmask = wakeupmask>>1;
             }
             printf("wakeup key =\r\n");
-            for(i=0;i<5;i++)
+            for(i=0;i<15;i++)
                 printf(" %x",wakeup_key[i]);
         }
+        app_custom_ui_layout(device_ui_layout_type);
+        printf("device_type = %x ,device_ui_type=%x\r\n",device_type,device_ui_layout_type);
+        wakeup_key_pos = addr_pos + 4;
+        printf("wakeup_key_pos=%x\r\n",wakeup_key_pos);
+        if(my_devNamelen>16)
+            my_devNamelen = 16;
     }
     app_custom_param_init(device_type);
 
-    my_FWRevtrs[3] = (device_type) + 48;
-    my_FWRevtrs[4] = device_ui_layout_type + 48;
+    my_FWRevtrs[3] = (device_type) + 0x30;
+    my_FWRevtrs[4] = (device_ui_layout_type) + 0x30;
 
 }
 
@@ -221,12 +251,7 @@ u8  app_custom_is_wakeup_key(u8 keyid)
 {
     u8 i;
 
-    for(i=0;i<5;i++)
-    {
-        if(wakeup_key[i] == 0xff)
-            return 0;
-    }
-    for(i=0;i<5;i++)
+    for(i=0;i<15;i++)
     {
         if(keyid == wakeup_key[i])
         {
@@ -250,7 +275,7 @@ u8 app_custom_get_drive_len(void)
 
 void app_custom_test(void)
 {
-    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x01,0x00,0x30,0x00,0x78,0x00,0x41,0x00,0x42,0x00,0x43};
+    u8 buffer[]={0x01,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0xff,0xff,0xff,0xff,0xff,0x0f,0x10,0x09,0,0x13,0xff,0xff,0xff,0xff,0xff,0xff,0x0c,0x16,0x3,0x15,0x01};
     flash_erase_sector(APP_CUSTOM_ADDR);
     flash_write_page(APP_CUSTOM_ADDR,sizeof(buffer),buffer);
 }

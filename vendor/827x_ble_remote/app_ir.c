@@ -32,28 +32,24 @@
 #include "app_ir.h"
 #include "../../stack/ble/attr/att.h"
 
-
+//programming timeout 30s
 #define PROGRAMMING_TIMEOUT 30000000
+
+//Regularly query whether the current time can be erased
 #define FLASH_ERASE_TIMEOUT 100000
 
 #define INVALID_KEY_ID      0xFF00
-#define MAX_CODE_LENGTH     256
-#define MAX_KEY_COUNT       5
+#define MAX_CODE_LENGTH     256            /*  The maximum number of ir codes for each key. */
+#define MAX_KEY_COUNT       5              /*  The maximum number of key for ir programming.*/
 
 #define KEY_IDX_NULL        0xff
 
 typedef struct{
-    u16 key_id;                 //Key ID, comes from ATV
+    u16 key_id;                    //Key ID, comes from ATV (host keyid)
     u16 code_size;
     u8  button_idx;                //button index, based on enum in firmware
     u8  code[MAX_CODE_LENGTH];
 }key_code_t;
-
-typedef struct {
-    u16 key_id;
-    u8  button_idx;
-    u8  button;
-}key_button_pair_t;
 
 typedef struct{
     u32 release_timer;
@@ -86,7 +82,15 @@ typedef struct {
     ir_keycode_merge_t   ir_merge;
 }ir_app_parm_t;
 
+extern u8 device_type;
 
+typedef struct {
+    u16 key_id;
+    u8  button_idx;
+    u8  button;
+}key_button_pair_t;
+
+//keyid: receive from the host. button_idx: Corresponding to the key index in the memory ir_table[].button:The actual keyid corresponding to the board
 const key_button_pair_t key_button_map[MAX_KEY_COUNT] = {
     {0x0018, KEY_IDX_VOLUP, 0x10},
     {0x0019, KEY_IDX_VOLDN, 0x02},
@@ -95,6 +99,7 @@ const key_button_pair_t key_button_map[MAX_KEY_COUNT] = {
     {0x00B2, KEY_IDX_INPUT, 0x03}
 };
 
+//The following address corresponds to the flash memory address written each time. Upto 5 keys can be written at a time, and each key occupies a maximum of 256 bytes.
 const u32 if_flash_sect_addr[IR_DATA_SECT_MAX_NUM] ={IR_DATA_SECT_0_ADDR+256,IR_DATA_SECT_0_ADDR+1536,IR_DATA_SECT_0_ADDR+2816,IR_DATA_SECT_1_ADDR+256,IR_DATA_SECT_1_ADDR+1536,IR_DATA_SECT_1_ADDR+2816, \
                                                  IR_DATA_SECT_2_ADDR+256,IR_DATA_SECT_2_ADDR+1536,IR_DATA_SECT_2_ADDR+2816,IR_DATA_SECT_3_ADDR+256,IR_DATA_SECT_3_ADDR+1536,IR_DATA_SECT_3_ADDR+2816};
 
@@ -139,16 +144,32 @@ int     blt_soft_timer_delete(blt_timer_callback_t func)
 
 _attribute_data_retention_ app_ir_programming_end_Cb_t    app_ir_programming_end_Cb = NULL;
 
+/**
+ * @brief       This function servers to register the callback at the end of ir programming
+ * @param[in]   Callback function that needs to be registered
+ * @return      none
+ */
 void app_ir_programming_end_register(app_ir_programming_end_Cb_t cb)
 {
     app_ir_programming_end_Cb = cb;
 }
 
+/**
+ * @brief       This function set the programming flag
+ * @param[in]   flag the progtamming key. 0x55:current key is a programming key 0:current key not is a propramming key
+ * @return      none
+ */
 void programming_key_set(u8 data)
 {
     ir_app_parm.is_key_programming = data;
 }
 
+/**
+ * @brief       This function is used to determine whether the current key is a programming key
+ * @param[in]   none
+ * @return      1: programming key
+ *              0: not a programming key
+ */
 u8 is_programming_key_send(void)
 {
     if(ir_app_parm.is_key_programming == 0x55)
@@ -157,6 +178,11 @@ u8 is_programming_key_send(void)
         return 0;
 }
 
+/**
+ * @brief       This function is used to get the corresponding button index by board keyid
+ * @param[in]   button: keyid on the board
+ * @return      index 0-4
+ */
 u8 ir_get_button_idx_from_button(u8 button)
 {
     u8 i;
@@ -171,6 +197,11 @@ u8 ir_get_button_idx_from_button(u8 button)
     return KEY_IDX_NULL;
 }
 
+/**
+ * @brief       This function is used to get the corresponding button index by host keyid
+ * @param[in]   button: keyid issued by host
+ * @return      index 0-4
+ */
 u8 ir_get_button_idx_from_key_id(u16 key_id)
 {
     u8 i;
@@ -185,6 +216,11 @@ u8 ir_get_button_idx_from_key_id(u16 key_id)
     return KEY_IDX_NULL;
 }
 
+/**
+ * @brief       This function is used to get the corresponding ir data by board keyid
+ * @param[in]   key_idx: keyid on the board
+ * @return      ir data
+ */
 key_code_t* ir_get_key_code_from_keyid_idx(u8 key_idx)
 {
     u8 i;
@@ -213,6 +249,11 @@ key_code_t* ir_get_key_code_from_keyid_idx(u8 key_idx)
     return NULL;
 }
 
+/**
+ * @brief       This function is used to get the corresponding button index by board keyid
+ * @param[in]   key_idx: keyid on the board
+ * @return      button index
+ */
 u8 ir_get_suppress_index_from_keyid_idx(u8 key_idx)
 {
     u8 i;
@@ -242,6 +283,11 @@ u8 ir_get_suppress_index_from_keyid_idx(u8 key_idx)
     return KEY_IDX_NULL;
 }
 
+/**
+ * @brief       This function is init the ir buffer
+ * @param[in]   none
+ * @return      none
+ */
 void ir_table_init(void)
 {
     u8 i;
@@ -275,6 +321,11 @@ void ir_table_init(void)
 #define APP_IR_DATA_HEAD          0xa5
 #define APP_IR_DATA_HEAD_INVALID  0x0
 
+/**
+ * @brief       Write a flag to indicate that the ir data is invalid
+ * @param[in]   0:indicate the ir data is invalid 1:indicate the ir data is valid
+ * @return      none
+ */
 void ir_flash_set_flag(u8 flag)
 {
     u8 sect= ir_flash_index/3;
@@ -296,6 +347,11 @@ void ir_flash_set_flag(u8 flag)
     }
 }
 
+/**
+ * @brief       Read the ir data from the flash
+ * @param[in]   flash addr
+ * @return      none
+ */
 void ir_flash_check(u32 addr)
 {
     u8 button_index=0,i;
@@ -326,6 +382,11 @@ void ir_flash_check(u32 addr)
     }
 }
 
+/**
+ * @brief       Read the flag from the flash,and find the address which backup the valid ir data
+ * @param[in]   none
+ * @return      none
+ */
 void ir_param_init(void)
 {
     u32 addr;
@@ -376,6 +437,13 @@ void ir_param_init(void)
 
 }
 
+/**
+ * @brief       Backup the ir data in flash
+ * @param[in]   button_index: which button
+   @param[in]   addr:flash addr
+   @param[in]   len:ir data length
+ * @return      none
+ */
 void ir_flash_save(u8 button_index,u32 addr,u32 len)
 {
     u32 flash_addr;
@@ -400,6 +468,11 @@ void ir_flash_save(u8 button_index,u32 addr,u32 len)
     printf("ir_flash_save addr=%x\r\n",addr);
 }
 
+/**
+ * @brief       Erase the flash sector
+ * @return      0: not erase success
+               -1: erase success
+ */
 int ir_flash_erase_timeoutcb(void)
 {
     printf("ir_flash_erase_timeoutcb\r\n");
@@ -426,18 +499,31 @@ int ir_flash_erase_timeoutcb(void)
     return 0;
 }
 
+/**
+ * @brief       Add a timer for erase flash
+ * @return      none
+ */
 void ir_flash_erase(void)
 {
     printf("ir_flash_erase\r\n");
     blt_soft_timer_add(&ir_flash_erase_timeoutcb, FLASH_ERASE_TIMEOUT);
 }
 
+/**
+ * @brief       Ir flash factory
+ * @return      none
+ */
 void ir_flash_factory(void)
 {
     printf("ir_flash_factory\r\n");
     ir_flash_set_flag(0);
 }
 
+/**
+ * @brief       ir_programming_timeoutcb
+ * @return      -1: exit the timer
+                 0: exit the timer this time
+ */
 int ir_programming_timeoutcb(void)
 {
     printf("ir_programming_timeoutcb\r\n");
@@ -451,6 +537,12 @@ int ir_programming_timeoutcb(void)
     return 0;
 }
 
+/**
+ * @brief       Recognize the programming key is IR mode or BLE HID modes
+ * @param[in]   button_index: which button
+ * @return      1: BLE HID mode
+                0: IR mode
+ */
 u8 ir_key_is_suppress(u8 key_idx)
 {
     u8 index;
@@ -462,6 +554,11 @@ u8 ir_key_is_suppress(u8 key_idx)
         return false;
 }
 
+/**
+ * @brief       ir_type_read
+ * @param[in]   none
+ * @return      1 or 0
+ */
 int ir_type_read(void)
 {
     u8 type;
@@ -499,6 +596,11 @@ int ir_type_read(void)
 
 }
 
+/**
+ * @brief       Obtain the duty,frequency,repear delay
+ * @param[in]   none
+ * @return      none
+ */
 void ir_fallback_get_protocol_configure(unsigned char* p_duty_cycle, unsigned short* p_carrier_frequency,
                                         unsigned short* p_repeat_delay)
 {
@@ -507,6 +609,11 @@ void ir_fallback_get_protocol_configure(unsigned char* p_duty_cycle, unsigned sh
     *p_repeat_delay = ir_app_parm.ir_repeat_delay.repeat_delay;
 }
 
+/**
+ * @brief       Load ir data to ir send buffer
+ * @param[in]   ir data
+ * @return      none
+ */
 void ir_send_key_code(key_code_t* p_key_code)
 {
     u8* code = p_key_code->code;
@@ -608,6 +715,11 @@ void ir_send_key_code(key_code_t* p_key_code)
 }
 
 extern void app_ota_status(u8 status);
+/**
+ * @brief       send ir data and send nofity
+ * @param[in]   1: down 0:up
+ * @return      0
+ */
 int ir_fallback_send(u8 key_down)
 {
     key_code_t* p_key_code = &ir_table[ir_app_parm.current_programming_key_send];
@@ -639,6 +751,11 @@ int ir_fallback_send(u8 key_down)
     return 0;
 }
 
+/**
+ * @brief       Ir_repeat_delay_release_time
+ * @param[in]   none
+ * @return      0
+ */
 int ir_repeat_delay_release_time(void)
 {
     ir_app_parm.ir_repeat_delay.release_timer = clock_time();
@@ -646,6 +763,11 @@ int ir_repeat_delay_release_time(void)
     return 0;
 }
 
+/**
+ * @brief       ir_repeat_delay_timer
+ * @param[in]   none
+ * @return      -1
+ */
 int ir_repeat_delay_timer(void)
 {
     printf("ir_repeat_delay_timer\r\n");
@@ -653,6 +775,12 @@ int ir_repeat_delay_timer(void)
     return -1;
 }
 
+/**
+ * @brief       ir_fallback_send_key_code
+ * @param[in]   button_idx
+ * @param[in]   key_down  1:down 0:up
+ * @return      false or true
+ */
 u8 ir_fallback_send_key_code(u8 button_idx, u8 key_down)
 {
     u8 last_key_send = ir_app_parm.current_programming_key_send;
@@ -699,6 +827,14 @@ u8 ir_fallback_send_key_code(u8 button_idx, u8 key_down)
     return true;
 }
 
+/**
+ * @brief       ir_code_merge
+ * @param[in]   key_id
+ * @param[in]   button_index
+ * @param[in]   code size: ir data length
+ * @param[in]   code: ir data
+ * @return      none
+ */
 void ir_code_merge(u16 key_id,u8 button_index,u16 code_size,u8* code)
 {
     u32 flash_addr_pos=0,len;
@@ -768,28 +904,16 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
     return true;
 }
 
+/**
+ * @brief       Receive ATV commands and processed
+ * @param[in]   handle :ATV command
+ * @param[in]   buf:command
+ * @param[in]   len: command data length
+ * @return      false or true
+ */
 void ir_fallback_process(u16 handle, u8* buf, u8 len)
 {
     u8 index,data;
-
-    #if 0
-    if (handle < ATV_IR_SERVICE_IDX || handle > ATV_IR_KEY_EVENT_CCCD_IDX)
-    {
-        //A programming session shell always be performed on one ATT Bearer.
-        if (ir_app_parm.ir_programming.programming_start == 1)
-        {
-            ir_app_parm.ir_programming.programming_start = 0;
-            if (ir_app_parm.programming_timer)
-            {
-                blt_soft_timer_delete(ir_programming_timeoutcb);
-                ir_app_parm.programming_timer = NULL;
-            }
-            ir_table_init();
-            printf("ir_table programming is interrupted.\r\n");
-        }
-        return;
-    }
-    #endif
     u8 testdata[6],i,k;
     u32 addr;
 

@@ -40,45 +40,44 @@ extern void ui_enable_mic(int en);
 extern u8        buffer_mic_pkt_wptr;
 extern u8        buffer_mic_pkt_rptr;
 
+u8 audio_start_reason = 0;        //on-request(0x00),PTT(0x01),HTT(0x03) etc.
+u8 audio_stop_reason = 0;
+
+
+u8 app_audio_send_index = 0;
+u8 app_audio_sync_serial = 0;            //Used for google voice v0.4 sync cmd
+
+u16 mic_open_error_code = 0;
+
+_attribute_data_retention_ u8 mic_open_mode = CAPTURE_MODE;        //0x00:playback mode   0x01:capture mode
+
+_attribute_data_retention_ u8 google_voice_ver = 4;    //4: ver 0.4e  10:ver 1.0
+_attribute_data_retention_ u8 used_assistant_model = REASON_MICOPEN;
+
+//Google voice v1.0 control parameter
+_attribute_data_retention_ u8 app_mtu_size = 23;
+_attribute_data_retention_ u8 auido_frame_size = 20;      //Byte. this variable is updated after sending CAPS_RESP
+_attribute_data_retention_ u8 stream_id = 0;              //The identifier of an audio stream to extend.
+_attribute_data_retention_ u8 flag_active_mic_open = 0;   //Enable/disable mic open command
+
+_attribute_data_retention_ u16 google_voice_ctl = 0;
 
 _attribute_data_retention_ u16 atv_char_ctl_ccc = 0;
 _attribute_data_retention_ u16 atv_char_rx_ccc = 0;
-
-_attribute_data_retention_ u8 google_voice_ver = 4;    //4: ver 0.4e  10:ver 1.0
-_attribute_data_retention_ u16 google_voice_ctl = 0;
-_attribute_data_retention_ u8  used_assistant_model = REASON_MICOPEN;
-
-
-
 
 _attribute_data_retention_ u16 google_voice_codec_used = CODEC_USED_16K;
 _attribute_data_retention_ u16 google_voice_packet_length = VOICE_V0P4_ADPCM_PACKET_LEN;
 _attribute_data_retention_ u16 google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM_UNIT_SIZE;
 
 _attribute_data_retention_ u32 app_audio_start_delay = 0;
-_attribute_data_retention_ u32 app_active_remote_timer = 0;     //wait mic open cmd after send START_SEARCH
-_attribute_data_retention_ u32 app_audio_transfer_timer = 0;    //used for google voice timeout
+_attribute_data_retention_ u32 app_active_remote_timer = 0;     //Wait mic open cmd after send START_SEARCH
+_attribute_data_retention_ u32 app_audio_transfer_timer = 0;    //Used for google voice timeout
 
-u8 app_audio_send_index = 0;
-
-u8 app_audio_sync_serial = 0;            //used for google voice v0.4 sync cmd
-
-
-//google voice v1.0 control parameter
-_attribute_data_retention_ u8  app_mtu_size = 23;
-_attribute_data_retention_ u8  auido_frame_size = 20;    //byte. this variable is updated after sending CAPS_RESP
-
-_attribute_data_retention_ u8  stream_id = 0;            //The identifier of an audio stream to extend.
-
-_attribute_data_retention_ u8  flag_active_mic_open = 0;            //The identifier of an audio stream to extend.
-
-
-u8  audio_start_reason = 0;        //on-request(0x00),PTT(0x01),HTT(0x03) etc.
-u8  audio_stop_reason = 0;
-u16 mic_open_error_code = 0;
-
-u8  mic_open_mode = CAPTURE_MODE;        //0x00:playback mode   0x01:capture mode
-
+/**
+ * @brief   initialize packet parameters according to the version of google voice
+ * @param   none
+ * @return  none
+ */
 void google_voice_para_init(){
 
     if(google_voice_ver == 4){      //ver0.4e
@@ -98,6 +97,11 @@ void google_voice_para_init(){
     }
 }
 
+/**
+ * @brief   initialize voice control parameters
+ * @param   none
+ * @return  none
+ */
 void app_audio_parameter_init(){
 
     app_audio_send_index = 0;
@@ -122,24 +126,49 @@ void app_audio_parameter_init(){
 //    previous_seq_no = 0xffff;
 }
 
+/**
+ * @brief       this function is used to save the assistant model.
+ * @param[in]   model:the model type
+ * @return      none
+ */
 void set_assistant_model(u8 model){
     used_assistant_model = model;
 }
 
+/**
+ * @brief   this function is used to read the assistant model.
+ * @param   none
+ * @return  the model type
+ */
 u8 read_assistant_model(){
     return used_assistant_model;
 }
 
+/**
+ * @brief   this function is used to enable the mic open command.
+ * @param   none
+ * @return  none
+ */
 void active_mic_open(){
     flag_active_mic_open = 1;
     app_active_remote_timer = clock_time()|1;
 }
 
+/**
+ * @brief   this function is used to read the audio frame size.
+ * @param   none
+ * @return  the audio frame size
+ */
 u8 read_audio_frame_size(){
 
     return auido_frame_size;
 }
 
+/**
+ * @brief       this function is used to set the audio frame size.
+ * @param[in]   frame_size:The frame size(data length exchange)
+ * @return      none
+ */
 void set_audio_frame_size(u8 frame_size){
     auido_frame_size = 20;
 
@@ -156,7 +185,11 @@ void set_audio_frame_size(u8 frame_size){
     }
 }
 
-
+/**
+ * @brief   initial settings before sending voice.
+ * @param   none
+ * @return  none
+ */
 void google_mic_enable(){
 
     app_audio_parameter_init();
@@ -172,20 +205,33 @@ void google_mic_enable(){
     app_audio_start_delay  = clock_time() | 1;
 }
 
-//google voice v.04 api
+/**
+ * @brief   set FLAG_GOOGLE_SEARCH bit for send search key(on-request)
+ * @param   none
+ * @return  none
+ */
 void google_voice_on_request(){
 
     //app_active_remote_timer = clock_time() | 1;
     google_voice_ctl |= FLAG_GOOGLE_SEARCH;
 }
 
+/**
+ * @brief   set FLAG_GOOGLE_DPAD_SELECT bit for send DPAD cmd.(ver 0.4e 3.2.3)
+ * @param   none
+ * @return  none
+ */
 void google_voice_dpad_select(){
     if(google_voice_ver == 4){
         google_voice_ctl |= FLAG_GOOGLE_DPAD_SELECT;
     }
 }
 
-//google voice  v1.0 api
+/**
+ * @brief       this function is used to start the voice.
+ * @param[in]   start_reason:audio start reason
+ * @return      none
+ */
 u8 app_audio_key_start(u8 start_reason){
 
     printf("app_audio_key_start\n");
@@ -244,7 +290,11 @@ u8 app_audio_key_start(u8 start_reason){
     return 0;
 }
 
-
+/**
+ * @brief       this function is used to stop the voice.
+ * @param[in]   reason:Audio stop reason
+ * @return      none
+ */
 u8 app_audio_key_stop(u8 reason){
     ui_enable_mic(0);
     app_active_remote_timer = 0;
@@ -256,6 +306,11 @@ u8 app_audio_key_stop(u8 reason){
     return 0;
 }
 
+/**
+ * @brief   this function is used to stop the voice by HTT.
+ * @param   none
+ * @return  0: ready to stop voice  1:voice start reason is not HTT
+ */
 u8 app_audio_key_stop_by_htt(){
     if(audio_start_reason != REASON_HTT) return 1;
 
@@ -264,7 +319,11 @@ u8 app_audio_key_stop_by_htt(){
     return 0;
 }
 
-
+/**
+ * @brief   according to the version of google voice, start the corresponding process
+ * @param   none
+ * @return  none
+ */
 void google_voice_start(){
 
     if(google_voice_ver == 10){
@@ -275,11 +334,21 @@ void google_voice_start(){
     }
 }
 
-
+/**
+ * @brief   this function is used to stop the voice.
+ * @param   none
+ * @return  none
+ */
 void google_voice_stop(){
-    app_audio_key_stop_by_htt();
+    if(audio_start_reason == REASON_HTT)
+        app_audio_key_stop_by_htt();
 }
 
+/**
+ * @brief       google voice 0.4 processing function.
+ * @param[in]   pw:received RF data
+ * @return      none
+ */
 void google_voice_v0p4(rf_packet_att_data_t *pw){
     u8 sendBuff[20]  = {0};
 
@@ -378,6 +447,12 @@ void google_voice_v0p4(rf_packet_att_data_t *pw){
     }
 }
 
+/**
+ * @brief       verify stream id.
+ * @param[in]   received stream id from host
+ * @return      0: OK  1: audio_start_reason is not REASON_MICOPEN
+ *              2: stream id out of range  3: the received id is inconsistent with the current id
+ */
 u8 verify_stream_id(u8 id){
 
     switch(id){
@@ -401,6 +476,11 @@ u8 verify_stream_id(u8 id){
     return 0;
 }
 
+/**
+ * @brief       google voice 1.0 processing function.
+ * @param[in]   received RF data
+ * @return      none
+ */
 void google_voice_v1p0(rf_packet_att_data_t *pw){
     if(pw->dat[0] == AUDIO_GOOGLE_CMD_OPEN){
         printf("AUDIO_GOOGLE_CMD_OPEN\n");
@@ -507,6 +587,11 @@ void google_voice_v1p0(rf_packet_att_data_t *pw){
     }
 }
 
+/**
+ * @brief       google voice processing function.
+ * @param[in]   p: received RF data
+ * @return      none
+ */
 int app_auido_google_callback(void* p){
     //u8 sendBuff[20]  = {0};
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
@@ -545,6 +630,11 @@ int app_auido_google_callback(void* p){
     return 0;
 }
 
+/**
+ * @brief   google command process for google voice v0.4.
+ * @param   none
+ * @return  none
+ */
 void google_cmd_v0p4_proc(){
 
     if(google_voice_ctl & FLAG_GOOGLE_DPAD_SELECT){
@@ -613,6 +703,11 @@ void google_cmd_v0p4_proc(){
     }
 }
 
+/**
+ * @brief   google command process for google voice v1.0.
+ * @param   none
+ * @return  none
+ */
 void google_cmd_v1p0_proc(){
 
     if(!atv_char_rx_ccc && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
@@ -688,8 +783,13 @@ void google_cmd_v1p0_proc(){
     }
 }
 
-void google_get_rsp(void)
-{
+/**
+ * @brief   notify CAPS_RESP packet.
+ * @param   none
+ * @return  none
+ */
+void google_get_rsp(void){
+
     u8 sendBuff[9] = {0};
     if(google_voice_ver == 10){
 
@@ -731,6 +831,11 @@ void google_get_rsp(void)
 _attribute_data_retention_ u8 notify_get_rsp_en = 0;
 _attribute_data_retention_ u32 notify_get_rsp_tick = 0;
 _attribute_data_retention_ u32 notify_get_rsp_delay_time = 6000000;
+/**
+ * @brief   google command process at app_audio_task.
+ * @param   none
+ * @return  none
+ */
 void google_cmd_proc(){
 
 //    if(app_active_remote_timer && clock_time_exceed(app_active_remote_timer, APP_AUDIO_GOOGLE_TIMEOUT1)){
@@ -801,6 +906,11 @@ void google_cmd_proc(){
     }
 }
 
+/**
+ * @brief   delay caps rsp time.
+ * @param   none
+ * @return  none
+ */
 void google_get_rsp_delay(void)
 {
     if(notify_get_rsp_en)
@@ -810,6 +920,11 @@ void google_get_rsp_delay(void)
     }
 }
 
+/**
+ * @brief   notify audio data process for google voice v0.4.
+ * @param   none
+ * @return  none
+ */
 void google_voice_data_notify_v0p4_proc(){
 
     //////////////////////////////////////////////////////////////////
@@ -850,6 +965,11 @@ void google_voice_data_notify_v0p4_proc(){
 
 u8  previous_sampling_rate = U16_LO(CODEC_USED_16K);    //default sampling rate:16k
 u16 previous_seq_no = 0xffff;
+/**
+ * @brief   notify audio data process for google voice v1.0
+ * @param   none
+ * @return  none
+ */
 void google_voice_data_notify_v1p0_proc(){
 
     int *p = mic_encoder_data_buffer ();
@@ -972,6 +1092,11 @@ void google_voice_data_notify_v1p0_proc(){
     }
 }
 
+/**
+ * @brief   notify audio data process.
+ * @param   none
+ * @return  none
+ */
 void google_voice_data_notify_proc(){
     //send voice data
     if( google_voice_ver == 10){
@@ -982,6 +1107,11 @@ void google_voice_data_notify_proc(){
     }
 }
 
+/**
+ * @brief   google voice task at main loop.
+ * @param   none
+ * @return  none
+ */
 void app_audio_task(void){
 
     if(app_active_remote_timer && clock_time_exceed(app_active_remote_timer, APP_AUDIO_GOOGLE_TIMEOUT1)){

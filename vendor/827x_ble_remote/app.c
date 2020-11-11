@@ -347,7 +347,6 @@ void app_service_change(void)
     }
 }
 
-
 void mtu_exchange_loop(void)
 {
     if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, mtuExchange_check_timer ))
@@ -422,6 +421,14 @@ void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
      }
 }
 
+int app_ota_terminate_timeoutcb(void)
+{
+    printf("app_ota_terminate_timeoutcb\r\n");
+    terminate_google_ota_proc(OTA_USER_TERMINATE);
+
+    return -1;
+}
+
 void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 {
 
@@ -430,6 +437,11 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
 
     if(app_repairing() == 0)
     {
+        if(ota_is_working)
+        {
+            app_pairing_error();
+            blt_soft_timer_add(&app_ota_terminate_timeoutcb, 1000000);
+        }
         if(*p == HCI_ERR_CONN_TIMEOUT){
             printf("HCI_ERR_CONN_TIMEOUT\r\n");
             device_timeout_state=0x55;
@@ -819,7 +831,7 @@ void blt_pm_proc(void)
             #if (LONG_PRESS_KEY_POWER_OPTIMIZE)
                 extern int key_matrix_same_as_last_cnt;
                 if(!ota_is_working && key_matrix_same_as_last_cnt > 5){  //key matrix stable can optize
-                    bls_pm_setManualLatency(3);
+                    bls_pm_setManualLatency(2);
                 }
                 else{
                     bls_pm_setManualLatency(0);  //latency off: 0
@@ -995,8 +1007,10 @@ typedef struct{
     u8    data[31];           //0-31 byte
 }rf_packet_adv_ind_module_t;
 
-extern u8 wakeup_key[5];
+extern u8 wakeup_key[15];
 
+
+/*  //sdmc format
 void app_tx_power_wakeup(u8 keyid)
 {
     rf_packet_adv_ind_module_t tx_power_wakeup;
@@ -1050,6 +1064,124 @@ void app_tx_power_wakeup(u8 keyid)
     else
         tx_power_wakeup.data[18] = 0;
     printf("tx_power_wakeup.data[18]=%x\r\n",tx_power_wakeup.data[18]);
+    for(u8 i=0;i<3;i++)
+    {
+        rf_set_ble_channel(37+i);
+
+        rf_start_stx (&tx_power_wakeup, 100);
+
+        while(rf_tx_finish()!=0x01);
+
+        rf_tx_finish_clear_flag();
+    }
+    if(keyid != 0xff)
+    {
+        index++;
+        write_wakeup_keyindex_info(index);
+    }
+}
+*/
+
+void app_tx_power_wakeup(u8 keyid)
+{
+    rf_packet_adv_ind_module_t tx_power_wakeup;
+    smp_param_save_t  bondInfo;
+    u8 buffer[40];
+    u8 index=0,i,j=0;
+    u8 pos_index[3]={0};
+
+    printf("app_tx_power_wakeup\r\n");
+    rf_set_ble_access_code_adv();
+    rf_set_ble_crc_adv();
+    bls_smp_param_loadByIndex(0, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+
+
+    flash_read_page(0x78000+wakeup_key_pos, 40, buffer);
+    if(buffer[0] == 0xff)
+    {
+        tx_power_wakeup.rf_len = 19;
+        tx_power_wakeup.dma_len = tx_power_wakeup.rf_len + 2;
+        tx_power_wakeup.type = ADV_TYPE_CONNECTABLE_UNDIRECTED;
+
+        memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
+        tx_power_wakeup.data[0] = 0x0c;
+        tx_power_wakeup.data[1] = 0x16;
+        tx_power_wakeup.data[2] = 0x03;
+        tx_power_wakeup.data[3] = 0x15;
+        tx_power_wakeup.data[4] = 0x01;
+        if(keyid == 0xff)
+        {
+            tx_power_wakeup.data[5] = 0x02;  //schedule ota wakeup packet
+        }
+        else
+        {
+            tx_power_wakeup.data[5] = 1;
+        }
+        if(read_wakeup_keyindex_info(&index) == 0)
+        {
+            tx_power_wakeup.data[6] = index;
+        }
+        else
+            tx_power_wakeup.data[6] = 0;
+        printf("tx_power_wakeup.data[6]=%x\r\n",tx_power_wakeup.data[6]);
+
+        memcpy(&(tx_power_wakeup.data[7]), bondInfo.peer_addr, 6);
+    }
+    else
+    {
+        tx_power_wakeup.rf_len = buffer[4];
+        tx_power_wakeup.dma_len = tx_power_wakeup.rf_len + 2;
+        tx_power_wakeup.type = buffer[3];
+        memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
+        printf("buffer\r\n");
+        for(i=0;i<5;i++)
+            printf(" %x",buffer[i]);
+
+        for(i=0;i<3;i++)
+        {
+            if(buffer[i])
+            {
+                pos_index[i] = buffer[i]-8;
+            }
+            else
+                pos_index[i] = 0xff;
+        }
+
+        for(i=0;i<buffer[4]-6;i++)
+        {
+            if(i == pos_index[0])
+            {
+                if(keyid == 0xff)
+                    tx_power_wakeup.data[i] = 2;
+                else
+                    tx_power_wakeup.data[i] = 1;
+            }
+            else if(i == pos_index[1])
+            {
+                 if(read_wakeup_keyindex_info(&index) == 0)
+                 {
+                     tx_power_wakeup.data[i] = index;
+                 }
+                 else
+                     tx_power_wakeup.data[i] = 0;
+                 printf("tx_power_wakeup.data[i]=%x\r\n",tx_power_wakeup.data[i]);
+            }
+            else if(i == pos_index[2])
+            {
+                 memcpy(&(tx_power_wakeup.data[i]), bondInfo.peer_addr, 6);
+                 i += 5;
+            }
+            else
+            {
+                tx_power_wakeup.data[i] = buffer[11+j];
+                j++;
+            }
+        }
+        printf("wakeup packet =\r\n");
+        for(i=0;i<buffer[4]-6;i++)
+            printf(" %x",tx_power_wakeup.data[i]);
+    }
+
     for(u8 i=0;i<3;i++)
     {
         rf_set_ble_channel(37+i);
@@ -1150,6 +1282,10 @@ void user_init_normal(void)
         if(kb_powerdet())
         {
             printf("press and hold back key\r\n");
+            flash_erase_sector(IR_DATA_SECT_0_ADDR);
+            flash_erase_sector(IR_DATA_SECT_1_ADDR);
+            flash_erase_sector(IR_DATA_SECT_2_ADDR);
+            flash_erase_sector(IR_DATA_SECT_3_ADDR);
             u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
             printf("bond_number_1=%x\r\n",bond_number);
             if(bond_number)
@@ -1280,7 +1416,7 @@ void user_init_normal(void)
     bls_ota_registerotaSignatureCmdCb(app_ota_signature);
     bls_ota_registerResultIndicateCb(app_ota_result);
     bls_ota_registerotaScheduletCb(app_schedule_ota);
-
+    bls_ota_registerotaTimetouCb(app_ota_timeout);
     bls_ota_init_handle(OTA_CMD_OUT_DP_H);
 
 #endif
@@ -1351,6 +1487,8 @@ void main_loop (void)
     #if (BLE_AUDIO_ENABLE)
         app_audio_task();
     #endif
+
+    google_ota_proc();
 
     #if (BATT_CHECK_ENABLE)
         if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){

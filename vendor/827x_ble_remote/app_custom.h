@@ -28,8 +28,11 @@
 #define APP_CUSTOM_H_
 
 
-extern  u8 device_type;
+extern u8 device_type;
 extern u8 key_setting_or_noti[2];
+extern u8 key_guide_or_livetv[2];
+extern u8 key_subtitle_or_teletext[2];
+extern u8 wakeup_key_pos;
 extern const unsigned char Kb_Map_Normal[8][3];
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);

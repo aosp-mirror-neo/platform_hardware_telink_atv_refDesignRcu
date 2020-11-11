@@ -60,10 +60,10 @@ typedef enum{
 }OTA_CtlFlagDef;
 
 typedef void (*ota_signatureCb_t)(void);
-typedef void (*ota_FWdecryptionCb_t)(void *data);
+typedef void (*ota_FWdecryptionCb_t)(u8 *data);
 typedef void (*ota_newStartCb_t)(void *data);
 typedef void (*ota_scheduleCb_t)(u8 *data);
-
+typedef void (*ota_timeoutCb_t)(void);
 
 void bls_ota_init_handle(u16 handle);
 
@@ -73,9 +73,14 @@ void bls_ota_registerotaSignatureCmdCb(ota_signatureCb_t cb);
 void bls_ota_registerotaFWdecryptionCb(ota_FWdecryptionCb_t cb);
 void bls_ota_registerotaNewStartCb(ota_newStartCb_t cb);
 void bls_ota_registerotaScheduletCb(ota_scheduleCb_t cb);
+void bls_ota_registerotaTimetouCb(ota_timeoutCb_t cb);
+void terminate_google_ota_proc(u8 reason);
+
 //void google_ota_result(int result);
 
 int google_ota_write(void * p);
+
+void google_ota_proc(void);
 
 extern u8  ota_ctl_flag;
 
