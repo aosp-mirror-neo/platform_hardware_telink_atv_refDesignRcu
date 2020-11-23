@@ -920,6 +920,12 @@ void google_get_rsp_delay(void)
     }
 }
 
+void google_reset_rsp_delay(void)
+{
+    notify_get_rsp_delay_time = 12000000;
+}
+
+
 /**
  * @brief   notify audio data process for google voice v0.4.
  * @param   none

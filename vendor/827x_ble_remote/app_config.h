@@ -34,6 +34,7 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 #include  "application/usbstd/usbkeycode.h"
 
+#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
 #define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
 #define IR_DATA_SECT_0_ADDR                   0x6c000
 #define IR_DATA_SECT_1_ADDR                   0x6d000

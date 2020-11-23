@@ -31,6 +31,9 @@
 #include "rc_ir.h"
 #include "app_ir.h"
 #include "../../stack/ble/attr/att.h"
+#include "app_flash_write.h"
+extern void google_reset_rsp_delay(void);
+extern u8 is_mic_enable(void);
 
 //programming timeout 30s
 #define PROGRAMMING_TIMEOUT 30000000
@@ -91,12 +94,21 @@ typedef struct {
 }key_button_pair_t;
 
 //keyid: receive from the host. button_idx: Corresponding to the key index in the memory ir_table[].button:The actual keyid corresponding to the board
-const key_button_pair_t key_button_map[MAX_KEY_COUNT] = {
+const key_button_pair_t key_button_map_g10[MAX_KEY_COUNT] = {
     {0x0018, KEY_IDX_VOLUP, 0x10},
     {0x0019, KEY_IDX_VOLDN, 0x02},
     {0x00A4, KEY_IDX_MUTE, 0x16},
     {0x001A, KEY_IDX_POWER, 0 },
     {0x00B2, KEY_IDX_INPUT, 0x03}
+};
+
+//keyid: receive from the host. button_idx: Corresponding to the key index in the memory ir_table[].button:The actual keyid corresponding to the board
+const key_button_pair_t key_button_map_g20[MAX_KEY_COUNT] = {
+    {0x0018, KEY_IDX_VOLUP, 0x1f},
+    {0x0019, KEY_IDX_VOLDN, 0x02},
+    {0x00A4, KEY_IDX_MUTE,  0x2B},
+    {0x001A, KEY_IDX_POWER, 0 },
+    {0x00B2, KEY_IDX_INPUT, 0x06}
 };
 
 //The following address corresponds to the flash memory address written each time. Upto 5 keys can be written at a time, and each key occupies a maximum of 256 bytes.
@@ -188,10 +200,19 @@ u8 ir_get_button_idx_from_button(u8 button)
     u8 i;
     for(i = 0; i < MAX_KEY_COUNT; i++)
     {
-        if (key_button_map[i].button == button)
+        if(device_type == REMOTE_G10)
         {
-
-            return key_button_map[i].button_idx;
+            if (key_button_map_g10[i].button == button)
+            {
+                return key_button_map_g10[i].button_idx;
+            }
+        }
+        else
+        {
+            if (key_button_map_g20[i].button == button)
+            {
+                return key_button_map_g20[i].button_idx;
+            }
         }
     }
     return KEY_IDX_NULL;
@@ -207,10 +228,19 @@ u8 ir_get_button_idx_from_key_id(u16 key_id)
     u8 i;
     for(i = 0; i < MAX_KEY_COUNT; i++)
     {
-        if (key_button_map[i].key_id == key_id)
+        if(device_type == REMOTE_G10)
         {
-
-            return key_button_map[i].button_idx;
+            if (key_button_map_g10[i].key_id == key_id)
+            {
+                return key_button_map_g10[i].button_idx;
+            }
+        }
+		else
+		{
+            if (key_button_map_g20[i].key_id == key_id)
+            {
+                return key_button_map_g20[i].button_idx;
+            }
         }
     }
     return KEY_IDX_NULL;
@@ -431,6 +461,26 @@ void ir_param_init(void)
     else
     {
         addr = if_flash_sect_addr[ir_flash_index];
+		if(ir_flash_index >= IR_DATA_NEED_ERASE_NUM)
+		{
+		    flash_read_page(IR_DATA_SECT_0_ADDR,1,&data[0]);
+			if(data[0] != 0xff)
+			{
+			    printf("erase 1 part flash\r\n");
+			    flash_erase_sector(IR_DATA_SECT_0_ADDR);
+                flash_erase_sector(IR_DATA_SECT_1_ADDR);
+			}
+		}
+		if(ir_flash_index < IR_DATA_NEED_ERASE_NUM)
+		{
+            flash_read_page(IR_DATA_SECT_2_ADDR,1,&data[0]);
+			if(data[0] != 0xff)
+			{
+			    printf("erase 2 part flash\r\n");
+			    flash_erase_sector(IR_DATA_SECT_2_ADDR);
+                flash_erase_sector(IR_DATA_SECT_3_ADDR);
+			}
+		}
         printf("current sector= %x app_ir_param_init addr=%x\r\n",ir_flash_index,addr);
         ir_flash_check(addr);
     }
@@ -468,6 +518,12 @@ void ir_flash_save(u8 button_index,u32 addr,u32 len)
     printf("ir_flash_save addr=%x\r\n",addr);
 }
 
+
+void ir_init_key_event_notify(u8 value)
+{
+    ir_app_parm.ir_programming.key_notification_flag = value;
+}
+
 /**
  * @brief       Erase the flash sector
  * @return      0: not erase success
@@ -477,6 +533,8 @@ int ir_flash_erase_timeoutcb(void)
 {
     printf("ir_flash_erase_timeoutcb\r\n");
 
+    if(is_mic_enable() == 1)
+		return 0;
     if(bls_ll_requestConnBrxEventDisable() > 240)
     {
         bls_ll_disableConnBrxEvent();
@@ -506,7 +564,7 @@ int ir_flash_erase_timeoutcb(void)
 void ir_flash_erase(void)
 {
     printf("ir_flash_erase\r\n");
-    blt_soft_timer_add(&ir_flash_erase_timeoutcb, FLASH_ERASE_TIMEOUT);
+    blt_soft_timer_add(ir_flash_erase_timeoutcb, FLASH_ERASE_TIMEOUT);
 }
 
 /**
@@ -518,6 +576,29 @@ void ir_flash_factory(void)
     printf("ir_flash_factory\r\n");
     ir_flash_set_flag(0);
 }
+
+
+/**
+ * @brief       Erase the flash sector
+ * @return      0: not erase success
+               -1: erase success
+ */
+int ir_key_event_notify_erase_timeoutcb(void)
+{
+    printf("ir_key_event_notify_erase_timeoutcb\r\n");
+
+    if(bls_ll_requestConnBrxEventDisable() > 120)
+    {
+        bls_ll_disableConnBrxEvent();
+		flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
+        printf("erase_succ\r\n");
+        bls_ll_restoreConnBrxEvent();
+        return -1;
+    }
+
+    return 0;
+}
+
 
 /**
  * @brief       ir_programming_timeoutcb
@@ -532,9 +613,8 @@ int ir_programming_timeoutcb(void)
     if (ir_app_parm.programming_timer)
     {
         ir_app_parm.programming_timer = NULL;
-        return -1;
     }
-    return 0;
+    return -1;
 }
 
 /**
@@ -715,6 +795,30 @@ void ir_send_key_code(key_code_t* p_key_code)
 }
 
 extern void app_ota_status(u8 status);
+_attribute_data_retention_ u8  ir_cache_key[3]={0};
+
+/**
+ * @brief       Ir_repeat_delay_release_time
+ * @param[in]   none
+ * @return      0
+ */
+int ir_cache_key_timer(void)
+{
+    printf("ir_cache_key_timer\r\n");
+    if(device_in_connection_state)
+    {
+        printf("send cachekey_notify\r\n");
+        ir_cache_key[0] = 0;   //down
+        bls_att_pushNotifyData(ATV_IR_KEY_EVENT_IDX, ir_cache_key, sizeof(ir_cache_key));
+		sleep_us(100);
+		ir_cache_key[0] = 1;   //up
+        bls_att_pushNotifyData(ATV_IR_KEY_EVENT_IDX, ir_cache_key, sizeof(ir_cache_key));
+		return -1;
+    }
+    printf("send cachekey_notify timeout\r\n");
+    return -1;
+}
+
 /**
  * @brief       send ir data and send nofity
  * @param[in]   1: down 0:up
@@ -736,17 +840,30 @@ int ir_fallback_send(u8 key_down)
         ir_send_key_code(p_key_code);
     }
 
-    if (ir_app_parm.ir_programming.key_notification_flag && device_in_connection_state)
+    if (ir_app_parm.ir_programming.key_notification_flag)
     {
         //Besides sending IR code, also notify ATV that the key event
         printf("notify down\r\n");
-        key_id = key_button_map[ir_app_parm.current_programming_key_send].key_id;
+        if(device_type == REMOTE_G10)
+            key_id = key_button_map_g10[ir_app_parm.current_programming_key_send].key_id;
+        else
+            key_id = key_button_map_g20[ir_app_parm.current_programming_key_send].key_id;
         printf("key_id=%x\r\n",key_id);
-        u8 TempBuf[3];
-        TempBuf[0] = key_down ? 0:1;
-        TempBuf[1] = (key_id >> 8);
-        TempBuf[2] = key_id;
-        bls_att_pushNotifyData(ATV_IR_KEY_EVENT_IDX, TempBuf, sizeof(TempBuf));
+        ir_cache_key[0] = key_down ? 0:1;
+        ir_cache_key[1] = (key_id >> 8);
+        ir_cache_key[2] = key_id;
+		if(device_in_connection_state)
+            bls_att_pushNotifyData(ATV_IR_KEY_EVENT_IDX, ir_cache_key, sizeof(ir_cache_key));
+		else
+		{
+		    if(key_down == 1)
+		    {
+		        printf("add cache key\r\n");
+		        blt_soft_timer_delete(ir_cache_key_timer);
+		        blt_soft_timer_add(ir_cache_key_timer, 5000000);
+		    }
+		}
+
     }
     return 0;
 }
@@ -809,7 +926,7 @@ u8 ir_fallback_send_key_code(u8 button_idx, u8 key_down)
              {
                  time = ir_app_parm.ir_repeat_delay.repeat_delay - time;
                  printf("need delay=%x\r\n",time);
-                 blt_soft_timer_add(&ir_repeat_delay_timer, time);
+                 blt_soft_timer_add(ir_repeat_delay_timer, time);
              }
              else
              {
@@ -884,9 +1001,15 @@ void ir_code_merge(u16 key_id,u8 button_index,u16 code_size,u8* code)
     }
 }
 
+/**
+ * @brief       ir_table_add_key
+ * @param[in]   key_id,code_size,code
+ * @return      0,11
+ */
 u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
 {
     u8 button_index=0;
+	u16 button;
 
     button_index = ir_get_button_idx_from_key_id(key_id);
     if (button_index == KEY_IDX_NULL)
@@ -896,13 +1019,34 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
     if ((ir_app_parm.ir_programming.programmed_key_count < MAX_KEY_COUNT)
         && (code_size <= MAX_CODE_LENGTH))
     {
-        printf("ir_table[button_index].key_id=%x \r\n",key_button_map[button_index].button);
+        if(device_type == REMOTE_G10)
+        {
+            button = key_button_map_g10[button_index].button;
+            printf("ir_table[button_index].key_id=%x \r\n",button);
+        }
+		else
+		{
+		    button = key_button_map_g20[button_index].button;
+			printf("ir_table[button_index].key_id=%x \r\n",button);
+		}
         printf("ir_table[button_index].code_size=%x \r\n",code_size);
         printf("ir_table[button_index].button_idx=%x \r\n",button_index);
-        ir_code_merge(key_button_map[button_index].button,button_index,code_size,code);
+
+        ir_code_merge(button,button_index,code_size,code);
     }
     return true;
 }
+
+/**
+ * @brief       ir_key_event_notify_erase
+ * @param[in]   none
+ * @return      none
+ */
+void ir_key_event_notify_erase(void)
+{
+    blt_soft_timer_add(ir_key_event_notify_erase_timeoutcb, 100000);
+}
+
 
 /**
  * @brief       Receive ATV commands and processed
@@ -927,6 +1071,7 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
                 if (ir_app_parm.ir_programming.programming_start == 1)
                 {
                     printf("ir table programming start\r\n");
+					google_reset_rsp_delay();
                     ir_table_init();
                     ir_flash_set_flag(0);
                     if(ir_flash_index == 0)
@@ -940,11 +1085,14 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
                     printf("ir_flash_index=%x\r\n",ir_flash_index);
                     if(ir_flash_index >= IR_DATA_SECT_MAX_NUM)
                         ir_flash_index = 0;
-                    if(ir_app_parm.programming_timer == NULL)
+					if (ir_app_parm.programming_timer)
                     {
-                        ir_app_parm.programming_timer = 1;
-                        blt_soft_timer_add(&ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
+                        blt_soft_timer_delete(ir_programming_timeoutcb);
+                        ir_app_parm.programming_timer = NULL;
                     }
+
+                    ir_app_parm.programming_timer = 1;
+                    blt_soft_timer_add(ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
                 }
                 else
                 {
@@ -993,7 +1141,7 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
         case ATV_IR_KEY_ID_IDX:
         {
             if ((ir_app_parm.ir_programming.programming_start == 1)
-                && (ir_app_parm.ir_programming.current_programming_key_id == INVALID_KEY_ID)
+                //&& (ir_app_parm.ir_programming.current_programming_key_id == INVALID_KEY_ID)
                 && (len == 2))
             {
                 ir_app_parm.ir_programming.current_programming_key_id = buf[0];
@@ -1004,7 +1152,7 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
                      blt_soft_timer_delete(ir_programming_timeoutcb);
                      ir_app_parm.programming_timer = NULL;
                 }
-                blt_soft_timer_add(&ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
+                blt_soft_timer_add(ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
                 ir_app_parm.programming_timer = 1;
             }
             break;
@@ -1028,7 +1176,7 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
                      blt_soft_timer_delete(ir_programming_timeoutcb);
                      ir_app_parm.programming_timer = NULL;
                 }
-                blt_soft_timer_add(&ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
+                blt_soft_timer_add(ir_programming_timeoutcb, PROGRAMMING_TIMEOUT);
                 ir_app_parm.programming_timer = 1;
             }
             break;
@@ -1057,7 +1205,19 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
             if (len == 2)
             {
                 printf("ccc buf[0]=%x\r\n",buf[0]);
-                ir_app_parm.ir_programming.key_notification_flag = buf[0];
+                if(buf[0] != ir_app_parm.ir_programming.key_notification_flag)
+                {
+                    ir_app_parm.ir_programming.key_notification_flag = buf[0];
+
+                    if(is_ir_key_event_notify_flash_info_full() == 1)
+                    {
+                        ir_key_event_notify_erase();
+                        //flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
+                        //write_ir_key_event_notify(buf[0]);
+                    }
+                    else
+                        write_ir_key_event_notify(buf[0]);
+                }
             }
             break;
         }
@@ -1068,7 +1228,4 @@ void ir_fallback_process(u16 handle, u8* buf, u8 len)
         break;
     }
 }
-
-
-
 

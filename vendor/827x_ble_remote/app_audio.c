@@ -91,14 +91,6 @@ _attribute_data_retention_    u8        key_htt_press = 0;
     {
         ui_mic_enable = en;
         printf("ui_mic_enable=%x\r\n",ui_mic_enable);
-        if(ui_mic_enable)
-        {
-            app_ota_status(0);
-        }
-        else
-        {
-            app_ota_status(1);
-        }
 #if BLE_DMIC_ENABLE
         //DMIC Bias output
         gpio_set_output_en (GPIO_DMIC_BIAS, en);
@@ -168,6 +160,15 @@ _attribute_data_retention_    u8        key_htt_press = 0;
         #if ((!BLE_DMIC_ENABLE) && (BATT_CHECK_ENABLE))
             battery_set_detect_enable(!en);
         #endif
+
+		if(ui_mic_enable)
+        {
+            app_ota_status(0);
+        }
+        else
+        {
+            app_ota_status(1);
+        }
     }
 
     void voice_key_press(void)

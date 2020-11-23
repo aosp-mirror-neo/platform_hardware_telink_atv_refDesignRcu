@@ -358,7 +358,7 @@ void init_peer_mac(void)
 
 void write_wakeup_keyindex_info(u8 index){
 
-    u8 dat[4] ={0xA5,0xff,0,0};
+    u8 dat[4] ={0xA5,0xff,0xff,0xff};
 
     dat[2] = index;
     u8 ret = flash_write_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
@@ -404,6 +404,53 @@ void init_wakeup_keyindex(void)
     }    
 }
 
+void write_ir_key_event_notify(u8 index){
+
+    u8 dat[4] ={0xA5,0xff,0xff,0xff};
+
+    dat[2] = index;
+    u8 ret = flash_write_info(IR_KEY_EVENT_NOTIFY_SECT_ADDR,1,4,3,dat);
+    printf("write_ir_key_event_notify index =%x,ret=0x%x\r\n",index,ret);
+}
+
+u8 read_ir_key_event_notify(u8 *index){
+
+    u8 dat[4] ={0};
+    u8 ret = flash_read_info(IR_KEY_EVENT_NOTIFY_SECT_ADDR,1,4,3,dat);
+    if(!ret){
+        *index = dat[2];
+    }
+    //return 0:Success,1:flash is empty,2:sector data error
+    return ret;
+}
+
+u8 is_ir_key_event_notify_flash_info_full(void)
+{
+    if(flash_pos_info(IR_KEY_EVENT_NOTIFY_SECT_ADDR,1,4) == 0x03)
+    {
+        return 1;
+    }
+    return 0;
+}
+
+u8 init_ir_key_event_notify(void)
+{
+    u8 index=0xff;
+    if(read_ir_key_event_notify(&index) == 0)
+    {
+        if(is_ir_key_event_notify_flash_info_full())
+        {
+            flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
+            write_ir_key_event_notify(index);
+        }
+        printf("ir_key_event_notify ccc=%x\r\n",index);
+    }
+    else
+    {
+        printf("no ir_key_event_notify\r\n");
+    }
+	return index;
+}
 
 
 

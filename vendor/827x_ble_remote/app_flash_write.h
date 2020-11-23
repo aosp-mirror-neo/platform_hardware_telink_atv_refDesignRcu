@@ -53,4 +53,8 @@ extern void write_wakeup_keyindex_info(u8 index);
 extern u8 read_wakeup_keyindex_info(u8 *index);
 extern u8 is_wakeup_keyindex_flash_info_full(void);
 extern void init_wakeup_keyindex(void);
+extern u8 init_ir_key_event_notify(void);
+extern u8 is_ir_key_event_notify_flash_info_full(void);
+extern void write_ir_key_event_notify(u8 index);
+
 #endif /* APP_INFO_H_ */

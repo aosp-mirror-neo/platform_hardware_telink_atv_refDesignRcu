@@ -653,7 +653,7 @@ int app_ir_callback(void *p)
         // 002e - 0031                                                  (52-56)
         {5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},                //prop
-        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &google_ota_write, &otaRead},            //value
+        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_write, &otaRead},            //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_Otaccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_Otaccc), &att_ccc_control},
         {0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
@@ -804,7 +804,7 @@ int app_ir_callback(void *p)
         // 0034 - 0038              (52-56)
         {5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},                //prop
-        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &google_ota_write, &otaRead},            //value
+        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_write, &otaRead},            //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_Otaccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_Otaccc), &att_ccc_control},
         {0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 

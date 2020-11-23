@@ -109,6 +109,7 @@ void bls_ota_setTimeout(u32 timeout_us);
 
 extern int otaWrite(void * p);
 extern int otaRead(void * p);
+extern _attribute_data_retention_    int        ota_program_bootAddr;
 
 
 //firmware_size_k  must be 4k aligned

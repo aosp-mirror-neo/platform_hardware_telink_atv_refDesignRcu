@@ -46,4 +46,6 @@ int server2client_auido_proc(void* p);
 void audio_state_check(void);
 void voice_key_release(void);
 void voice_key_press(void);
+
+
 #endif /* APP_AUDIO_H_ */

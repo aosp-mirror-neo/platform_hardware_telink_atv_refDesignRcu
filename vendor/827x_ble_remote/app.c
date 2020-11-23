@@ -167,6 +167,7 @@ extern u8 my_devNamelen;
 extern u8 my_devName[20];
 extern u8 ir_flash_erase_flag;
 extern void ir_flash_set_flag(u8 flag);
+extern u8 init_ir_key_event_notify(void);
 
 void app_enter_deep_timeset(void)
 {
@@ -413,7 +414,7 @@ void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
      printf("ble_ll_reject\r\n");
      if(device_in_connection_state == 0)
      {
-         blt_soft_timer_add(&app_enable_adv_timeout, 1000000);
+         blt_soft_timer_add(app_enable_adv_timeout, 3000000);
          ble_sts_t status = app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN);
          printf("status=%x\r\n",status);
          if(google_voice_ctl & FLAG_GOOGLE_CAPS_RESP)
@@ -424,7 +425,7 @@ void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
 int app_ota_terminate_timeoutcb(void)
 {
     printf("app_ota_terminate_timeoutcb\r\n");
-    terminate_google_ota_proc(OTA_USER_TERMINATE);
+    app_ota_terminate(OTA_USER_TERMINATE);
 
     return -1;
 }
@@ -440,7 +441,8 @@ void     ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
         if(ota_is_working)
         {
             app_pairing_error();
-            blt_soft_timer_add(&app_ota_terminate_timeoutcb, 1000000);
+            blt_soft_timer_add(app_ota_terminate_timeoutcb, 1000000);
+			return;
         }
         if(*p == HCI_ERR_CONN_TIMEOUT){
             printf("HCI_ERR_CONN_TIMEOUT\r\n");
@@ -617,6 +619,7 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             mtuExchange_check_tick = clock_time() | 1;
             notify_get_rsp_tick = clock_time()|1;
             battery_refresh();
+			blt_soft_timer_add(app_cachekey_send_timer,30000);
         }
         break;
 
@@ -665,7 +668,7 @@ int app_peer_mac_flash_erase_timeoutcb(void)
 
 void app_peer_mac_flash_erase(void)
 {
-    blt_soft_timer_add(&app_peer_mac_flash_erase_timeoutcb, PEER_MAC_FLASH_ERASE_TIMEOUT);
+    blt_soft_timer_add(app_peer_mac_flash_erase_timeoutcb, PEER_MAC_FLASH_ERASE_TIMEOUT);
 }
 
 
@@ -690,6 +693,11 @@ void app_save_peer_mac_info(u8 *mac)
             printf("new mac\r\n");
             memcpy(peer_mac,mac,6);
             ir_table_init();
+			write_ccc_info(0);
+			write_ir_key_event_notify(0);
+			flag_ccc_data = 0;
+			atv_char_ctl_ccc = 0;
+			atv_char_rx_ccc = 0;
             ir_flash_erase_flag = 0x55;
             if(is_peer_mac_flash_info_full() == 0)
                write_peer_mac_info(peer_mac);
@@ -708,7 +716,8 @@ void    task_connect (u8 e, u8 *p, int n)
     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 
     latest_user_event_tick = clock_time();
-    blt_soft_timer_add(&app_terminate_timeout, 2000000);
+    blt_soft_timer_add(app_terminate_timeout, 2000000);
+	bls_ota_set_random(p+12);
 }
 
 void    task_conn_update_req (u8 e, u8 *p, int n)
@@ -898,7 +907,7 @@ void blt_pm_proc(void)
             if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg )
             {
                  if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
-                        time =  ADV_IDLE_ENTER_DEEP_TIME;
+                        time = ADV_IDLE_ENTER_DEEP_TIME;
                  else
                         time = 3;
                  if(clock_time_exceed(advertise_begin_tick ,  time* 1000000))
@@ -1007,7 +1016,7 @@ typedef struct{
     u8    data[31];           //0-31 byte
 }rf_packet_adv_ind_module_t;
 
-extern u8 wakeup_key[15];
+extern u8 wakeup_key[APP_CUSTOM_WAKEUPKEY_NUM];
 
 
 /*  //sdmc format
@@ -1106,8 +1115,8 @@ void app_tx_power_wakeup(u8 keyid)
         memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
         tx_power_wakeup.data[0] = 0x0c;
         tx_power_wakeup.data[1] = 0x16;
-        tx_power_wakeup.data[2] = 0x03;
-        tx_power_wakeup.data[3] = 0x15;
+        tx_power_wakeup.data[2] = 0x36;
+        tx_power_wakeup.data[3] = 0xfd;
         tx_power_wakeup.data[4] = 0x01;
         if(keyid == 0xff)
         {
@@ -1201,6 +1210,7 @@ void app_tx_power_wakeup(u8 keyid)
 
 void app_delay_set(void)
 {
+    printf("app_delay_set\r\n");
     google_get_rsp_delay();
 
     if((flag_dle & 0x80) == 0)
@@ -1209,6 +1219,11 @@ void app_delay_set(void)
         mtuExchange_check_tick = clock_time() | 1;
         mtuExchange_check_timer = 500000;
     }
+}
+
+u8 is_mic_enable(void)
+{
+    return ui_mic_enable;
 }
 
 void user_init_normal(void)
@@ -1294,6 +1309,9 @@ void user_init_normal(void)
             printf("bond_number_1=%x\r\n",bond_number);
         }
     }
+	u8 data = analog_read(DEEP_ANA_REG2);
+	if(data == 0x0f)
+		analog_write(DEEP_ANA_REG2, 0);
     app_schedule_ota_wakeup_host();
 
     is_pairing_mode = 0;
@@ -1348,6 +1366,12 @@ void user_init_normal(void)
                                          MY_APP_ADV_CHANNEL,
                                          ADV_FP_NONE);
         if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
+        /*
+        if(power_down_flag == 1)
+        {
+            bls_ll_setAdvEnable(1);  //adv enable
+        }
+        */
         printf("inderict adv\r\n");
     }
 
@@ -1410,13 +1434,7 @@ void user_init_normal(void)
 #if (BLE_REMOTE_OTA_ENABLE)
     ////////////////// OTA relative ////////////////////////
     bls_ota_clearNewFwDataArea(); //must
-    //bls_ota_registerStartCmdCb(app_enter_ota_mode);
-    bls_ota_registerotaNewStartCb(app_enter_ota_mode);
-    bls_ota_registerVersionReqCb(app_ota_ver_check);
-    bls_ota_registerotaSignatureCmdCb(app_ota_signature);
-    bls_ota_registerResultIndicateCb(app_ota_result);
-    bls_ota_registerotaScheduletCb(app_schedule_ota);
-    bls_ota_registerotaTimetouCb(app_ota_timeout);
+
     bls_ota_init_handle(OTA_CMD_OUT_DP_H);
 
 #endif
@@ -1428,9 +1446,11 @@ void user_init_normal(void)
     printf("flag_ccc_data:0x%x\n",flag_ccc_data);
     app_ir_programming_end_register(app_delay_set);
     is_flash_info_full();
-
     init_peer_mac();
     ir_param_init();
+	u8 ccc = init_ir_key_event_notify();
+	if(ccc != 0xff)
+		ir_init_key_event_notify(ccc);
     init_wakeup_keyindex();
     extern void init_device_info (void);
     init_device_info();
@@ -1488,7 +1508,7 @@ void main_loop (void)
         app_audio_task();
     #endif
 
-    google_ota_proc();
+    app_ota_proc();
 
     #if (BATT_CHECK_ENABLE)
         if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){

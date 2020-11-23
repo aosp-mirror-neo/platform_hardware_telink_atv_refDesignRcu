@@ -122,13 +122,27 @@ static unsigned char     kb_is_fn_pressed = 0;
 
 
 extern u8 *p_kb_map_normal;
+extern u8 comb_key_keyid[7];
 extern const unsigned int Kb_Drive_Pins_G10[];
+extern const unsigned int Kb_Drive_Pins_G20[];
+extern const unsigned char Kb_CombKey_KeyId_G10[6];
+extern const unsigned char Kb_CombKey_KeyId_G20[7];
+
 void kb_p_map_init(void)
 {
     u8 len = app_custom_get_drive_len();
+	printf("len=%x\r\n",len);
     kb_p_map[0] = p_kb_map_normal;//p_kb_map_normal;
-    memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
-    //kb_k_mp = kb_p_map[0];
+    if(device_type == REMOTE_G10)
+    {
+        memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
+		memcpy(comb_key_keyid,Kb_CombKey_KeyId_G10,6);
+    }
+	else
+	{
+		memcpy(drive_pins,Kb_Drive_Pins_G20,len*4);
+		memcpy(comb_key_keyid,Kb_CombKey_KeyId_G20,7);
+	}
 }
 
 void kb_rmv_ghost_key(u32 * pressed_matrix){

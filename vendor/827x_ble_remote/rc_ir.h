@@ -105,7 +105,7 @@ typedef struct{
     u8 repeat_enable;
     u8 last_cmd;
     u8 rsvd;
-
+    u8 is_full_sequence;
     u32 sending_start_time;
 }ir_send_ctrl_t;
 

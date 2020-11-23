@@ -30,7 +30,7 @@
 #include "rc_ir.h"
 #include "app_ir.h"
 
-
+extern void         bls_pm_setSuspendMask (u8 mask);
 #if (REMOTE_IR_ENABLE)
 
 
@@ -134,6 +134,7 @@ void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
         reg_pwm_irq_mask |= FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //enable dma fifo mode done irq mask
 
 
+		bls_pm_setSuspendMask(0);
         ir_send_ctrl.is_sending = IR_SENDING_DATA;
 
         ir_send_ctrl.sending_start_time = clock_time();
@@ -173,25 +174,34 @@ int ir_sending_check(void)
 }
 
 
-#if 0
+#if 1
 void ir_send_release(void)
 {
     u8 r = irq_disable();
 
-    ir_send_ctrl.last_cmd = 0xff;
+    if(ir_send_ctrl.is_full_sequence == 0)
+    {
+        printf("ir_send_release (not full sequence)\r\n");
+        ir_send_ctrl.last_cmd = 0xff;
+        ir_send_ctrl.is_sending = IR_SENDING_STOP;
+    }
+    else
+    {
+        printf("ir_send_release (is full sequence)\r\n");
+        ir_send_ctrl.last_cmd = 0xff;
 
 #if(!ADD_REPEAT_ONE_BY_ONE)
-    if(ir_send_ctrl.is_sending != IR_SENDING_NONE){
-        pwm_stop_dma_ir_sending();
-    }
+        if(ir_send_ctrl.is_sending != IR_SENDING_NONE){
+            pwm_stop_dma_ir_sending();
+        }
 #endif
 
-    ir_send_ctrl.is_sending = IR_SENDING_NONE;
-
-    reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear irq status
-    reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
-
-
+        ir_send_ctrl.is_sending = IR_SENDING_NONE;
+        ir_send_ctrl.is_full_sequence = 0;
+        pwm_stop_dma_ir_sending();
+        reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear irq status
+        reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
+    }
     irq_restore(r);
 }
 #else
@@ -221,7 +231,7 @@ void rc_ir_irq_prc(void)
    // printf("rc_ir_irq_prc\r\n");
     if(reg_pwm_irq_sta & FLD_IRQ_PWM0_IR_DMA_FIFO_DONE){
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //clear irq status
-
+        ir_send_ctrl.is_full_sequence = 0x55;
         if(is_programming_key_send() == 0)
         {
             if(ir_send_ctrl.repeat_enable){
@@ -259,7 +269,8 @@ void rc_ir_irq_prc(void)
                 }
                 else
                 {
-                    printf("ir irq release\r\n");
+                    printf("nec ir irq release\r\n");
+
                     reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
                     ir_send_ctrl.is_sending = IR_SENDING_NONE;
  
@@ -469,11 +480,14 @@ void  ir_send_specil (u16 freq, u8 cycle)
 
     //irq_enable();
 
+	bls_pm_setSuspendMask(0);
     ir_send_ctrl.is_sending = IR_SENDING_DATA;
+    ir_send_ctrl.repeat_enable = 0;
 
     pwm_start_dma_ir_sending();
 
     ir_send_ctrl.last_cmd = 0xff; //must
+    ir_send_ctrl.is_full_sequence = 0;
 }
 
 

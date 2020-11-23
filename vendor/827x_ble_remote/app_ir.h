@@ -63,4 +63,5 @@ extern void ir_param_init(void);
 extern void ir_flash_erase(void);
 extern void ir_flash_eraseall(void);
 extern void app_ir_programming_end_register(app_ir_programming_end_Cb_t cb);
+extern void ir_init_key_event_notify(u8 value);
 #endif

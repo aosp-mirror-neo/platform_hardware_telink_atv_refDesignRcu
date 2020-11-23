@@ -47,8 +47,8 @@ enum{
 
 // control data
 enum{
-     OTA_PAUSE = 0,
-     OTA_CONTINUE,
+     OTA_CTRL_PAUSE = 0,
+     OTA_CTRL_CONTINUE,
 };
 
 
@@ -57,31 +57,20 @@ typedef enum{
      BATT_CHECK_OK    = BIT(1),
      OTA_SIGNATURE    = BIT(2),
      OTA_START        = BIT(3),
+
+     OTA_PAUSE        = BIT(14),
+     FW_DEC           = BIT(15),
 }OTA_CtlFlagDef;
 
-typedef void (*ota_signatureCb_t)(void);
-typedef void (*ota_FWdecryptionCb_t)(u8 *data);
-typedef void (*ota_newStartCb_t)(void *data);
-typedef void (*ota_scheduleCb_t)(u8 *data);
-typedef void (*ota_timeoutCb_t)(void);
-
 void bls_ota_init_handle(u16 handle);
+void bls_ota_set_random(u8 *random);
+void bls_ota_get_random(u8 *random);
+char app_ota_pause();
+char app_ota_continue();
+void app_ota_terminate(u8 reason);
+int app_ota_write(void * p);
+void app_ota_proc(void);
 
-unsigned char google_ota_pause();
-unsigned char google_ota_continue();
-void bls_ota_registerotaSignatureCmdCb(ota_signatureCb_t cb);
-void bls_ota_registerotaFWdecryptionCb(ota_FWdecryptionCb_t cb);
-void bls_ota_registerotaNewStartCb(ota_newStartCb_t cb);
-void bls_ota_registerotaScheduletCb(ota_scheduleCb_t cb);
-void bls_ota_registerotaTimetouCb(ota_timeoutCb_t cb);
-void terminate_google_ota_proc(u8 reason);
-
-//void google_ota_result(int result);
-
-int google_ota_write(void * p);
-
-void google_ota_proc(void);
-
-extern u8  ota_ctl_flag;
+extern u16 ota_ctl_flag;
 
 #endif /* APP_OTA_H_ */
