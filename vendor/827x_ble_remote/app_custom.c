@@ -93,32 +93,32 @@ const unsigned char Kb_Map_Normal_G20[8][6] = \
                         {\
                         {0,            1,               2,             3,          4,         5},  \
                         {6,            7,               8,             9,          10,        11},  \
-                        {12,           13,               14,             15,         16,        17},  \
-                        {VOICE,        19,               20,             21,         22,        23},  \
-                        {24,           25,               26,             27,         28,        29},  \
-                        {30,           31,               32,             33,         34,        35},  \
-                        {36,           37,               38,             39,         40,        41},  \
-                        {42,           43,               44,             45,         46,        47}};
+                        {12,           13,              14,            15,         16,        17},  \
+                        {VOICE,        19,              20,            21,         22,        23},  \
+                        {24,           25,              26,            27,         28,        29},  \
+                        {30,           31,              32,            33,         34,        35},  \
+                        {36,           37,              38,            39,         40,        41},  \
+                        {42,           43,              44,            45,         46,        47}};
 
 const unsigned char Kb_Map_Ble_G20[] = {\
-                        CR_POWER,       CR_RIGHT,       CR_VOL_DN,     CR_INFO,     VK_4,         CR_GREEN,\
-                        CR_INPUT,       CR_DN,           CR_CHN_DN,     VK_0,         VK_3,         CR_RED,\
-                        CR_BOOKMARK,   CR_BACK,        CR_YOUTUBE,     CR_SUBTITLE,VK_2,         VK_6,\
-                        CR_ASSIST,       CR_HOME,        CR_NETFLIX,     VK_9,         VK_1,         VK_5,\
-                        CR_DASHBOARD,  CR_GUIDE,       CR_DISNEY,     VK_8,         CR_BLUE,     VK_NONE,\
-                        CR_UP,           CR_VOL_UP,       CR_HBOMAX,     VK_7,         CR_YELLOW,  VK_NONE,\
-                        CR_LEFT,       CR_CHN_UP,       VK_NONE,      VK_NONE,     VK_NONE,     VK_NONE,\
-                        CR_CENTER,       CR_VOL_MUTE,    VK_NONE,      VK_NONE,     VK_NONE,     VK_NONE};
+                        CR_POWER,      CR_RIGHT,        CR_VOL_DN,     CR_INFO,     VK_4,      CR_GREEN,\
+                        CR_INPUT,      CR_DN,           CR_CHN_DN,     VK_0,        VK_3,      CR_RED,\
+                        CR_BOOKMARK,   CR_BACK,         CR_YOUTUBE,    CR_SUBTITLE, VK_2,      VK_6,\
+                        CR_ASSIST,     CR_HOME,         CR_NETFLIX,    VK_9,        VK_1,      VK_5,\
+                        CR_DASHBOARD,  CR_GUIDE,        CR_DISNEY,     VK_8,        CR_BLUE,   VK_NONE,\
+                        CR_UP,         CR_VOL_UP,       CR_HBOMAX,     VK_7,        CR_YELLOW, VK_NONE,\
+                        CR_LEFT,       CR_CHN_UP,       VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE,\
+                        CR_CENTER,     CR_VOL_MUTE,     VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE};
 
 const unsigned char Kb_Map_Ir_G20[] =  {\
-                        IR_POWER,       IR_RIGHT,       IR_VOL_DN,     IR_INFO,     IR_VK_4,     IR_GREEN,\
-                        IR_INPUT,       IR_DN,           IR_CHN_DN,     IR_VK_0,     IR_VK_3,     IR_RED, \
-                        IR_BOOKMARK,   IR_BACK,        IR_YOUTUBE,     IR_SUBTITLE,IR_VK_2,     IR_VK_6,\
-                        IR_ASSIST,       IR_HOME,        IR_NETFLIX,     IR_VK_9,     IR_VK_1,     IR_VK_5,\
-                        IR_DASHBOARD,  IR_GUIDE,       IR_DISNEY,     IR_VK_8,     IR_BLUE,     VK_NONE,\
-                        IR_UP,           IR_VOL_UP,       IR_HBOMAX,     IR_VK_7,     IR_YELLOW,  VK_NONE,\
-                        IR_LEFT,       IR_CHN_UP,       VK_NONE,      VK_NONE,     VK_NONE,     VK_NONE,\
-                        IR_CENTER,       IR_MUTE,        VK_NONE,      VK_NONE,     VK_NONE,     VK_NONE};
+                        IR_POWER,      IR_RIGHT,        IR_VOL_DN,     IR_INFO,     IR_VK_4,   IR_GREEN,\
+                        IR_INPUT,      IR_DN,           IR_CHN_DN,     IR_VK_0,     IR_VK_3,   IR_RED, \
+                        IR_BOOKMARK,   IR_BACK,         IR_YOUTUBE,    IR_SUBTITLE, IR_VK_2,   IR_VK_6,\
+                        IR_ASSIST,     IR_HOME,         IR_NETFLIX,    IR_VK_9,     IR_VK_1,   IR_VK_5,\
+                        IR_DASHBOARD,  IR_GUIDE,        IR_DISNEY,     IR_VK_8,     IR_BLUE,   VK_NONE,\
+                        IR_UP,         IR_VOL_UP,       IR_HBOMAX,     IR_VK_7,     IR_YELLOW, VK_NONE,\
+                        IR_LEFT,       IR_CHN_UP,       VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE,\
+                        IR_CENTER,     IR_MUTE,         VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE};
 
 const unsigned short int Kb_Map_Correspend_Index_G20[] =  {6,VOICE,24,24,42,  13,19,25,0,6,  25,14,20,26,32,  48,15,28,5,11,  34,3,15};
 

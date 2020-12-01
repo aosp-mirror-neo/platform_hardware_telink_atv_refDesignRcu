@@ -131,18 +131,18 @@ extern const unsigned char Kb_CombKey_KeyId_G20[7];
 void kb_p_map_init(void)
 {
     u8 len = app_custom_get_drive_len();
-	printf("len=%x\r\n",len);
+    printf("len=%x\r\n",len);
     kb_p_map[0] = p_kb_map_normal;//p_kb_map_normal;
     if(device_type == REMOTE_G10)
     {
         memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
-		memcpy(comb_key_keyid,Kb_CombKey_KeyId_G10,6);
+        memcpy(comb_key_keyid,Kb_CombKey_KeyId_G10,6);
     }
-	else
-	{
-		memcpy(drive_pins,Kb_Drive_Pins_G20,len*4);
-		memcpy(comb_key_keyid,Kb_CombKey_KeyId_G20,7);
-	}
+    else
+    {
+        memcpy(drive_pins,Kb_Drive_Pins_G20,len*4);
+        memcpy(comb_key_keyid,Kb_CombKey_KeyId_G20,7);
+    }
 }
 
 void kb_rmv_ghost_key(u32 * pressed_matrix){
@@ -396,8 +396,6 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 
         u32 key_changed = key_debounce_filter( pressed_matrix, \
                         (numlock_status & KB_NUMLOCK_STATUS_POWERON) ? 0 : 1);
-       if(key_changed)
-         printf("key_changed === 1\r\n");
 
 #if (KB_REPEAT_KEY_ENABLE)
         if(key_changed){

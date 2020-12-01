@@ -100,7 +100,6 @@ static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 _attribute_data_retention_ u8 my_devName[20];
 _attribute_data_retention_ u8 my_devNamelen;
 
-
 static u16 serviceChangeVal[2] = {0};
 
 static u8 serviceChangeCCC[2] = {0,0};
@@ -519,13 +518,12 @@ u8      ir_data[1] = {0};
 
 #endif
 
-
-//u8 flash_count=0;
+extern void app_set_mtusize(void);
 extern void ir_fallback_process(u16 handle, u8* buf, u8 len);
 int app_ir_callback(void *p)
 {
     u16 handle,i,len;
-    //u32 addr;
+    u8 printf_len;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
     handle = (u16)((pw->hh)<<8) | (u16)(pw->hl);
@@ -535,11 +533,15 @@ int app_ir_callback(void *p)
     printf("pw->dat=\r\n");
 
     len = pw->l2cap-3;//pw->rf_len-7;
-
-    for(i=0;i<len;i++)
+    printf_len = len;
+    if(printf_len > 10)
+        printf_len = 10;
+    for(i=0;i<printf_len;i++)
         printf(" %x",pw->dat[i]);
 
+    app_set_mtusize();
     ir_fallback_process(handle,pw->dat,len);
+
     return 0;
 }
 

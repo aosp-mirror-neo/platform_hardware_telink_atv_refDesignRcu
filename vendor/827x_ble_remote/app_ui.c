@@ -231,14 +231,14 @@ u8 app_enter_ota_mode(u8 *data)
     return 0;
 }
 
-void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_sign_key){
-
-    u8 aes_plaintext[16] = {'g','o','o','g','l','e','G','1','0','R','C','U',0x00,0x00,0x00,0x00,};
-    u8 signature_key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};  //OTA key;
-
-    memcpy(plaintext,aes_plaintext,16);
-    memcpy(cus_sign_key,signature_key,16);
-}
+//void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_sign_key){
+//
+//    u8 aes_plaintext[16] = {'g','o','o','g','l','e','G','1','0','R','C','U',0x00,0x00,0x00,0x00,};
+//    u8 signature_key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};  //OTA key;
+//
+//    memcpy(plaintext,aes_plaintext,16);
+//    memcpy(cus_sign_key,signature_key,16);
+//}
 
 void app_ota_result(u8 result)
 {
@@ -912,14 +912,12 @@ void app_mic_led(u8 en)
     {
         if(en)
         {
-            printf("app_mic_led\r\n");
             device_led_setup(led_cfg[LED_SHINE_PTT]);
         }
         else
         {
             if(factory_reset_flag == 0)
             {
-                printf("app_mic_led close led");
                 device_led_setup(led_cfg[en ? 1 : 2]);
             }
         }
@@ -929,13 +927,11 @@ void app_mic_led(u8 en)
         if(en)
         {
             device_led_setup(led_cfg[en ? 1 : 2]);
-            printf("app_mic_led\r\n");
         }
         else
         {
             if(factory_reset_flag == 0)
             {
-                printf("app_mic_led close led");
                 device_led_setup(led_cfg[en ? 1 : 2]);
             }
         }
@@ -944,7 +940,6 @@ void app_mic_led(u8 en)
 
 void app_keypress_led(u8         ir_key)
 {
-    printf("app_keypress_led_lowbat=%x\r\n",lowbat);
     if(lowbat == 0x55)
     {
         printf("low bat\r\n");
@@ -962,7 +957,6 @@ void app_keypress_led(u8         ir_key)
     {
           if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (ui_mic_enable == 0))
           {
-              printf("is_pairing_mode=%x,is_reconn_mode=%x\r\n",is_pairing_mode,is_reconn_mode);
               if(device_in_connection_state == 1)
               {
                   device_led_setup(led_cfg[LED_SHINE_FAST]);
@@ -975,8 +969,9 @@ void app_keypress_led(u8         ir_key)
     }
     if(ir_key)
     {
-        if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (ota_is_working == 0) && (ui_mic_enable == 0))
+        if((is_pairing_mode == 0) && (ota_is_working == 0) && (ui_mic_enable == 0))
         {
+            printf("ir db key press\r\n");
             device_led_setup(led_cfg[LED_SHINE_FAST]);
             device_led_setup(led_cfg[LED_KEYPRESS]);
         }
@@ -1038,7 +1033,6 @@ void key_change_proc(void)
     if (kb_event.cnt == 2)   //two key press, do  not process
     {
         //retime
-        printf("kb_event.cnt == 2_step1\r\n");
         advertise_tick_retime();
         if(wakeup_key_send_flag == 1)
         {
@@ -1049,7 +1043,6 @@ void key_change_proc(void)
 #if (STUCK_KEY_PROCESS_ENABLE)
         stuckkey_keypresstimer = clock_time() | 1;
 #endif
-        printf("kb_event.cnt == 2_step2\r\n");
         if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[1])) || ((key0 == comb_key_keyid[1]) && (key1 == comb_key_keyid[0]))) //Pairing Mode  back+home
         {
             printf("pair start\r\n");
@@ -1155,7 +1148,6 @@ void key_change_proc(void)
     }
     else if(kb_event.cnt == 1)
     {
-          printf("ir_not_released=%x\r\n",ir_not_released);
           //retime
           advertise_tick_retime();
 
@@ -1344,7 +1336,6 @@ void key_change_proc(void)
 #if (REMOTE_IR_ENABLE)
         else if(key_type == IR_KEY)
         {
-            printf("ir_not_released=%x\r\n",ir_not_released);
             if(ir_not_released){
                 ir_not_released = 0;
                 if(ir_send_ctrl.is_sending)
@@ -1375,11 +1366,11 @@ void app_factory_reset(void)
     factory_reset_flag = 0x55;
     is_reconn_mode = 0;
     is_pairing_mode = 0;
-    write_ccc_info(0);
+
     flag_ccc_data = 0;
     atv_char_ctl_ccc = 0;
     atv_char_rx_ccc = 0;
-
+    write_ccc_info(&flag_ccc_data);
     //led
     device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
 
@@ -1690,4 +1681,10 @@ int att_ccc_control(void* p){
 
     return 0;
 }
+
+u8 app_is_key_released(void)
+{
+    return key_not_released;
+}
+
 

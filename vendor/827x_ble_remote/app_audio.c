@@ -161,7 +161,7 @@ _attribute_data_retention_    u8        key_htt_press = 0;
             battery_set_detect_enable(!en);
         #endif
 
-		if(ui_mic_enable)
+        if(ui_mic_enable)
         {
             app_ota_status(0);
         }

@@ -337,23 +337,31 @@ u8 is_peer_mac_flash_info_full(void)
 
 void init_peer_mac(void)
 {
-    if(read_peer_mac_info(peer_mac) == 0)
+    u8 i;
+    u8 dat;
+    printf("init_peer_mac\r\n");
+    for(i=0;i<5;i++)
     {
-        printf("peer_mac =\r\n");
-        for(u8 i=0;i<6;i++)
-            printf(" %x",peer_mac[i]);
-         printf("\r\n");
-        if(is_peer_mac_flash_info_full())
+        dat = read_peer_mac_info(peer_mac);
+        if(dat == 0)
         {
-            flash_erase_sector(MAC_DATA_SECT_ADDR);
-            write_peer_mac_info(peer_mac);
+            printf("peer_mac =\r\n");
+            for(u8 i=0;i<6;i++)
+                printf(" %x",peer_mac[i]);
+             printf("\r\n");
+            if(is_peer_mac_flash_info_full())
+            {
+                flash_erase_sector(MAC_DATA_SECT_ADDR);
+                write_peer_mac_info(peer_mac);
+            }
+            break;
+        }
+        else if(dat == 1)
+        {
+            printf("no_peer_mac\r\n");
+            break;
         }
     }
-    else
-    {
-        printf("no_peer_mac\r\n");
-    }
-    
 }
 
 void write_wakeup_keyindex_info(u8 index){
@@ -449,7 +457,7 @@ u8 init_ir_key_event_notify(void)
     {
         printf("no ir_key_event_notify\r\n");
     }
-	return index;
+    return index;
 }
 
 

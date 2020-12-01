@@ -73,6 +73,8 @@ _attribute_data_retention_ u32 app_audio_start_delay = 0;
 _attribute_data_retention_ u32 app_active_remote_timer = 0;     //Wait mic open cmd after send START_SEARCH
 _attribute_data_retention_ u32 app_audio_transfer_timer = 0;    //Used for google voice timeout
 
+extern int device_in_connection_state;
+
 /**
  * @brief   initialize packet parameters according to the version of google voice
  * @param   none
@@ -801,7 +803,7 @@ void google_get_rsp(void){
         sendBuff[5] = 0x00;                                 //audio frame size (2)
         sendBuff[6] = read_audio_frame_size();              //audio frame size (2)
         //sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
-        sendBuff[7] = (read_audio_frame_size() > app_mtu_size)?1:0;       //extra configuration (1)
+        sendBuff[7] = ((read_audio_frame_size()+3) > app_mtu_size)?1:0;       //extra configuration (1)
         sendBuff[8] = 0x00;                                 //reserved(1)
 
         }else{
@@ -817,7 +819,7 @@ void google_get_rsp(void){
     }
     ble_sts_t ret;
     ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 9);
-    printf("google_get_rsp _ret=%x\r\n",ret);
+    printf("google_get_rsp_ret=%x\r\n",ret);
     if(ret == BLE_SUCCESS){
         if(google_voice_ver == 10)
         {
@@ -837,6 +839,7 @@ _attribute_data_retention_ u32 notify_get_rsp_delay_time = 6000000;
  * @return  none
  */
 void google_cmd_proc(){
+     ble_sts_t ret;
 
 //    if(app_active_remote_timer && clock_time_exceed(app_active_remote_timer, APP_AUDIO_GOOGLE_TIMEOUT1)){
 //        //wait mic open cmd
@@ -867,15 +870,20 @@ void google_cmd_proc(){
             u8 sendData[2] = {0};
 
             sendData[0] = ATV_MIC_CHAR_CTL_SEARCH;
-            bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendData, 1);
+            ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendData, 1);
+            printf("search 1 ret=%x\r\n",ret);
 
             sendData[0] = 0x21;
             sendData[1] = 0x02;
-            bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, sendData, 2); //  8 HID_NORMAL_KB_REPORT_INPUT_DP_H
+            ret = bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, sendData, 2); //  8 HID_NORMAL_KB_REPORT_INPUT_DP_H
+
+            printf("search 2 ret=%x\r\n",ret);
 
             sendData[0] = 0x00;
             sendData[1] = 0x00;
-            bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, sendData, 2);
+            ret = bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, sendData, 2);
+
+            printf("search 3 ret=%x\r\n",ret);
 
             google_voice_ctl &= ~FLAG_GOOGLE_SEARCH;
         }
@@ -1129,7 +1137,8 @@ void app_audio_task(void){
 
     if(!google_voice_ctl) return;
 
-    google_cmd_proc();
+    if(device_in_connection_state)
+        google_cmd_proc();
 
     if(google_voice_ctl & FLAG_DELAY_NOTIFY){
 

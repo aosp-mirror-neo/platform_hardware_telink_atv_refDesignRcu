@@ -70,4 +70,5 @@ extern void app_schedule_ota_wakeup_host(void);
 extern void app_schedule_ota_send_notify_to_continue_ota(void);
 extern void app_ota_timeout(void);
 extern int app_cachekey_send_timer(void);
+extern u8 app_is_key_released(void);
 #endif /* APP_UI_H_ */
