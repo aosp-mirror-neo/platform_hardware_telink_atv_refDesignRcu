@@ -429,10 +429,10 @@ void ir_param_init(void)
     u8 find_flag=0;
 
     ir_flash_index = IR_DATA_SECT_MAX_NUM;
+    printf("ir flash head=\r\n");
     for(i=0;i<IR_DATA_SECT_NUM;i++)
     {
         flash_read_page(IR_DATA_SECT_0_ADDR+i*0x1000, 6, data);
-        printf("sect i=%x\r\n",i);
         for(u8 k=0;k<6;k++)
             printf(" %x",data[k]);
         for(j=0;j<3;j++)
@@ -455,12 +455,12 @@ void ir_param_init(void)
     if(ir_flash_index == IR_DATA_SECT_MAX_NUM)
     {
         ir_flash_index = 0;
-        printf("no ir data\r\n");
+        printf("\r\nno ir data\r\n");
         return;
     }
     if(nodata_flag == 1)
     {
-        printf("no ir data, but ir_flash_index =%x\r\n",ir_flash_index);
+        printf("\r\nno ir data, but ir_flash_index =%x\r\n",ir_flash_index);
     }
     else
     {

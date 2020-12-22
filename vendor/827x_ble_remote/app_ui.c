@@ -77,7 +77,6 @@ extern int device_in_connection_state;
 extern u8 flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8 wakeup_src;
-extern u8 wakeup_key[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 power_down_flag;
 extern u8 wakeup_key_send_flag;
 extern int ir_fallback_send(u8 key_down);
@@ -409,23 +408,24 @@ void app_schedule_ota_send_notify_to_continue_ota(void)
 
 void app_schedule_ota_wakeup_host(void)
 {
+#if 1
     u8 data = analog_read(DEEP_ANA_REG2);
-    u8 i;
     u8 flag=0;
 
     if((wakeup_src == 2) && (data) && (power_down_flag == 2))
     {
-        for(i=0;i<APP_CUSTOM_WAKEUPKEY_NUM;i++)
-        {
-            if(wakeup_key[i] != 0xff)
-                flag++;
-        }
+        flag = app_custom_is_enable_wakeup_key();
         if(flag)
         {
             printf("app_schedule_ota_wakeup_host\r\n");
             app_tx_power_wakeup(0xff);
         }
     }
+#else
+    printf("app_schedule_ota_wakeup_host\r\n");
+    app_tx_power_wakeup(0xff);
+
+#endif
 }
 
 #endif
@@ -1550,7 +1550,6 @@ void app_ui_init_normal(void)
     device_led_off(APP_LED_RED);
     if((analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG) == 0)
     {
-        printf("led on 1s\r\n");
         device_led_setup(led_cfg[LED_POWER_ON]);  //only poweron
     }
 #endif
@@ -1561,11 +1560,10 @@ void app_ui_init_normal(void)
 #endif
 
 
-
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_init();
 
-    if(power_down_flag == 1)
+    if((power_down_flag == 1) && (test_get_mode() != MODE_TEST))
     {
         blt_soft_timer_add(app_poweron_timeout, 1000000);
     }

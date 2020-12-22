@@ -212,9 +212,13 @@ void google_mic_enable(){
  * @param   none
  * @return  none
  */
+#define PREVENT_TIME    600 //ms
+_attribute_data_retention_ u32 prevent_repeat_trigger_on_request_tick = 0;
 void google_voice_on_request(){
 
-    //app_active_remote_timer = clock_time() | 1;
+    //Prevent repeated triggers(2020.12.15)
+    if(prevent_repeat_trigger_on_request_tick && (!clock_time_exceed(prevent_repeat_trigger_on_request_tick,PREVENT_TIME*1000))) return;
+    prevent_repeat_trigger_on_request_tick = clock_time()|1;
     google_voice_ctl |= FLAG_GOOGLE_SEARCH;
 }
 
@@ -516,18 +520,11 @@ void google_voice_v1p0(rf_packet_att_data_t *pw){
                 default:
                 {
                     //send audio stop and restart audio or ignore cmd
-                    if(mic_open_mode == mic_mode){
-                        //when mic_open_mode is same.ignore the cmd.
-
-                    }else{
-                        //mic_open_mode is changed.send audio stop and restart audio with new mode
-                        mic_open_mode = mic_mode;
-
-                        ui_enable_mic(0);
-                        google_voice_ctl |= FLAG_AUDIO_CLOSE;
-                        audio_stop_reason = REASON_UPCOMING_AUDIO_START;
-                        audio_start_reason = REASON_MICOPEN;
-                    }
+                    //Prevent repeated triggers(2020.12.15)
+                    ui_enable_mic(0);
+                    google_voice_ctl |= FLAG_AUDIO_CLOSE;
+                    audio_stop_reason = REASON_UPCOMING_AUDIO_START;
+                    audio_start_reason = REASON_MICOPEN;
                     break;
                 }
             }
@@ -1167,6 +1164,7 @@ void app_audio_task(void){
     }
 
     if((google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA) == 0) return;
+    prevent_repeat_trigger_on_request_tick = 0;
     proc_mic_encoder();
 
     google_voice_data_notify_proc();

@@ -100,7 +100,7 @@ u8 flash_pos_info(unsigned long addr, u8 used_sector, u8 used_block){
 
         //search data in flash
         s16 offset = bsearch_without_recursion(addr,used_sector,used_block);
-        printf("offset=%x \r\n", (u16)offset);
+        //printf("offset=%x \r\n", (u16)offset);
         if(offset == -1){
 
             ret = 2;    //return 2;    //sector data error
@@ -339,7 +339,6 @@ void init_peer_mac(void)
 {
     u8 i;
     u8 dat;
-    printf("init_peer_mac\r\n");
     for(i=0;i<5;i++)
     {
         dat = read_peer_mac_info(peer_mac);
