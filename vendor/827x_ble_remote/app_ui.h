@@ -46,7 +46,7 @@ void proc_keyboard (u8 e, u8 *p, int n);
     void app_ota_result(int result);
     void app_schedule_ota(u8 *data);
 
-    void app_ota_decryption(u8 *data);
+    //void app_ota_decryption(u8 *data);
 #endif
     int att_ccc_control(void* p);
 

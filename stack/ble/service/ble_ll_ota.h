@@ -43,7 +43,7 @@
 #define CMD_OTA_FW_VERSION                     0xff00
 #define CMD_OTA_START                          0xff01
 #define CMD_OTA_END                            0xff02
-#define CMD_OTA_SIGNATURE                      0xff03
+#define CMD_OTA_AUTHENTICATION                 0xff03
 #define CMD_OTA_SCHEDULE                       0xff04
 
 #define FLAG_FW_CHECK                          0x5D
@@ -73,6 +73,7 @@ extern u32 blt_ota_timeout_us;
 
 extern u32 ota_program_offset;
 extern int ota_firmware_size_k;
+extern int ota_program_bootAddr;
 
 
 typedef void (*ota_startCb_t)(void);
@@ -96,6 +97,8 @@ enum{
 
      //app not
      OTA_USER_TERMINATE,   //9
+     OTA_SIGNATURE_ERR,   //
+
 };
 
 void bls_ota_procTimeout(void);

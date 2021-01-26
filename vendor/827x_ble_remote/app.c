@@ -84,12 +84,12 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 
 //#define RX_FIFO_SIZE            96                    //-24//64
 //#define RX_FIFO_SIZE            160                    //-24//64
-#define RX_FIFO_SIZE            160                    //-24//64
+#define RX_FIFO_SIZE             160                    //-24//64
 #define RX_FIFO_NUM                8
 
 //#define TX_FIFO_SIZE            88                    //-12//40
-#define TX_FIFO_SIZE            148                    //-12//40
-#define TX_FIFO_NUM                16
+#define TX_FIFO_SIZE             148                    //-12//40
+#define TX_FIFO_NUM                8
 
 //#define MTU_SIZE_SETTING        72
 #define MTU_SIZE_SETTING         180
@@ -152,6 +152,7 @@ _attribute_data_retention_    u16 count_schedule_ota=0;
 
 _attribute_data_retention_    u8 app_slave_terminate=0;
 _attribute_data_retention_    u8 app_is_set_mtusize=0;
+_attribute_data_retention_    u8 prepareWrite_b[300];
 
 
 u8  mac_public[6];
@@ -169,6 +170,15 @@ extern u8 my_devName[20];
 extern u8 ir_flash_erase_flag;
 extern void ir_flash_set_flag(u8 flag);
 extern u8 init_ir_key_event_notify(void);
+
+#if (UART_PRINT_ENABLE)
+_attribute_data_retention_    u8 printf_uart_flag=0;
+
+void app_set_printf_uart_flag(unsigned char data)
+{
+    printf_uart_flag = data;
+}
+#endif
 
 void app_enter_deep_timeset(void)
 {
@@ -234,6 +244,21 @@ void direct_adv(u8 e, u8 *p, int n)
     bls_ll_setAdvEnable(1);  //must: set adv enable
 }
 
+#if (UART_PRINT_ENABLE)
+void app_uart_tx(void)
+{
+    gpio_setup_up_down_resistor(UART_TX_PB1, PM_PIN_PULLUP_10K);  //must, for stability and prevent from current leakage
+    gpio_set_func(UART_TX_PB1,AS_UART); // set tx pin
+    gpio_set_input_en(UART_TX_PB1, 1);  //experiment shows that tx_pin should open input en(confirmed by qiuwei)
+    uart_init_baudrate(1000000,16000000,PARITY_NONE, STOP_BIT_ONE); //baud rate: 115200
+    uart_ndma_clear_tx_index();
+    //uart_dma_enable(0, 0);
+    //irq_disable_type(FLD_IRQ_DMA_EN);
+    //dma_chn_irq_enable(FLD_DMA_CHN_UART_RX | FLD_DMA_CHN_UART_TX, 0);
+    //uart_irq_enable(0,0);   //uart RX irq enable
+    //uart_ndma_irq_triglevel(1,0);    //set the trig level. 1 indicate one byte will occur interrupt
+}
+#endif
 
 void app_adv_interval_downgrade_direct(void)
 {
@@ -373,11 +398,13 @@ void mtu_exchange_loop(void)
         {
             printf("mtu_exchange_loop_dle\r\n");
             blc_ll_exchangeDataLength(LL_LENGTH_REQ,(TX_FIFO_SIZE-18));
+            flag_dle |= 0x01;
         }
         if((flag_dle&0x80) == 0)
         {
             printf("mtu_exchange_loop_update conn parm\r\n");
             bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
+            flag_dle |= 0x80;
         }
         //app_service_change();
     }
@@ -413,7 +440,7 @@ int app_terminate_timeout(void)
      return -1;
 }
 
-void     ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
+void ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
 {
      printf("ble_ll_reject\r\n");
      if(device_in_connection_state == 0)
@@ -503,7 +530,7 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
                      }
                      else
                      {
-                         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+                         bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
                          if(bond_number)
                          {
                               enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
@@ -522,6 +549,14 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
               enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
               bls_ll_setAdvEnable(0);
               printf("HCI_ERR_CONN_TERM_MIC_FAILURE\r\n");
+              bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+              if(bond_number)
+              {
+                  enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+              }
+              else
+                  enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+              app_adv_direct();
         }
         google_voice_ctl = 0;
     }
@@ -781,8 +816,18 @@ void app_phy_update_complete_event(u8 e,u8 *p, int n)
 extern u32 drive_pins[];
 void blt_pm_proc(void)
 {
-    u8 time=0;
 #if(BLE_REMOTE_PM_ENABLE)
+
+    u8 time=0;
+
+#if (UART_PRINT_ENABLE)
+    if(printf_uart_flag)
+    {
+        bls_pm_setSuspendMask (SUSPEND_DISABLE);
+        return;
+    }
+#endif
+
 #if (STUCK_KEY_PROCESS_ENABLE)
     extern u32 stuckkey_keypresstimer;
     if(key_not_released && stuckkey_keypresstimer && clock_time_exceed(stuckkey_keypresstimer, STUCK_KEY_ENTERDEEP_TIME*1000000))
@@ -804,9 +849,7 @@ void blt_pm_proc(void)
                     cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
                  }
             }
-
             app_release_hid_key();
-
             printf("deep\r\n");
             cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
             printf("into deep fail\r\n");
@@ -819,6 +862,13 @@ void blt_pm_proc(void)
         bls_pm_setSuspendMask (SUSPEND_DISABLE);
         return;
     }
+    if(ir_flash_busy())
+    {
+        bls_pm_setSuspendMask (SUSPEND_DISABLE);
+        //printf("flash busy\r\n");
+        return;
+    }
+
     if((ui_mic_enable || google_voice_ctl || ota_is_working) && (device_in_connection_state))
     {
         //printf("ota_is_working ui_mic_enable=%x google_voice_ctl=%x ota_is_working=%x,\r\n",ui_mic_enable,google_voice_ctl,ota_is_working);
@@ -1170,7 +1220,7 @@ void app_tx_power_wakeup(u8 keyid)
 
 void app_delay_set(void)
 {
-    printf("app_delay_set\r\n");
+    //printf("app_delay_set\r\n");
     google_get_rsp_delay();
     if((flag_dle & 0x80) == 0)
     {
@@ -1233,6 +1283,9 @@ void user_init_normal(void)
     extern void my_att_init ();
     my_att_init (); //gatt initialization
     blc_l2cap_register_handler (blc_l2cap_packet_receive);      //l2cap initialization
+    extern ble_sts_t blc_att_prepareWriteBufferCfg (u8 *pBuf, u16 bufSize);
+    u8 status = blc_att_prepareWriteBufferCfg (prepareWrite_b, sizeof(prepareWrite_b));
+    if(status != BLE_SUCCESS) {   while(1); }  //debug: l2cap buffer setting err
 
     blc_att_setRxMtuSize(MTU_SIZE_SETTING);
 
@@ -1266,10 +1319,13 @@ void user_init_normal(void)
         if(kb_powerdet())
         {
             printf("press and hold back key\r\n");
-            flash_erase_sector(IR_DATA_SECT_0_ADDR);
-            flash_erase_sector(IR_DATA_SECT_1_ADDR);
-            flash_erase_sector(IR_DATA_SECT_2_ADDR);
-            flash_erase_sector(IR_DATA_SECT_3_ADDR);
+            for(u8 i=0;i<8;i++)
+            {
+                if(i<4)
+                    flash_erase_sector(IR_DATA_SECT_0_ADDR+i*0x1000);
+                else
+                    flash_erase_sector(IR_DATA_SECT_0_ADDR-0x7000+(i-4)*0x1000);
+            }
             u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
             if(bond_number)
                  bls_smp_param_deleteByIndex(0);
@@ -1291,8 +1347,9 @@ void user_init_normal(void)
     ////////////////// config adv packet /////////////////////
 
     blc_smp_param_setBondingDeviceMaxNumber(1);
-
+#if (MP_TEST_MODE)
     if (test_get_mode() != MODE_TEST)
+#endif
     {
         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
         smp_param_save_t  bondInfo;
@@ -1338,6 +1395,7 @@ void user_init_normal(void)
             printf("inderict adv\r\n");
         }
     }
+#if (MP_TEST_MODE)
     else
     {
         printf("test mode\r\n");
@@ -1351,6 +1409,7 @@ void user_init_normal(void)
         if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
         printf("inderict adv\r\n");
     }
+#endif
 
     //set rf power index, user must set it after every suspend wakeup, cause relative setting will be reset in suspend
     user_set_rf_power(0, 0, 0);
@@ -1461,25 +1520,49 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 void ir_flash_erase_loop(void)
 {
-    if(ir_flash_erase_tick && clock_time_exceed(ir_flash_erase_tick, 8000000 ))
+    if((ir_flash_erase_tick))
     {
-        ir_flash_erase_tick = 0;
-        printf("ir_flash_erase_loop\r\n");
-        ir_flash_erase();
+        if(ir_flash_erase_timeoutcb() == -1)
+        {
+            ir_flash_erase_tick = 0;
+        }
     }
 }
 
+#if 0
+_attribute_data_retention_ u32 test_toggle_tick=0;
+_attribute_data_retention_ u8 test_toggle_level=0;
+
+void test_toggle(void)
+{
+    if(clock_time_exceed(test_toggle_tick, 30000))
+    {
+        test_toggle_tick = clock_time() | 1;
+        if(test_toggle_level)
+        {
+            device_led_on(0);
+            test_toggle_level = 0;
+        }
+        else
+        {
+            device_led_off(0);
+            test_toggle_level = 1;
+        }
+
+    }
+}
+#endif
 void main_loop (void)
 {
-    mtu_exchange_loop();
-    ir_flash_erase_loop();
-
+    //test_toggle();
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_process(MAINLOOP_ENTRY);
 #endif
     ////////////////////////////////////// BLE entry /////////////////////////////////
     blt_sdk_main_loop();
-
+    mtu_exchange_loop();
+    ir_flash_erase_loop();
+    ir_flash_save_loop();
     ////////////////////////////////////// UI entry /////////////////////////////////
     #if (BLE_AUDIO_ENABLE)
         app_audio_task();

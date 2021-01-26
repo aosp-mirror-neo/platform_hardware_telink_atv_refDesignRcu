@@ -51,7 +51,7 @@
 
 //RF_LEN_MAX:255: MIC(4)+LL_MAX_LEN(251) => LL_MAX_LEN:l2cap_len(2)+cid(2)+ATT_MTU_MAX(247).
 //l2cap buffer max: dma(4)+header(2)+l2cap_len(2)+cid(2)+ATT_MTU_MAX(247).
-#define    L2CAP_RX_BUFF_LEN_MAX              260//257 = 10+247,align 4, here we use 260
+#define    L2CAP_RX_BUFF_LEN_MAX              300//260//257 = 10+247,align 4, here we use 260
 //dma(4)+header(2)+l2cap_len(2)+cid(2)+Attribute_data[ATT_MTU]
 #define    ATT_RX_MTU_SIZE_MAX                    (L2CAP_RX_BUFF_LEN_MAX - 10)
 

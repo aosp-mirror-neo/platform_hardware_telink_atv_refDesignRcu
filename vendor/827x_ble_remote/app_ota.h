@@ -40,37 +40,40 @@
 //report type
 enum{
     TYPE_VERSION = 0,
-     TYPE_SINATURE_DATA,
-     TYPE_CONTROL_DATA,
-     TYPE_OTA_RESULT,
+    TYPE_SINATURE_DATA,
+    TYPE_CONTROL_DATA,
+    TYPE_OTA_RESULT,
 };
 
 // control data
 enum{
-     OTA_CTRL_PAUSE = 0,
-     OTA_CTRL_CONTINUE,
+    OTA_CTRL_PAUSE = 0,
+    OTA_CTRL_CONTINUE,
 };
 
-
 typedef enum{
-     FW_VER_CHECK     = BIT(0),    //just send version to Master
-     BATT_CHECK_OK    = BIT(1),
-     OTA_SIGNATURE    = BIT(2),
-     OTA_START        = BIT(3),
-
-     OTA_PAUSE        = BIT(14),
-     FW_DEC           = BIT(15),
-}OTA_CtlFlagDef;
+    IDLE_MODE = 0,
+    OTA_VER_CHECK,    //Includes battery voltage detection
+    OTA_AUTHENTICATION,
+    OTA_PROCESS,
+}ota_status_type_t;
 
 void bls_ota_init_handle(u16 handle);
+
+ota_status_type_t app_get_ota_status();
+
+void app_ota_set_en_ecdsa(u8 en);
+
 void bls_ota_set_random(u8 *random);
 void bls_ota_get_random(u8 *random);
 char app_ota_pause();
 char app_ota_continue();
+
 void app_ota_terminate(u8 reason);
+
 int app_ota_write(void * p);
 void app_ota_proc(void);
 
-extern u16 ota_ctl_flag;
+//extern u16 ota_ctl_flag;
 
 #endif /* APP_OTA_H_ */

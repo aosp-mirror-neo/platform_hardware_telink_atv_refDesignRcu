@@ -8,6 +8,7 @@ C_SRCS += \
 ../vendor/827x_ble_remote/app_att.c \
 ../vendor/827x_ble_remote/app_audio.c \
 ../vendor/827x_ble_remote/app_custom.c \
+../vendor/827x_ble_remote/app_ecdsa.c \
 ../vendor/827x_ble_remote/app_flash_write.c \
 ../vendor/827x_ble_remote/app_ir.c \
 ../vendor/827x_ble_remote/app_phytest.c \
@@ -15,13 +16,15 @@ C_SRCS += \
 ../vendor/827x_ble_remote/app_ui.c \
 ../vendor/827x_ble_remote/battery_check.c \
 ../vendor/827x_ble_remote/main.c \
-../vendor/827x_ble_remote/rc_ir.c 
+../vendor/827x_ble_remote/rc_ir.c \
+../vendor/827x_ble_remote/sha256.c
 
 OBJS += \
 ./vendor/827x_ble_remote/app.o \
 ./vendor/827x_ble_remote/app_att.o \
 ./vendor/827x_ble_remote/app_audio.o \
 ./vendor/827x_ble_remote/app_custom.o \
+./vendor/827x_ble_remote/app_ecdsa.o \
 ./vendor/827x_ble_remote/app_flash_write.o \
 ./vendor/827x_ble_remote/app_ir.o \
 ./vendor/827x_ble_remote/app_phytest.o \
@@ -29,7 +32,8 @@ OBJS += \
 ./vendor/827x_ble_remote/app_ui.o \
 ./vendor/827x_ble_remote/battery_check.o \
 ./vendor/827x_ble_remote/main.o \
-./vendor/827x_ble_remote/rc_ir.o 
+./vendor/827x_ble_remote/rc_ir.o \
+./vendor/827x_ble_remote/sha256.o
 
 
 # Each subdirectory must supply rules for building sources it contributes

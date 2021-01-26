@@ -519,26 +519,28 @@ u8      ir_data[1] = {0};
 #endif
 
 extern void app_set_mtusize(void);
-extern void ir_fallback_process(u16 handle, u8* buf, u8 len);
+extern void ir_fallback_process(u16 handle, u8* buf, u16 len);
 int app_ir_callback(void *p)
 {
-    u16 handle,i,len;
-    u8 printf_len;
+    u16 handle,len;
+    u16 printf_len;
+    u16 i;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
     handle = (u16)((pw->hh)<<8) | (u16)(pw->hl);
 
-    printf("handle = %x\r\n",handle);
-    printf("pw->l2cap=%x\r\n",pw->l2cap-3);
-    printf("pw->dat=\r\n");
+    //printf("handle = %x\r\n",handle);
+    //printf("pw->l2cap=%x\r\n",pw->l2cap-3);
+    printf("dat=\r\n");
 
     len = pw->l2cap-3;//pw->rf_len-7;
     printf_len = len;
-    if(printf_len > 10)
-        printf_len = 10;
+    #if 1
+    if(printf_len > 6)
+        printf_len = 6;
     for(i=0;i<printf_len;i++)
         printf(" %x",pw->dat[i]);
-
+    #endif
     app_set_mtusize();
     ir_fallback_process(handle,pw->dat,len);
 

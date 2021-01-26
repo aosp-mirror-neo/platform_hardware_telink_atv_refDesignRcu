@@ -447,12 +447,12 @@ u32 kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio)
 
         ///////////////////////////////////////////////////////////////////
         kb_remap_key_code(pd, KB_RETURN_KEY_MAX, &kb_event, numlock_status);
-        extern u8 TwoKeyPressFlag;
-        if((TwoKeyPressFlag == 0x55) && (kb_event.cnt == 1))
+        extern u8 Accessibility_Shortcut_Flag;
+        if((Accessibility_Shortcut_Flag == 0x55) && (kb_event.cnt == 1))
         {
              printf("filter\r\n");
-             extern void app_twokey_to_onekey(void);
-             app_twokey_to_onekey();
+             extern void app_accessibility_short_key_to_single_key(void);
+             app_accessibility_short_key_to_single_key();
              return 0;
         }
 

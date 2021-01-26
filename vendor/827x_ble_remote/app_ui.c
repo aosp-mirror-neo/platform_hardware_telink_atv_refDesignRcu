@@ -230,14 +230,36 @@ u8 app_enter_ota_mode(u8 *data)
     return 0;
 }
 
-//void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_sign_key){
-//
-//    u8 aes_plaintext[16] = {'g','o','o','g','l','e','G','1','0','R','C','U',0x00,0x00,0x00,0x00,};
-//    u8 signature_key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};  //OTA key;
-//
-//    memcpy(plaintext,aes_plaintext,16);
-//    memcpy(cus_sign_key,signature_key,16);
-//}
+/*******************************************************************
+ *** Use the following functions to modify various types of keys ***
+ *******************************************************************/
+/*
+
+//change authentication plaintext and plaintext key
+void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_auth_key){
+
+    u8 auth_plaintext[16] = {'0','1','2','3','4','5','6','7','8','9','a','b',0x00,0x00,0x00,0x00,};
+    u8 auth_key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};  //OTA key;
+
+    memcpy(plaintext,auth_plaintext,16);
+    memcpy(cus_auth_key,auth_key,16);
+}
+
+void app_ota_get_fw_decryption_key(u8 *dec_key){
+
+    u8 key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};
+    memcpy(dec_key,key,16);
+}
+
+//change ecdsa public key
+void app_ota_get_ecdsa_pub_key(u8 *pub_key){
+    u8 key[64] = {0x8d,0x82,0x79,0xc1,0xbb,0x22,0xe7,0x99,0xe6,0x97,0x49,0xf6,0xab,0x28,0x44,0x6d,
+                  0x9f,0x21,0xce,0x13,0x5b,0x43,0xfa,0x74,0x87,0xe2,0x96,0x49,0xcd,0xc8,0xdd,0xc3,
+                  0x92,0x6f,0x6e,0x3d,0x89,0xb0,0x5c,0xa7,0xf9,0xce,0xb7,0x38,0x97,0xa3,0xce,0x9a,
+                  0xae,0xaf,0x89,0xbe,0x8d,0x8d,0x03,0x1e,0x6b,0xb9,0x14,0x24,0xda,0x14,0x11,0xbe};
+    memcpy(pub_key,key,64);
+}
+*/
 
 void app_ota_result(u8 result)
 {
@@ -496,18 +518,18 @@ extern u8 app_audio_key_flags;
 extern u8 htt_audio_model_key_press_flags;
 
 typedef enum{
-    APP_TWOKEYPRESS_NONE=0,
-    APP_TWOKEYPRESS_PAIRING,
-    APP_TWOKEYPRESS_FACTORYRESET,
-    APP_TWOKEYPRESS_BUGREPORT,
-    APP_TWOKEYPRESS_ONEKEY
-}APP_TwoKeyPressMode;
+    APP_ACCESSIBILITY_SHORTCUT_NONE=0,
+    APP_ACCESSIBILITY_SHORTCUT_PAIRING,
+    APP_ACCESSIBILITY_SHORTCUT_FACTORYRESET,
+    APP_ACCESSIBILITY_SHORTCUT_BUGREPORT,
+    APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY
+}APP_Accessibility_Shortcut_Mode;
 
 
 _attribute_data_retention_     u32 keyScanLongPressTick = 0;
 _attribute_data_retention_     u32 LongPressTick = 0;
-_attribute_data_retention_     APP_TwoKeyPressMode  TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
-_attribute_data_retention_     u8 TwoKeyPressFlag = 0;
+_attribute_data_retention_     APP_Accessibility_Shortcut_Mode  Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
+_attribute_data_retention_     u8 Accessibility_Shortcut_Flag = 0;
 _attribute_data_retention_     u16 SpecialKey = 0;
 
 
@@ -988,16 +1010,16 @@ void app_pairing_led(void)
     device_led_setup(led_cfg[LED_SHINE_PAIRING]);
 }
 
-void app_twokey_to_onekey(void)
+void app_accessibility_short_key_to_single_key(void)
 {
-    if(TwoKeyPressMode != APP_TWOKEYPRESS_NONE)
+    if(Accessibility_Shortcut_Mode != APP_ACCESSIBILITY_SHORTCUT_NONE)
     {
-        printf("app_twokey_to_onekey\r\n");
-        TwoKeyPressMode = APP_TWOKEYPRESS_ONEKEY; 
+        printf("app_accessibility_short_key_to_single_key\r\n");
+        Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY;
     }
     if((is_pairing_mode == 0))
     {
-        printf("app_twokey_to_onekey_close led\r\n");
+        printf("app_accessibility_short_key_to_single_key_close led\r\n");
         device_led_off(APP_LED_GREEN);
     }
 }
@@ -1039,7 +1061,7 @@ void key_change_proc(void)
             wakeup_key_send_flag = 2;
         }
         if(is_pairing_mode)    return;
-        TwoKeyPressFlag = 0x55;
+        Accessibility_Shortcut_Flag = 0x55;
 #if (STUCK_KEY_PROCESS_ENABLE)
         stuckkey_keypresstimer = clock_time() | 1;
 #endif
@@ -1049,7 +1071,6 @@ void key_change_proc(void)
             comb_key_stop_ir();
             blt_soft_timer_delete(app_special_key_delay_timer);
             //in voice mode need disable enter pairing mode
-            printf("twokey ui_mic_enable=%x\r\n",ui_mic_enable);
             if(ui_mic_enable)
             {
                return;
@@ -1060,7 +1081,7 @@ void key_change_proc(void)
             }
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 4000000;
-            TwoKeyPressMode = APP_TWOKEYPRESS_PAIRING;
+            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_PAIRING;
         }
         else if (((key0 == comb_key_keyid[2]) && (key1 == comb_key_keyid[3])) || ((key0 == comb_key_keyid[3]) && (key1 == comb_key_keyid[2]))) //Factory Reset Mode center+mute
         {
@@ -1073,7 +1094,7 @@ void key_change_proc(void)
             }
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 4000000;
-            TwoKeyPressMode = APP_TWOKEYPRESS_FACTORYRESET;
+            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_FACTORYRESET;
         }
         else if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[2])) || ((key0 == comb_key_keyid[2]) && (key1 == comb_key_keyid[0]))) //Bug report  back+center
         {
@@ -1082,7 +1103,7 @@ void key_change_proc(void)
             device_led_setup(led_cfg[LED_AUDIO_ON]);
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 1000000;
-            TwoKeyPressMode = APP_TWOKEYPRESS_BUGREPORT;
+            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
         }
         else
         {
@@ -1199,7 +1220,7 @@ void key_change_proc(void)
           if(ir_key_is_suppress(key0) == 0)
           {
           
-              printf("is suppress\r\n");
+              //printf("is suppress\r\n");
               app_keypress_led(1);
               if(ir_fallback_send_key_code(key0,1))
               {
@@ -1252,7 +1273,7 @@ void key_change_proc(void)
                 }
                 else
                 {
-                    printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
+                    //printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
  
                     key_type = KEYBOARD_KEY;
                     key_buf[2] = key_value;
@@ -1303,10 +1324,11 @@ void key_change_proc(void)
     {
         printf("key release\r\n");
         advertise_tick_retime();
-        if(audio_start_reason == REASON_HTT){
+        if((audio_start_reason == REASON_HTT) && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
             printf("key release_audio_start_reason:0x%x\n",audio_start_reason);
             google_voice_ctl |= FLAG_AUDIO_CLOSE;
             audio_stop_reason = REASON_RELEASE_HTT;
+            audio_start_reason = 0;
         }
         key_not_released = 0;
         keyScanLongPressTick = 0;
@@ -1316,7 +1338,7 @@ void key_change_proc(void)
         #endif
         if(is_programming_key_send() == 1)
         {
-           printf("notify up\r\n");
+           printf("key up\r\n");
            ir_fallback_send(0);
         }
         programming_key_set(0);
@@ -1346,7 +1368,7 @@ void key_change_proc(void)
             }
         }
 #endif
-        TwoKeyPressFlag = 0;
+        Accessibility_Shortcut_Flag = 0;
     }
 
 
@@ -1381,7 +1403,7 @@ void app_factory_reset(void)
     bls_ll_setAdvEnable(0);
     if(device_in_connection_state)
     {
-        printf("TwoKeyPressMode=%x\r\n",TwoKeyPressMode);
+        printf("Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
         if(ui_mic_enable)
         {
             audio_open = 1;
@@ -1448,20 +1470,20 @@ void proc_keyboard (u8 e, u8 *p, int n)
     }
 #endif
 
-    if((keyScanLongPressTick == 0) && (TwoKeyPressMode != APP_TWOKEYPRESS_NONE)) //&& (TwoKeyPressMode != APP_TWOKEYPRESS_ONEKEY))
+    if((keyScanLongPressTick == 0) && (Accessibility_Shortcut_Mode != APP_ACCESSIBILITY_SHORTCUT_NONE))
     {
         printf("stop led\r\n");
         device_led_off(APP_LED_GREEN);
-        TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
+        Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
     }
 
     if(keyScanLongPressTick && clock_time_exceed(keyScanLongPressTick, LongPressTick))
     {
         keyScanLongPressTick = 0;
         advertise_tick_retime();
-        printf("twokey timeout and TwoKeyPressMode=%x\r\n",TwoKeyPressMode);
-        if(TwoKeyPressMode == APP_TWOKEYPRESS_ONEKEY) return;
-        if(TwoKeyPressMode == APP_TWOKEYPRESS_PAIRING)
+        printf("Accessibility_Shortcut timeout and Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
+        if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY) return;
+        if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_PAIRING)
         {
             printf("trigger pair\r\n");
             if(lowbat == 0x55)
@@ -1497,13 +1519,13 @@ void proc_keyboard (u8 e, u8 *p, int n)
                 repairing_flag = 0x55;
             }
         }
-        else if(TwoKeyPressMode == APP_TWOKEYPRESS_FACTORYRESET)
+        else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_FACTORYRESET)
         {
             app_factory_reset();
         }
-        else if(TwoKeyPressMode == APP_TWOKEYPRESS_BUGREPORT)
+        else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_BUGREPORT)
         {
-            printf("APP_TWOKEYPRESS_BUGREPORT ongoning\r\n");
+            printf("APP_ACCESSIBILITY_SHORTCUT_BUGREPORT ongoning\r\n");
             device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state == 0)
             {
@@ -1521,7 +1543,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
-        TwoKeyPressMode = APP_TWOKEYPRESS_NONE;
+        Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
     }
 
     //app_key_send_store();
@@ -1563,7 +1585,12 @@ void app_ui_init_normal(void)
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_init();
 
-    if((power_down_flag == 1) && (test_get_mode() != MODE_TEST))
+    if(
+            (power_down_flag == 1)
+#if (MP_TEST_MODE)
+            && (test_get_mode() != MODE_TEST)
+#endif
+      )
     {
         blt_soft_timer_add(app_poweron_timeout, 1000000);
     }

@@ -59,6 +59,7 @@
 #define _RF_CMD_RSSI_RES             0x0C
 #define _RF_CMD_VER_REQ              0x11
 #define _RF_CMD_VER_RES              0x12
+#define _RF_CMD_CONN_COMPLETED       0x2F
 #define _RF_CMD_DEV_TYPE_REQ         0x84
 #define _RF_CMD_DEV_TYPE_RES         0x85
 #define _RF_CMD_PNP_ID_REQ           0x86
@@ -67,13 +68,17 @@
 #define _RF_CMD_DEV_NAME_RES         0x89
 #define _RF_CMD_DEV_UI_LAYOUT_REQ    0x8A
 #define _RF_CMD_DEV_UI_LAYOUT_RES    0x8B
+#define _RF_CMD_WAKEUP_KEYS_REQ      0x8C
+#define _RF_CMD_WAKEUP_KEYS_RES      0x8D
+#define _RF_CMD_WAKEUP_PACKET_REQ    0x8E
+#define _RF_CMD_WAKEUP_PACKET_RES    0x8F
 #define _RF_CMD_FACTORY_REQ          0x16
 #define _RF_CMD_FACTORY_RES          0x17
 
-#define _RF_CMD_CONN_COMPLETED       0x2F
+#define _FLASH_MODE_AREA             0x73000
+#define _FLASH_MODE_LEN              1
 
-#define _FLASH_DATA_AREA             0x73000
-#define _FLASH_DATA_LEN              1
+#define _FLASH_CUSTOM_DATA_AREA      0x78000
 
 #define _FLASH_DEV_TYPE_AREA         0x78000
 #define _FLASH_DEV_TYPE_LEN          1
@@ -92,46 +97,58 @@
 
 typedef enum
 {
-    _KEY_CODE_POWER         = 0x00,
-    _KEY_CODE_INPUT         = 0x03,
-    _KEY_CODE_BOOKMARK      = 0x06,
-    _KEY_CODE_ASSISTANT     = 0xC0,
-    _KEY_CODE_SETTINGS      = 0x0C,
-    _KEY_CODE_DPAD_UP       = 0x0F,
-    _KEY_CODE_DPAD_LEFT     = 0x12,
-    _KEY_CODE_DPAD_CENTER   = 0x15,
-    _KEY_CODE_DPAD_RIGHT    = 0x01,
-    _KEY_CODE_DPAD_DOWN     = 0x04,
-    _KEY_CODE_BACK          = 0x07,
-    _KEY_CODE_HOME          = 0x0A,
-    _KEY_CODE_GUIDE         = 0x0D,
-    _KEY_CODE_VOLUME_UP     = 0x10,
-    _KEY_CODE_PROGRAM_UP    = 0x13,
-    _KEY_CODE_MUTE          = 0x16,
-    _KEY_CODE_VOLUME_DOWN   = 0x02,
-    _KEY_CODE_PROGRAM_DOWN  = 0x05,
-    _KEY_CODE_YOUTUBE       = 0x08,
-    _KEY_CODE_NETFLIX       = 0x0B,
-    _KEY_CODE_APP003        = 0x0E,
-    _KEY_CODE_APP004        = 0x11,
-    _KEY_CODE_1             = 0xFF, /// unknown key code
-    _KEY_CODE_2             = 0xFF, /// unknown key code
-    _KEY_CODE_3             = 0xFF, /// unknown key code
-    _KEY_CODE_4             = 0xFF, /// unknown key code
-    _KEY_CODE_5             = 0xFF, /// unknown key code
-    _KEY_CODE_6             = 0xFF, /// unknown key code
-    _KEY_CODE_7             = 0xFF, /// unknown key code
-    _KEY_CODE_8             = 0xFF, /// unknown key code
-    _KEY_CODE_9             = 0xFF, /// unknown key code
-    _KEY_CODE_EXTRA_1       = 0xFF, /// unknown key code
-    _KEY_CODE_0             = 0xFF, /// unknown key code
-    _KEY_CODE_EXTRA_2       = 0xFF, /// unknown key code
-    _KEY_CODE_RED           = 0xFF, /// unknown key code
-    _KEY_CODE_GREEN         = 0xFF, /// unknown key code
-    _KEY_CODE_YELLOW        = 0xFF, /// unknown key code
-    _KEY_CODE_BLUE          = 0xFF, /// unknown key code
-    _KEY_CODE_NONE          = 0xFF
-} _tKey_Code;
+    _KEY_IDX_POWER,
+    _KEY_IDX_INPUT,
+    _KEY_IDX_BOOKMARK,
+    _KEY_IDX_ASSISTANT,
+    _KEY_IDX_SETTINGS,
+    _KEY_IDX_DPAD_UP,
+    _KEY_IDX_DPAD_LEFT,
+    _KEY_IDX_DPAD_CENTER,
+    _KEY_IDX_DPAD_RIGHT,
+    _KEY_IDX_DPAD_DOWN,
+    _KEY_IDX_BACK,
+    _KEY_IDX_HOME,
+    _KEY_IDX_GUIDE,
+    _KEY_IDX_VOLUME_PLUS,
+    _KEY_IDX_PROGRAM_UP,
+    _KEY_IDX_MUTE,
+    _KEY_IDX_VOLUME_MINUS,
+    _KEY_IDX_PROGRAM_DOWN,
+    _KEY_IDX_YOUTUBE,
+    _KEY_IDX_NETFLIX,
+    _KEY_IDX_APP03,
+    _KEY_IDX_APP04,
+    _KEY_IDX_NUM_1,
+    _KEY_IDX_NUM_2,
+    _KEY_IDX_NUM_3,
+    _KEY_IDX_NUM_4,
+    _KEY_IDX_NUM_5,
+    _KEY_IDX_NUM_6,
+    _KEY_IDX_NUM_7,
+    _KEY_IDX_NUM_8,
+    _KEY_IDX_NUM_9,
+    _KEY_IDX_SUBTITLES,
+    _KEY_IDX_NUM_0,
+    _KEY_IDX_INFORMATION,
+    _KEY_IDX_RED,
+    _KEY_IDX_GREEN,
+    _KEY_IDX_YELLOW,
+    _KEY_IDX_BLUE,
+    _KEY_IDX_NONE = 0xFF
+} _tKey_Index;
+
+typedef struct
+{
+    u8 device_type;
+    u8 pnp_id[7];
+    u8 device_name_length;
+    u8 device_name[29];
+    u8 device_ui_layout;
+    u8 wakeup_key_1[2];
+    u8 wakeup_key_2[2];
+    u8 wakeup_packet[35];
+} _tCustom_Data;
 
 
 extern void my_att_init(void);
@@ -156,7 +173,8 @@ extern _attribute_data_retention_ u32 app_audio_transfer_timer;
 extern _attribute_data_retention_ u8 bak_batpercent;
 
 static tTest_State _stat = TEST_STAT_USERMODE;
-static _tKey_Code _key = _KEY_CODE_NONE;
+static _tKey_Index _key = _KEY_IDX_NONE;
+static _tCustom_Data _custom_data = { 0x00, };
 
 
 static void _output_ir_nec(u8 ir_code)
@@ -216,27 +234,28 @@ static void _ctrl_led(u8 green_stat, u8 red_stat)
     (red_stat == _ON) ? device_led_on(APP_LED_RED) : device_led_off(APP_LED_RED);
 }
 
-static u8 _conv_key_to_ir(_tKey_Code key_code)
+static _tKey_Index _conv_key_code_to_idx(u8 key_code)
 {
-    _tKey_Code key_codes[] = {
-        _KEY_CODE_POWER,       _KEY_CODE_INPUT,        _KEY_CODE_BOOKMARK,   _KEY_CODE_ASSISTANT,
-        _KEY_CODE_SETTINGS,    _KEY_CODE_DPAD_UP,      _KEY_CODE_DPAD_LEFT,  _KEY_CODE_DPAD_CENTER,
-        _KEY_CODE_DPAD_RIGHT,  _KEY_CODE_DPAD_DOWN,    _KEY_CODE_BACK,       _KEY_CODE_HOME,
-        _KEY_CODE_GUIDE,       _KEY_CODE_VOLUME_UP,    _KEY_CODE_PROGRAM_UP, _KEY_CODE_MUTE,
-        _KEY_CODE_VOLUME_DOWN, _KEY_CODE_PROGRAM_DOWN, _KEY_CODE_YOUTUBE,    _KEY_CODE_NETFLIX,
-        _KEY_CODE_APP003,      _KEY_CODE_APP004,       _KEY_CODE_1,          _KEY_CODE_2,
-        _KEY_CODE_3,           _KEY_CODE_4,            _KEY_CODE_5,          _KEY_CODE_6,
-        _KEY_CODE_7,           _KEY_CODE_8,            _KEY_CODE_9,          _KEY_CODE_EXTRA_1,
-        _KEY_CODE_0,           _KEY_CODE_EXTRA_2,      _KEY_CODE_RED,        _KEY_CODE_GREEN,
-        _KEY_CODE_YELLOW,      _KEY_CODE_BLUE,
+    u8 key_codes_G10[] = {
+        0x00, 0x03, 0x06, 0xC0, 0x0C, 0x0F, 0x12, 0x15, 0x01, 0x04, 0x07,
+        0x0A, 0x0D, 0x10, 0x13, 0x16, 0x02, 0x05, 0x08, 0x0B, 0x0E, 0x11
     };
 
-    u8 ir_code = 0x00;
+    u8 key_codes_G20[] = {
+        0x00, 0x06, 0x0C, 0xC0, 0x18, 0x1E, 0x24, 0x2A, 0x01, 0x07, 0x0D,
+        0x13, 0x19, 0x1F, 0x25, 0x2B, 0x02, 0x08, 0x0E, 0x14, 0x1A, 0x20,
+        0x16, 0x10, 0x0A, 0x04, 0x17, 0x11, 0x21, 0x1B, 0x15, 0x0F, 0x09,
+        0x03, 0x0B, 0x05, 0x22, 0x1C
+    };
 
-    for (; ir_code < sizeof(key_codes); ir_code++)
-        if (key_codes[ir_code] == key_code) return ir_code;
+    u8 *key_codes = (_custom_data.device_type == REMOTE_G20) ? key_codes_G20 : key_codes_G10;
+    u8 key_codes_cnt = (_custom_data.device_type == REMOTE_G20) ? sizeof(key_codes_G20) : sizeof(key_codes_G10);
+    u8 key_idx = _KEY_IDX_POWER;
 
-    return 0xFF;
+    for (; key_idx < key_codes_cnt; key_idx++)
+        if (key_codes[key_idx] == key_code) return (_tKey_Index)key_idx;
+
+    return _KEY_IDX_NONE;
 }
 
 static void _ctrl_google_voice(bool is_start)
@@ -274,6 +293,48 @@ static void _switch_to_user_mode(void)
     device_led_setup(led_cfg);
 }
 
+static void _parse_custom_data(void)
+{
+    u8 buf[sizeof(_tCustom_Data)] = { 0x00, };
+    u8 idx = 0;
+
+    flash_read_page(_FLASH_CUSTOM_DATA_AREA, sizeof(_tCustom_Data), buf);
+
+    _custom_data.device_type = buf[idx++];
+
+    memcpy(_custom_data.pnp_id, &buf[idx], sizeof(_custom_data.pnp_id));
+    idx += sizeof(_custom_data.pnp_id);
+
+    _custom_data.device_name_length =
+        (buf[idx] > sizeof(_custom_data.device_name)) ? sizeof(_custom_data.device_name) : buf[idx];
+    memcpy(_custom_data.device_name, &buf[idx + 1], _custom_data.device_name_length);
+    idx += sizeof(_custom_data.device_name_length) + buf[idx];
+
+    _custom_data.device_ui_layout = buf[idx++];
+
+    memcpy(_custom_data.wakeup_key_1, &buf[idx], sizeof(_custom_data.wakeup_key_1));
+    idx += sizeof(_custom_data.wakeup_key_1);
+
+    memcpy(_custom_data.wakeup_key_2, &buf[idx], sizeof(_custom_data.wakeup_key_2));
+    idx += sizeof(_custom_data.wakeup_key_2);
+
+    if (_custom_data.wakeup_key_1[0] == 0xFF && _custom_data.wakeup_key_1[1] == 0xFF
+        && _custom_data.wakeup_key_2[0] == 0xFF && _custom_data.wakeup_key_2[1] == 0xFF)
+    {
+        memset(_custom_data.wakeup_packet, 0xFF, sizeof(_custom_data.wakeup_packet));
+        return;
+    }
+
+    _custom_data.wakeup_packet[0] = (buf[idx] > 31) ? 31 : buf[idx];
+    if (_custom_data.wakeup_packet[0] == 0) /// use google format only
+    {
+        memset(&_custom_data.wakeup_packet[1], 0xFF, sizeof(_custom_data.wakeup_packet) - 1);
+        return;
+    }
+    idx++;
+    memcpy(&_custom_data.wakeup_packet[1], &buf[idx], 3 +  _custom_data.wakeup_packet[0]);
+}
+
 void test_entry_mode(void)
 {
     if (!ir_hw_initialed)
@@ -283,6 +344,8 @@ void test_entry_mode(void)
     }
 
     app_factory_reset();
+
+    _parse_custom_data();
 
     _stat = TEST_STAT_ROOT;
     _ctrl_led(_ON, _ON);
@@ -298,7 +361,7 @@ u8 test_get_mode(void)
 {
     u8 cur_mode = MODE_TEST;
 
-    flash_read_page(_FLASH_DATA_AREA, _FLASH_DATA_LEN, &cur_mode);
+    flash_read_page(_FLASH_MODE_AREA, _FLASH_MODE_LEN, &cur_mode);
 
     return cur_mode;
 }
@@ -307,29 +370,49 @@ void test_set_mode(u8 mode)
 {
     u8 cur_mode = MODE_TEST;
 
-    flash_read_page(_FLASH_DATA_AREA, _FLASH_DATA_LEN, &cur_mode);
+    flash_read_page(_FLASH_MODE_AREA, _FLASH_MODE_LEN, &cur_mode);
 
     if (cur_mode == mode) return;
 
-    if (cur_mode == MODE_USER) flash_erase_sector(_FLASH_DATA_AREA);
-    flash_write_page(_FLASH_DATA_AREA, _FLASH_DATA_LEN, &mode);
+    if (cur_mode == MODE_USER) flash_erase_sector(_FLASH_MODE_AREA);
+    flash_write_page(_FLASH_MODE_AREA, _FLASH_MODE_LEN, &mode);
 }
 
 void test_proc_key(void)
 {
     if (kb_event.cnt == 1)
     {
-        _tKey_Code key_code = _KEY_CODE_POWER;
-
-        key_code = kb_event.keycode[0];
+        _tKey_Index key_idx = _conv_key_code_to_idx(kb_event.keycode[0]);
 
         _ctrl_led(_OFF, _OFF);
 
         if (_stat == TEST_STAT_ROOT)
         {
-            switch (key_code)
+            switch (key_idx)
             {
-            case _KEY_CODE_DPAD_CENTER:
+            case _KEY_IDX_POWER:
+                _output_ir_nec(IR_POWER);
+                break;
+
+            case _KEY_IDX_BOOKMARK:
+                {
+                    u8 mac[6] = { 0x00, };
+
+                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
+                    _output_ir_nec_custom(mac[5], mac[4], mac[3], 0x00);
+                }
+                break;
+
+            case _KEY_IDX_ASSISTANT:
+                {
+                    u8 mac[6] = { 0x00, };
+
+                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
+                    _output_ir_nec_custom(mac[2], mac[1], mac[0], 0x00);
+                }
+                break;
+
+            case _KEY_IDX_DPAD_CENTER:
                 {
                     u8 version_major = 0x00, version_minor = 0x00;
 
@@ -342,28 +425,7 @@ void test_proc_key(void)
                 }
                 break;
 
-            case _KEY_CODE_BOOKMARK:
-                {
-                    u8 mac[6] = { 0x00, };
-
-                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
-                    _output_ir_nec_custom(mac[5], mac[4], mac[3], 0x00);
-                }
-                break;
-
-            case _KEY_CODE_ASSISTANT:
-                {
-                    u8 mac[6] = { 0x00, };
-
-                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
-                    _output_ir_nec_custom(mac[2], mac[1], mac[0], 0x00);
-                }
-                break;
-
-            case _KEY_CODE_HOME:
-                break;
-
-            case _KEY_CODE_GUIDE:
+            case _KEY_IDX_GUIDE:
                 {
                     u8 battVal = bak_batpercent, battLvl = 0;
 
@@ -377,22 +439,18 @@ void test_proc_key(void)
                 }
                 break;
 
-            case _KEY_CODE_YOUTUBE:
-            case _KEY_CODE_NETFLIX:
-                if (key_code == _KEY_CODE_YOUTUBE) _ctrl_led(_OFF, _ON);
-                else if (key_code == _KEY_CODE_NETFLIX) _ctrl_led(_ON, _OFF);
-                _stat = TEST_STAT_LED;
-                break;
-
-            case _KEY_CODE_MUTE:
+            case _KEY_IDX_MUTE:
                 bls_ll_setAdvParam(ADV_INTERVAL_20MS, ADV_INTERVAL_25MS,
                                    ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
                                    0, NULL, BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
                 bls_ll_setAdvEnable(1);
                 break;
 
-            case _KEY_CODE_POWER:
-                _output_ir_nec(IR_POWER);
+            case _KEY_IDX_YOUTUBE:
+            case _KEY_IDX_NETFLIX:
+                if (key_idx == _KEY_IDX_YOUTUBE) _ctrl_led(_OFF, _ON);
+                else if (key_idx == _KEY_IDX_NETFLIX) _ctrl_led(_ON, _OFF);
+                _stat = TEST_STAT_LED;
                 break;
 
             default:
@@ -402,34 +460,31 @@ void test_proc_key(void)
         }
         else if (_stat == TEST_STAT_IR_KEY)
         {
-            u8 ir_code = 0xFF;
+            _output_ir_nec((u8)key_idx);
 
-            ir_code = _conv_key_to_ir(key_code);
-            _output_ir_nec(ir_code);
-
-            if (key_code == _KEY_CODE_BACK) _stat = TEST_STAT_ROOT;
+            if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
         }
         else if (_stat == TEST_STAT_CURRENT)
         {
-            if (key_code == _KEY_CODE_BACK) _stat = TEST_STAT_ROOT;
+            if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
         }
         else if (_stat == TEST_STAT_LED)
         {
-            if (key_code == _KEY_CODE_YOUTUBE) _ctrl_led(_OFF, _ON);
-            else if (key_code == _KEY_CODE_NETFLIX) _ctrl_led(_ON, _OFF);
-            else if (key_code == _KEY_CODE_BACK) _stat = TEST_STAT_ROOT;
+            if (key_idx == _KEY_IDX_YOUTUBE) _ctrl_led(_OFF, _ON);
+            else if (key_idx == _KEY_IDX_NETFLIX) _ctrl_led(_ON, _OFF);
+            else if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
         }
 
-        _key = key_code;
+        _key = key_idx;
     }
     else
     {
-        if (_stat == TEST_STAT_ROOT && _key == _KEY_CODE_HOME) _stat = TEST_STAT_CURRENT;
+        if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_HOME) _stat = TEST_STAT_CURRENT;
         else
         {
             if (ir_send_ctrl.is_sending) ir_dispatch(_TYPE_IR_RELEASE, 0, 0);
 
-            if (_stat == TEST_STAT_ROOT && _key == _KEY_CODE_POWER) _switch_to_user_mode();
+            if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_POWER) _switch_to_user_mode();
             else _ctrl_led(_ON, _ON);
         }
     }
@@ -470,63 +525,55 @@ int test_write_cb(void *p)
         break;
 
     case _RF_CMD_DEV_TYPE_REQ:
-        {
-            u8 device_type = 0x00;
-
-            buf[idx++] = _RF_CMD_DEV_TYPE_RES;
-            flash_read_page(_FLASH_DEV_TYPE_AREA, _FLASH_DEV_TYPE_LEN, &device_type);
-            buf[idx++] = device_type;
-            bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
-        }
+        buf[idx++] = _RF_CMD_DEV_TYPE_RES;
+        buf[idx++] = _custom_data.device_type;
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
 
     case _RF_CMD_PNP_ID_REQ:
-        {
-            u8 pnp_id[7] = { 0x00, };
-
-            buf[idx++] = _RF_CMD_PNP_ID_RES;
-            flash_read_page(_FLASH_PNP_ID_AREA, _FLASH_PNP_ID_LEN, pnp_id);
-            memcpy(buf+idx, pnp_id, _FLASH_PNP_ID_LEN);
-            idx += _FLASH_PNP_ID_LEN;
-            bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
-        }
+        buf[idx++] = _RF_CMD_PNP_ID_RES;
+        memcpy(buf+idx, _custom_data.pnp_id, sizeof(_custom_data.pnp_id));
+        idx += sizeof(_custom_data.pnp_id);
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
 
     case _RF_CMD_DEV_NAME_REQ:
-        {
-            u8 device_name_len = 0;
-            u8 device_name[32] = { 0x00, };
-
-            buf[idx++] = _RF_CMD_DEV_NAME_RES;
-            flash_read_page(_FLASH_DEV_NAME_LEN_AREA, _FLASH_DEV_NAME_LEN_LEN, &device_name_len);
-            flash_read_page(_FLASH_DEV_NAME_AREA, device_name_len, device_name);
-            memcpy(buf+idx, device_name, device_name_len);
-            idx += device_name_len;
-            bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
-        }
+        buf[idx++] = _RF_CMD_DEV_NAME_RES;
+        memcpy(buf+idx, _custom_data.device_name, _custom_data.device_name_length);
+        idx += _custom_data.device_name_length;
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
 
     case _RF_CMD_DEV_UI_LAYOUT_REQ:
-        {
-            u8 device_name_len = 0;
-            u8 device_ui_layout = 0x00;
+        buf[idx++] = _RF_CMD_DEV_UI_LAYOUT_RES;
+        buf[idx++] = _custom_data.device_ui_layout;
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
+        break;
 
-            buf[idx++] = _RF_CMD_DEV_UI_LAYOUT_RES;
-            flash_read_page(_FLASH_DEV_NAME_LEN_AREA, _FLASH_DEV_NAME_LEN_LEN, &device_name_len);
-            flash_read_page(_FLASH_DEV_UI_LAYOUT_AREA(device_name_len), _FLASH_DEV_UI_LAYOUT_LEN,
-                            &device_ui_layout);
-            buf[idx++] = device_ui_layout;
-            bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
+    case _RF_CMD_WAKEUP_KEYS_REQ:
+        buf[idx++] = _RF_CMD_WAKEUP_KEYS_RES;
+        memcpy(buf+idx, _custom_data.wakeup_key_1, sizeof(_custom_data.wakeup_key_1));
+        idx += sizeof(_custom_data.wakeup_key_1);
+        memcpy(buf+idx, _custom_data.wakeup_key_2, sizeof(_custom_data.wakeup_key_2));
+        idx += sizeof(_custom_data.wakeup_key_2);
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
+        break;
+
+    case _RF_CMD_WAKEUP_PACKET_REQ:
+        buf[idx++] = _RF_CMD_WAKEUP_PACKET_RES;
+        buf[idx++] = _custom_data.wakeup_packet[0];
+        if (_custom_data.wakeup_packet[0] != 0 && _custom_data.wakeup_packet[0] != 0xFF)
+        {
+            memcpy(buf+idx, &_custom_data.wakeup_packet[1], 3 + _custom_data.wakeup_packet[0]);
+            idx += 3 + _custom_data.wakeup_packet[0];
         }
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
 
     case _RF_CMD_FACTORY_REQ:
-        {
-            u8 buf = _RF_CMD_FACTORY_RES;
-            bls_att_pushNotifyData(TEST_MODE_DP_H, &buf, sizeof(buf));
-            
-            _switch_to_user_mode();
-        }
+        buf[0] = _RF_CMD_FACTORY_RES;
+        bls_att_pushNotifyData(TEST_MODE_DP_H, buf, 1);
+        _switch_to_user_mode();
         break;
 
     case _RF_CMD_CONN_COMPLETED:

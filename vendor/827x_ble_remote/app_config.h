@@ -34,14 +34,24 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 #include  "application/usbstd/usbkeycode.h"
 
-#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
-#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
+#define IR_DATA_SECT_0_EXT_ADDR               0x65000
+#define IR_DATA_SECT_1_EXT_ADDR               0x66000
+#define IR_DATA_SECT_2_EXT_ADDR               0x67000
+#define IR_DATA_SECT_3_EXT_ADDR               0x68000
+
 #define IR_DATA_SECT_0_ADDR                   0x6c000
 #define IR_DATA_SECT_1_ADDR                   0x6d000
 #define IR_DATA_SECT_2_ADDR                   0x6e000
 #define IR_DATA_SECT_3_ADDR                   0x6f000
+
+#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
+#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
+
 #define CCC_DATA_AREA                         0x70000
 #define MAC_DATA_SECT_ADDR                    0x71000
+
+#define APP_CUSTOM_ADDR                       0x78000
+
 
 #define IR_DATA_SECT_MAX_NUM                  12   //Each sector can be written 3 times ,4*3
 #define IR_DATA_SECT_NUM                      4
@@ -641,7 +651,10 @@ typedef enum
 #define BLE_PHYTEST_MODE                      PHYTEST_MODE_DISABLE
 #endif
 
-#define UART_PRINT_DEBUG_ENABLE               1
+
+#define UART_PRINT_ENABLE                     0   //uart_tx as uart print func
+
+#define UART_PRINT_DEBUG_ENABLE               1   //GPIO simulate uart print func
 
 #if (UART_PRINT_DEBUG_ENABLE)
 
@@ -653,6 +666,8 @@ typedef enum
     #define PB1_DATA_OUT                      1 //must
     #include "application/print/u_printf.h"
 #endif
+
+
 
 
 #include "../common/default_config.h"

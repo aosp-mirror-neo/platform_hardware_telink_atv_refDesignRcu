@@ -209,10 +209,23 @@ static int print(char **out, const char *format, va_list args) {
     return pc;
 }
 
+#if (UART_PRINT_ENABLE)
+extern void app_set_printf_uart_flag(unsigned char data);
+#endif
+
 int u_printf(const char *format, ...) {
+    int status;
+
+    #if (UART_PRINT_ENABLE)
+    app_set_printf_uart_flag(1);
+    #endif
     va_list args;
     va_start( args, format );
-    return print(0, format, args);
+    status = print(0, format, args);
+    #if (UART_PRINT_ENABLE)
+    app_set_printf_uart_flag(0);
+    #endif
+    return status;
 }
 
 int u_sprintf(char *out, const char *format, ...) {

@@ -15,6 +15,7 @@ C_SRCS += \
 ../drivers/8278/gpio_8278.c \
 ../drivers/8278/i2c.c \
 ../drivers/8278/lpc.c \
+../drivers/8278/pke.c \
 ../drivers/8278/qdec.c \
 ../drivers/8278/rf_pa.c \
 ../drivers/8278/s7816.c \
@@ -35,6 +36,7 @@ OBJS += \
 ./drivers/8278/gpio_8278.o \
 ./drivers/8278/i2c.o \
 ./drivers/8278/lpc.o \
+./drivers/8278/pke.o \
 ./drivers/8278/qdec.o \
 ./drivers/8278/rf_pa.o \
 ./drivers/8278/s7816.o \

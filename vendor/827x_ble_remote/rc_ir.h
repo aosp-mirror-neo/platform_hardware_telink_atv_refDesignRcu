@@ -91,7 +91,7 @@ typedef struct{
 #define IR_SENDING_STOP          3
 
 
-#define PWM_IR_MAX_NUM    80     //user can define this max number according to application
+#define PWM_IR_MAX_NUM    150     //user can define this max number according to application
 typedef struct{
     unsigned int dma_len;        // dma len
     unsigned short data[PWM_IR_MAX_NUM];

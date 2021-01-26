@@ -883,6 +883,7 @@ void google_cmd_proc(){
             printf("search 3 ret=%x\r\n",ret);
 
             google_voice_ctl &= ~FLAG_GOOGLE_SEARCH;
+            app_ota_status(0);
         }
     }
 

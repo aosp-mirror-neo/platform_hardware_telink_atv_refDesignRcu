@@ -28,8 +28,6 @@
 #include "app_config.h"
 #include "app_custom.h"
 
-#define APP_CUSTOM_ADDR           0x78000
-
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
 

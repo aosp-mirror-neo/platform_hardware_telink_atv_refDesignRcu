@@ -92,6 +92,11 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
     clock_init(SYS_CLK_48M_Crystal);
 #endif
 
+#if (UART_PRINT_ENABLE)
+    extern void app_uart_tx(void);
+    app_uart_tx();
+#endif
+
 #if (MP_TEST_MODE)
     GPIO_PB2_PULL_DOWN_100K;
     if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)

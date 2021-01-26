@@ -11,6 +11,7 @@ RM := rm -rf
 -include subdir.mk
 -include vendor/common/subdir.mk
 -include vendor/827x_ble_remote/subdir.mk
+-include vendor/827x_ble_remote/pke_common/subdir.mk
 -include drivers/8278/subdir.mk
 -include common/subdir.mk
 -include boot/8271/subdir.mk

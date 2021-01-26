@@ -143,9 +143,22 @@ int uart_putc(char byte) //GPIO simulate uart print func
 }
 #endif
 
+#if (UART_PRINT_ENABLE)
+unsigned char uart_putchar(char c)
+{
+    uart_ndma_send_byte(c);
+    return 1;
+}
+#endif
+
+
 int putchar(int c){
 #if (UART_PRINT_DEBUG_ENABLE)
     return uart_putc((char)c);
+
+#elif (UART_PRINT_ENABLE)
+    return uart_putchar((char)c);
+
 #elif (USB_PRINT_DEBUG_ENABLE)
     if(reg_usb_host_conn){
         swire_is_init = 0;        // should re-init swire if connect swire again
