@@ -1,141 +1,147 @@
-/* sha256.h - TinyCrypt interface to a SHA-256 implementation */
-
-/*
- *  Copyright (C) 2017 by Intel Corporation, All Rights Reserved.
- *
- *  Redistribution and use in source and binary forms, with or without
- *  modification, are permitted provided that the following conditions are met:
- *
- *    - Redistributions of source code must retain the above copyright notice,
- *     this list of conditions and the following disclaimer.
- *
- *    - Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- *    - Neither the name of Intel Corporation nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- *  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- *  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- *  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
- *  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- *  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
- *  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- *  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- *  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
- *  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
- *  POSSIBILITY OF SUCH DAMAGE.
- */
-
 /**
- * @file
- * @brief Interface to a SHA-256 implementation.
+ * \file sha256.h
  *
- *  Overview:   SHA-256 is a NIST approved cryptographic hashing algorithm
- *              specified in FIPS 180. A hash algorithm maps data of arbitrary
- *              size to data of fixed length.
+ * \brief SHA-224 and SHA-256 cryptographic hash function
  *
- *  Security:   SHA-256 provides 128 bits of security against collision attacks
- *              and 256 bits of security against pre-image attacks. SHA-256 does
- *              NOT behave like a random oracle, but it can be used as one if
- *              the string being hashed is prefix-free encoded before hashing.
+ *  Copyright (C) 2006-2015, ARM Limited, All Rights Reserved
+ *  SPDX-License-Identifier: Apache-2.0
  *
- *  Usage:      1) call tc_sha256_init to initialize a struct
- *              tc_sha256_state_struct before hashing a new string.
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may
+ *  not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *              2) call tc_sha256_update to hash the next string segment;
- *              tc_sha256_update can be called as many times as needed to hash
- *              all of the segments of a string; the order is important.
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
- *              3) call tc_sha256_final to out put the digest from a hashing
- *              operation.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ *  WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ *  This file is part of mbed TLS (https://tls.mbed.org)
  */
+#ifndef MBEDTLS_SHA256_H
+#define MBEDTLS_SHA256_H
 
-#ifndef __TC_SHA256_H__
-#define __TC_SHA256_H__
+#define MBEDTLS_SHA256_C
+
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
 
 //#include <stddef.h>
 //#include <stdint.h>
-#include "tl_common.h"
-#include "drivers.h"
+
+#include <stdint.h>
+#include "../../common/types.h"
+//typedef unsigned int uint32_t;
+
+#if !defined(MBEDTLS_SHA256_ALT)
+// Regular implementation
+//
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-typedef unsigned char uint8_t ;
-typedef unsigned long long uint64_t;
-
-#define _set    memset
-#define TC_CRYPTO_SUCCESS 1
-#define TC_CRYPTO_FAIL 0
-
-#define TC_ZERO_BYTE 0x00
-//typedef u32 size_t;
-
-#define TC_SHA256_BLOCK_SIZE (64)
-#define TC_SHA256_DIGEST_SIZE (32)
-#define TC_SHA256_STATE_BLOCKS (TC_SHA256_DIGEST_SIZE/4)
-
-struct tc_sha256_state_struct {
-    unsigned int iv[TC_SHA256_STATE_BLOCKS];
-    uint64_t bits_hashed;
-    uint8_t leftover[TC_SHA256_BLOCK_SIZE];
-    size_t leftover_offset;
-};
-
-typedef struct tc_sha256_state_struct *TCSha256State_t;
+/**
+ * \brief          SHA-256 context structure
+ */
+typedef struct
+{
+    uint32_t total[2];          /*!< number of bytes processed  */
+    uint32_t state[8];          /*!< intermediate digest state  */
+    unsigned char buffer[64];   /*!< data block being processed */
+    int is224;                  /*!< 0 => SHA-256, else SHA-224 */
+}
+mbedtls_sha256_context;
 
 /**
- *  @brief SHA256 initialization procedure
- *  Initializes s
- *  @return returns TC_CRYPTO_SUCCESS (1)
- *          returns TC_CRYPTO_FAIL (0) if s == NULL
- *  @param s Sha256 state struct
+ * \brief          Initialize SHA-256 context
+ *
+ * \param ctx      SHA-256 context to be initialized
  */
-int tc_sha256_init(TCSha256State_t s);
+void mbedtls_sha256_init( mbedtls_sha256_context *ctx );
 
 /**
- *  @brief SHA256 update procedure
- *  Hashes data_length bytes addressed by data into state s
- *  @return returns TC_CRYPTO_SUCCESS (1)
- *          returns TC_CRYPTO_FAIL (0) if:
- *                s == NULL,
- *                s->iv == NULL,
- *                data == NULL
- *  @note Assumes s has been initialized by tc_sha256_init
- *  @warning The state buffer 'leftover' is left in memory after processing
- *           If your application intends to have sensitive data in this
- *           buffer, remind to erase it after the data has been processed
- *  @param s Sha256 state struct
- *  @param data message to hash
- *  @param datalen length of message to hash
+ * \brief          Clear SHA-256 context
+ *
+ * \param ctx      SHA-256 context to be cleared
  */
-int tc_sha256_update (TCSha256State_t s, const uint8_t *data, size_t datalen);
+void mbedtls_sha256_free( mbedtls_sha256_context *ctx );
 
 /**
- *  @brief SHA256 final procedure
- *  Inserts the completed hash computation into digest
- *  @return returns TC_CRYPTO_SUCCESS (1)
- *          returns TC_CRYPTO_FAIL (0) if:
- *                s == NULL,
- *                s->iv == NULL,
- *                digest == NULL
- *  @note Assumes: s has been initialized by tc_sha256_init
- *        digest points to at least TC_SHA256_DIGEST_SIZE bytes
- *  @warning The state buffer 'leftover' is left in memory after processing
- *           If your application intends to have sensitive data in this
- *           buffer, remind to erase it after the data has been processed
- *  @param digest unsigned eight bit integer
- *  @param Sha256 state struct
+ * \brief          Clone (the state of) a SHA-256 context
+ *
+ * \param dst      The destination context
+ * \param src      The context to be cloned
  */
-int tc_sha256_final(uint8_t *digest, TCSha256State_t s);
+void mbedtls_sha256_clone( mbedtls_sha256_context *dst,
+                           const mbedtls_sha256_context *src );
+
+/**
+ * \brief          SHA-256 context setup
+ *
+ * \param ctx      context to be initialized
+ * \param is224    0 = use SHA256, 1 = use SHA224
+ */
+void mbedtls_sha256_starts( mbedtls_sha256_context *ctx, int is224 );
+
+/**
+ * \brief          SHA-256 process buffer
+ *
+ * \param ctx      SHA-256 context
+ * \param input    buffer holding the  data
+ * \param ilen     length of the input data
+ */
+void mbedtls_sha256_update( mbedtls_sha256_context *ctx, const unsigned char *input,
+                    size_t ilen );
+
+/**
+ * \brief          SHA-256 final digest
+ *
+ * \param ctx      SHA-256 context
+ * \param output   SHA-224/256 checksum result
+ */
+void mbedtls_sha256_finish( mbedtls_sha256_context *ctx, unsigned char output[32] );
+
+/* Internal use */
+void mbedtls_sha256_process( mbedtls_sha256_context *ctx, const unsigned char data[64] );
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* __TC_SHA256_H__ */
+#else  /* MBEDTLS_SHA256_ALT */
+#include "sha256_alt.h"
+#endif /* MBEDTLS_SHA256_ALT */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * \brief          Output = SHA-256( input buffer )
+ *
+ * \param input    buffer holding the  data
+ * \param ilen     length of the input data
+ * \param output   SHA-224/256 checksum result
+ * \param is224    0 = use SHA256, 1 = use SHA224
+ */
+void mbedtls_sha256( const unsigned char *input, size_t ilen,
+           unsigned char output[32], int is224 );
+
+/**
+ * \brief          Checkup routine
+ *
+ * \return         0 if successful, or 1 if the test failed
+ */
+int mbedtls_sha256_self_test( int verbose );
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* mbedtls_sha256.h */

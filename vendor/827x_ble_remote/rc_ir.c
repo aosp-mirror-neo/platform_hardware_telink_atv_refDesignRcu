@@ -177,7 +177,7 @@ int ir_sending_check(void)
 #if 1
 void ir_send_release(void)
 {
-    u8 r = irq_disable();
+    //u8 r = irq_disable();
 
     if(ir_send_ctrl.is_full_sequence == 0)
     {
@@ -202,7 +202,7 @@ void ir_send_release(void)
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear irq status
         reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
     }
-    irq_restore(r);
+    //irq_restore(r);
 }
 #else
 void ir_send_release(void)
@@ -262,7 +262,6 @@ void rc_ir_irq_prc(void)
                 else
                 {
                     printf("nec ir irq release\r\n");
-
                     reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
                     ir_send_ctrl.is_sending = IR_SENDING_NONE;
  
@@ -281,7 +280,6 @@ void rc_ir_irq_prc(void)
                 pwm_start_dma_ir_sending();
             }
         }
-
     }
 }
 

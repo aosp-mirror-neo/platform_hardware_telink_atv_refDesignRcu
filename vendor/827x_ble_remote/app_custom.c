@@ -47,10 +47,10 @@ _attribute_data_retention_  u16 key_subtitle_or_teletext[2]={IR_SUBTITLE,G00GLE_
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key_pos=0;
-_attribute_data_retention_  u8 comb_key_keyid[7]={0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle
+_attribute_data_retention_  u8 comb_key_keyid[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
 
-const unsigned char Kb_CombKey_KeyId_G10[6] = {7,  0xa, 0x15,0x16,0x0c,0x0d};           //back,home,center,mute,setting,guide keyid in g10
-const unsigned char Kb_CombKey_KeyId_G20[7] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f};      //back,home,center,mute,setting,guide keyid in g20
+const unsigned char Kb_CombKey_KeyId_G10[8] = {7,  0xa, 0x15,0x16,0x0c,0x0d,0xff,4};      //back,home,center,mute,setting,guide,subtitle,down keyid in g10
+const unsigned char Kb_CombKey_KeyId_G20[8] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f,7};      //back,home,center,mute,setting,guide,subtitle,dwon keyid in g20
 
 const unsigned char Kb_Map_Normal_G10[8][3] = {\
                         {0,          1,             2}, \

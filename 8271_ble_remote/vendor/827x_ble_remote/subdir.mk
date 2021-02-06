@@ -11,6 +11,7 @@ C_SRCS += \
 ../vendor/827x_ble_remote/app_ecdsa.c \
 ../vendor/827x_ble_remote/app_flash_write.c \
 ../vendor/827x_ble_remote/app_ir.c \
+../vendor/827x_ble_remote/app_ota.c \
 ../vendor/827x_ble_remote/app_phytest.c \
 ../vendor/827x_ble_remote/app_test.c \
 ../vendor/827x_ble_remote/app_ui.c \
@@ -27,6 +28,7 @@ OBJS += \
 ./vendor/827x_ble_remote/app_ecdsa.o \
 ./vendor/827x_ble_remote/app_flash_write.o \
 ./vendor/827x_ble_remote/app_ir.o \
+./vendor/827x_ble_remote/app_ota.o \
 ./vendor/827x_ble_remote/app_phytest.o \
 ./vendor/827x_ble_remote/app_test.o \
 ./vendor/827x_ble_remote/app_ui.o \

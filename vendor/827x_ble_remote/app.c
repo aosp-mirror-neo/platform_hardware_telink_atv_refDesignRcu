@@ -83,7 +83,7 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 
 
 //#define RX_FIFO_SIZE            96                    //-24//64
-//#define RX_FIFO_SIZE            160                    //-24//64
+//#define RX_FIFO_SIZE           160                    //-24//64
 #define RX_FIFO_SIZE             160                    //-24//64
 #define RX_FIFO_NUM                8
 

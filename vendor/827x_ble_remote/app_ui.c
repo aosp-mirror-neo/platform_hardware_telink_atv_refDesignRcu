@@ -70,7 +70,7 @@ _attribute_data_retention_ u8 is_pairing_mode=0;
 _attribute_data_retention_ u8 is_reconn_mode=0;
 _attribute_data_retention_    u8  ota_flag = 0;  //0:pause 1:continue
 
-extern u8 comb_key_keyid[7];
+extern u8 comb_key_keyid[8];
 extern    u32     latest_user_event_tick;
 extern u8 lowbat;
 extern int device_in_connection_state;
@@ -522,6 +522,7 @@ typedef enum{
     APP_ACCESSIBILITY_SHORTCUT_PAIRING,
     APP_ACCESSIBILITY_SHORTCUT_FACTORYRESET,
     APP_ACCESSIBILITY_SHORTCUT_BUGREPORT,
+    APP_ACCESSIBILITY_SHORTCUT_DOWNBACK,
     APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY
 }APP_Accessibility_Shortcut_Mode;
 
@@ -1050,6 +1051,7 @@ void key_change_proc(void)
     u8 key_value;
     u8 key_buf[8] = {0,0,0,0,0,0,0,0};
     u16 consumer_key[2]={0};
+    u16 comb_key[2];
 
     key_not_released = 1;
     if (kb_event.cnt == 2)   //two key press, do  not process
@@ -1107,6 +1109,17 @@ void key_change_proc(void)
         }
         else
         {
+            if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[7])) || ((key0 == comb_key_keyid[7]) && (key1 == comb_key_keyid[0]))) //  back+down
+            {
+                printf("back+dwon\r\n");
+                if(device_in_connection_state)
+                {
+                    keyScanLongPressTick = clock_time() | 1; //none zero
+                    LongPressTick = 1000000;
+                    Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+                    return;
+                }
+            }
             if(device_in_connection_state == 0)
             {
                 if(app_is_navi_key(key0,key1) == 0)
@@ -1428,6 +1441,7 @@ _attribute_data_retention_    static u32 keyScanTick = 0;
 
 void proc_keyboard (u8 e, u8 *p, int n)
 {
+    u16 consumer_key[2];
     //when key press gpio wakeup suspend, proc keyscan at least GPIO_WAKEUP_KEYPROC_CNT times
     //regardless of 8000 us interval
     if(e == BLT_EV_FLAG_GPIO_EARLY_WAKEUP){
@@ -1537,9 +1551,19 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                u16 consumer_key[2];
                 consumer_key[0] = G00GLE_MKEY_BACK;
                 consumer_key[1] = G00GLE_MKEY_CENTER;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+            }
+        }
+        else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
+        {
+            printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
+            device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
+            if(device_in_connection_state)
+            {
+                consumer_key[0] = G00GLE_MKEY_BACK;
+                consumer_key[1] = G00GLE_MKEY_DN;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
