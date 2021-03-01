@@ -773,7 +773,7 @@ void task_connect (u8 e, u8 *p, int n)
 
     latest_user_event_tick = clock_time();
     blt_soft_timer_add(app_terminate_timeout, 2000000);
-    bls_ota_set_random(p+12);
+//    bls_ota_set_random(p+12);
 }
 
 void task_conn_update_req (u8 e, u8 *p, int n)

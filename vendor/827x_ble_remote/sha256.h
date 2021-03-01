@@ -34,9 +34,9 @@
 //#include <stddef.h>
 //#include <stdint.h>
 
-#include <stdint.h>
+//#include <stdint.h>
 #include "../../common/types.h"
-//typedef unsigned int uint32_t;
+typedef unsigned int uint32_t;
 
 #if !defined(MBEDTLS_SHA256_ALT)
 // Regular implementation
