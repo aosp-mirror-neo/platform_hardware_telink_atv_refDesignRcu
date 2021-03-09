@@ -41,6 +41,8 @@ extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 extern void kb_p_map_init(void);
 
 _attribute_data_retention_  u8 device_type=1;
+_attribute_data_retention_  u8 en_powerkey_cache=1;
+_attribute_data_retention_  u8 en_google_wakeuppack=1;
 _attribute_data_retention_  u8 key_setting_or_noti[2]={IR_DASHBOARD,G00GLE_MKEY_DASHBOARD};
 _attribute_data_retention_  u8 key_guide_or_livetv[2]={IR_GUIDE,G00GLE_MKEY_GUIDE};
 _attribute_data_retention_  u16 key_subtitle_or_teletext[2]={IR_SUBTITLE,G00GLE_MKEY_SUBTITLE};
@@ -305,6 +307,17 @@ void app_custom_init(void)
     app_custom_param_init(device_type);
     my_FWRevtrs[3] = (device_type) + 0x30;
     my_FWRevtrs[4] = (device_ui_layout_type) + 0x30;
+
+    flash_read_page(APP_EN_CACHEKEY, 1, buffer);
+    if(buffer[0] == 0)
+    {
+        en_powerkey_cache = 0;
+    }
+    flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, buffer);
+    if(buffer[0] == 0)
+    {
+        en_google_wakeuppack = 0;
+    }
 }
 
 u8 app_custom_is_wakeup_key(u8 keyid)

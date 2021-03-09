@@ -78,7 +78,13 @@ extern u8 flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8 wakeup_src;
 extern u8 power_down_flag;
+extern u8 wakeup_key_keyid;
 extern u8 wakeup_key_send_flag;
+extern u8 wakeup_packet_format;
+extern u32 wakeup_tick;
+extern u32 advertise_begin_tick;
+extern u8 en_powerkey_cache;
+
 extern int ir_fallback_send(u8 key_down);
 extern void device_led_off(u8 led);
 extern void app_enter_deep_timeset(void);
@@ -430,7 +436,6 @@ void app_schedule_ota_send_notify_to_continue_ota(void)
 
 void app_schedule_ota_wakeup_host(void)
 {
-#if 1
     u8 data = analog_read(DEEP_ANA_REG2);
     u8 flag=0;
 
@@ -440,14 +445,9 @@ void app_schedule_ota_wakeup_host(void)
         if(flag)
         {
             printf("app_schedule_ota_wakeup_host\r\n");
-            app_tx_power_wakeup(0xff);
+            wakeup_key_send_flag = 2;
         }
     }
-#else
-    printf("app_schedule_ota_wakeup_host\r\n");
-    app_tx_power_wakeup(0xff);
-
-#endif
 }
 
 #endif
@@ -594,6 +594,10 @@ u8 app_keycache(u8 keyindex)
 
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     if(bond_number == 0) return 0;   
+    if(en_powerkey_cache == 0)
+    {
+        if(keyindex == 0) return 0;
+    }
     if(device_in_connection_state == 0)
     {
         if(app_key_store_count < KEY_CACHE_MAX)
@@ -608,7 +612,6 @@ u8 app_keycache(u8 keyindex)
             }
             if(i != 0x55)
                 app_key_store_buffer[app_key_store_count++] = keyindex;
-            
         }
         else
         {
@@ -1051,17 +1054,12 @@ void key_change_proc(void)
     u8 key_value;
     u8 key_buf[8] = {0,0,0,0,0,0,0,0};
     u16 consumer_key[2]={0};
-    u16 comb_key[2];
 
     key_not_released = 1;
     if (kb_event.cnt == 2)   //two key press, do  not process
     {
         //retime
         advertise_tick_retime();
-        if(wakeup_key_send_flag == 1)
-        {
-            wakeup_key_send_flag = 2;
-        }
         if(is_pairing_mode)    return;
         Accessibility_Shortcut_Flag = 0x55;
 #if (STUCK_KEY_PROCESS_ENABLE)
@@ -1196,22 +1194,21 @@ void key_change_proc(void)
               u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
               if(bond_number == 1)
               {
-                  if((power_down_flag == 2) || (wakeup_src == 1))
+                  if(app_custom_is_wakeup_key(key0) == 1)
                   {
-                      if(wakeup_key_send_flag == 1)
-                      {
-                          if(app_custom_is_wakeup_key(key0) == 1)
-                          {
-                              app_tx_power_wakeup(key0);
-                              wakeup_key_send_flag = 2;
-                          }
-                      }
+                     if(wakeup_key_send_flag == 0)
+                     {
+                         extern u8 wakeup_key_keycount;
+                         wakeup_key_keycount++;
+                         printf("app_send_wakeup_loop 5s start wakeup_key_keycount=%x\r\n",wakeup_key_keycount);
+                         write_wakeup_keyindex_info(wakeup_key_keycount);
+                         wakeup_key_send_flag = 1;
+                         wakeup_key_keyid = key0;
+                         advertise_begin_tick = 0;
+                         wakeup_packet_format = 0x55;
+                     }
                   }
               }
-          }
-          if(wakeup_key_send_flag == 1)
-          {
-              wakeup_key_send_flag = 2;
           }
 
 #if (BLE_AUDIO_ENABLE)
@@ -1232,7 +1229,6 @@ void key_change_proc(void)
           
           if(ir_key_is_suppress(key0) == 0)
           {
-          
               //printf("is suppress\r\n");
               app_keypress_led(1);
               if(ir_fallback_send_key_code(key0,1))

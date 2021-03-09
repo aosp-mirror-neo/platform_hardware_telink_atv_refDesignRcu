@@ -89,7 +89,7 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 
 //#define TX_FIFO_SIZE            88                    //-12//40
 #define TX_FIFO_SIZE             148                    //-12//40
-#define TX_FIFO_NUM                8
+#define TX_FIFO_NUM               16
 
 //#define MTU_SIZE_SETTING        72
 #define MTU_SIZE_SETTING         180
@@ -120,6 +120,10 @@ _attribute_data_retention_    my_fifo_t    blt_rxfifo = {
                                                     blt_txfifo_b,};
 #endif
 
+typedef struct{
+    u8    rf_len;             //LEN(6)_RFU(2)
+    u8    data[31];           //0-31 byte
+}rf_packet_adv_ind_module_t;
 
 //u8 flag_mtu=0;
 _attribute_data_retention_    u8 flag_dle=0;
@@ -153,21 +157,28 @@ _attribute_data_retention_    u16 count_schedule_ota=0;
 _attribute_data_retention_    u8 app_slave_terminate=0;
 _attribute_data_retention_    u8 app_is_set_mtusize=0;
 _attribute_data_retention_    u8 prepareWrite_b[300];
+_attribute_data_retention_    u8 wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
+_attribute_data_retention_    u8 power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is power down
+_attribute_data_retention_    u8 wakeup_key_send_flag=0;     //1: sending wake up packet 2:schedule ota flag
+_attribute_data_retention_    u8 wakeup_key_keyid=0;         //Save the wake-up key keyid
+_attribute_data_retention_    u8 wakeup_key_keycount=0;
 
 
 u8  mac_public[6];
 
 extern u8 is_pairing_mode;
 extern u8 is_reconn_mode;
+extern u8 en_google_wakeuppack;
+extern u8 my_devNamelen;
+extern u8 my_devName[20];
+extern u8 ir_flash_erase_flag;
+
 extern void app_pairing_led(void);
 extern ble_sts_t    blc_att_requestMtuSizeExchange (u16 connHandle, u16 mtu_size);
 extern void is_flash_info_full(void);
 extern void battery_refresh(void);
 extern void device_led_off(u8 led);
 extern void app_connect_led(void);
-extern u8 my_devNamelen;
-extern u8 my_devName[20];
-extern u8 ir_flash_erase_flag;
 extern void ir_flash_set_flag(u8 flag);
 extern u8 init_ir_key_event_notify(void);
 
@@ -489,6 +500,7 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
             device_timeout_state=0x55;
             is_pairing_mode = 0;
             is_reconn_mode = 0;
+            app_slave_terminate = 0;
             if((flag_schedule_ota == 0x55) || (bond_number == 0))
             {
                 enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
@@ -736,6 +748,9 @@ int app_host_event_callback (u32 h, u8 *para, int n)
 
             mtuExchange_check_tick = clock_time() | 1;
             notify_get_rsp_tick = clock_time()|1;
+            wakeup_key_keycount = 0;
+            write_wakeup_keyindex_info(wakeup_key_keycount);
+
             battery_refresh();
             blt_soft_timer_add(app_cachekey_send_timer,30000);
         }
@@ -1052,10 +1067,6 @@ _attribute_ram_code_ void user_init_battery_power_check(void)
     #endif
 }
 
-_attribute_data_retention_ u8 wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
-_attribute_data_retention_ u8 power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is power down
-_attribute_data_retention_ u8 wakeup_key_send_flag=1;     //2: already send wake up packet
-
 u8 app_wakeup_src(void)
 {
     u8 flag = analog_read(0X44);
@@ -1063,159 +1074,6 @@ u8 app_wakeup_src(void)
         return 1;  //wakeup for pad
     else
         return 2;  //wakeup for not pad
-}
-
-typedef struct{
-    u32 dma_len;            //won't be a fixed number as previous, should adjust with the mouse package number
-
-    u8    type;               //RA(1)_TA(1)_RFU(2)_TYPE(4)
-    u8    rf_len;             //LEN(6)_RFU(2)
-    u8    advA[6];            //address
-    u8    data[31];           //0-31 byte
-}rf_packet_adv_ind_module_t;
-
-void app_tx_power_wakeup(u8 keyid)
-{
-    rf_packet_adv_ind_module_t tx_power_wakeup;
-    smp_param_save_t  bondInfo;
-    u8 buffer[40];
-    u8 index=0,i;
-    u8 pos_index[3]={0};
-
-    printf("app_tx_power_wakeup\r\n");
-    rf_set_ble_access_code_adv();
-    rf_set_ble_crc_adv();
-    bls_smp_param_loadByIndex(0, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-
-    flash_read_page(0x78000+wakeup_key_pos, 40, buffer);
-
-    //google format
-    {
-        tx_power_wakeup.rf_len = 19;
-        tx_power_wakeup.dma_len = tx_power_wakeup.rf_len + 2;
-        tx_power_wakeup.type = ADV_TYPE_CONNECTABLE_UNDIRECTED;
-
-        memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
-        tx_power_wakeup.data[0] = 0x0c;
-        tx_power_wakeup.data[1] = 0x16;
-        tx_power_wakeup.data[2] = 0x36;
-        tx_power_wakeup.data[3] = 0xfd;
-        tx_power_wakeup.data[4] = 0x01;
-        if(keyid == 0xff)
-        {
-            tx_power_wakeup.data[5] = 0x02;  //schedule ota wakeup packet
-        }
-        else
-        {
-            tx_power_wakeup.data[5] = app_custom_wakeupkey_packet_index(keyid);
-        }
-        if(read_wakeup_keyindex_info(&index) == 0)
-        {
-            if(keyid == 0xff)
-            {
-                if(index)
-                  tx_power_wakeup.data[6] = index-1;
-                else
-                  tx_power_wakeup.data[6] = 0;
-            }
-            else
-                tx_power_wakeup.data[6] = index;
-        }
-        else
-            tx_power_wakeup.data[6] = 0;
-
-        memcpy(&(tx_power_wakeup.data[7]), bondInfo.peer_addr, 6);
-    }
-
-    for(u8 i=0;i<3;i++)
-    {
-       rf_set_ble_channel(37+i);
-
-       rf_start_stx (&tx_power_wakeup, 100);
-
-       while(rf_tx_finish()!=0x01);
-
-       rf_tx_finish_clear_flag();
-    }
-
-    //custom format
-    if(buffer[0] != 0xff)
-    {
-        tx_power_wakeup.rf_len = buffer[0]+6;
-        tx_power_wakeup.dma_len = tx_power_wakeup.rf_len + 2;
-        tx_power_wakeup.type = 0;
-        memcpy(&(tx_power_wakeup.advA[0]),mac_public,6);
-        for(i=0;i<buffer[0];i++)
-            tx_power_wakeup.data[i] = buffer[4+i];
-        printf("raw packet =\r\n");
-        for(i=0;i<buffer[0];i++)
-            printf(" %x",tx_power_wakeup.data[i]);
-        for(i=0;i<3;i++)
-        {
-            if(buffer[i])
-            {
-                pos_index[i] = buffer[i+1];
-            }
-            else
-                pos_index[i] = 0xff;
-        }
-        printf("\r\npos_index[0]=%x,pos_index[1]=%x,pos_index[2]=%x\r\n",pos_index[0],pos_index[1],pos_index[2]);
-
-        for(i=0;i<buffer[0];i++)
-        {
-            if(i == pos_index[0])
-            {
-                if(keyid == 0xff)
-                    tx_power_wakeup.data[i] = 2;
-                else
-                    tx_power_wakeup.data[i] = app_custom_wakeupkey_packet_index(keyid);
-            }
-            else if(i == pos_index[1])
-            {
-                 if(read_wakeup_keyindex_info(&index) == 0)
-                 {
-                    if(keyid == 0xff)
-                    {
-                        if(index)
-                            tx_power_wakeup.data[i] = index-1;
-                        else
-                            tx_power_wakeup.data[i] = 0;
-                    }
-                    else
-                        tx_power_wakeup.data[i] = index;
-                 }
-                 else
-                     tx_power_wakeup.data[i] = 0;
-                 printf("tx_power_wakeup.data[i]=%x\r\n",tx_power_wakeup.data[i]);
-            }
-            else if(i == pos_index[2])
-            {
-                 memcpy(&(tx_power_wakeup.data[i]), bondInfo.peer_addr, 6);
-                 i += 5;
-            }
-        }
-
-        printf("wakeup packet =\r\n");
-        for(i=0;i<buffer[0];i++)
-            printf(" %x",tx_power_wakeup.data[i]);
-        for(u8 i=0;i<3;i++)
-        {
-           rf_set_ble_channel(37+i);
-
-           rf_start_stx (&tx_power_wakeup, 100);
-
-           while(rf_tx_finish()!=0x01);
-
-           rf_tx_finish_clear_flag();
-        }
-
-    }
-
-    if(keyid != 0xff)
-    {
-        index++;
-        write_wakeup_keyindex_info(index);
-    }
 }
 
 void app_delay_set(void)
@@ -1376,9 +1234,9 @@ void user_init_normal(void)
                                             ADV_FP_NONE);
             if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
             //it is recommended that direct adv only last for several seconds, then switch to indirect adv
-            bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
-            bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &direct_adv);
-
+            //bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
+            //bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &direct_adv);
+            is_reconn_mode = 0x55;
             bls_ll_setAdvEnable(1);  //adv enable
             printf("direct adv\r\n");
         }
@@ -1552,6 +1410,180 @@ void test_toggle(void)
     }
 }
 #endif
+
+_attribute_data_retention_ u32 wakeup_packet_format=0x55;
+_attribute_data_retention_ u32 wakeup_tick=0;
+
+
+void app_send_wakeup_resume(void)
+{
+   u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+   if(bond_number)
+       app_adv_direct();
+   else
+       app_adv_indirect();
+}
+
+void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
+{
+   // u8 tbl_scanRsp[30];
+    u8 tbl_advData[40];
+
+    printf("app_start_send_wakeup\r\n");
+    bls_ll_setAdvEnable(0);
+   // tbl_advData[0] = advdata.rf_len;
+    memcpy(tbl_advData,advdata.data,advdata.rf_len);
+    //tbl_scanRsp[0] = my_devNamelen+1;
+    //tbl_scanRsp[1] = 0x09;
+   // memcpy(&tbl_scanRsp[2],my_devName,my_devNamelen);
+    for(u8 i=0;i<25;i++)
+        printf(" %x",tbl_advData[i]);
+    bls_ll_setAdvData( (u8 *)tbl_advData, advdata.rf_len);
+
+    //bls_ll_setScanRspData( (u8 *)tbl_scanRsp, my_devNamelen+2);
+
+    bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_30MS,
+        ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
+        0,    NULL,
+        MY_APP_ADV_CHANNEL,
+        ADV_FP_NONE);
+    bls_ll_setAdvEnable(1);
+}
+
+void app_tx_power_wakeup(u8 keyid)
+{
+    rf_packet_adv_ind_module_t tx_power_wakeup;
+    smp_param_save_t  bondInfo;
+    u8 buffer[40];
+    u8 index=0,i;
+    u8 pos_index[3]={0};
+    u8 format=0;
+
+    bls_smp_param_loadByIndex(0, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+
+    if(en_google_wakeuppack == 0)
+    {
+        format = 0;
+    }
+    else
+    {
+        if(wakeup_packet_format == 0x55)
+        {
+            format = 0;
+        }
+        else
+            format = 1;
+    }
+    if(format == 0)
+    {
+        flash_read_page(0x78000+wakeup_key_pos, 40, buffer);
+        if((buffer[0] != 0xff))
+        {
+            //custom format
+            tx_power_wakeup.rf_len = buffer[0];
+            for(i=0;i<buffer[0];i++)
+                tx_power_wakeup.data[i] = buffer[4+i];
+            for(i=0;i<3;i++)
+            {
+                if(buffer[i])
+                {
+                    pos_index[i] = buffer[i+1];
+                }
+                else
+                    pos_index[i] = 0xff;
+            }
+            for(i=0;i<buffer[0];i++)
+            {
+                if(i == pos_index[0])
+                {
+                    if(keyid == 0xff)
+                        tx_power_wakeup.data[i] = 2;
+                    else
+                        tx_power_wakeup.data[i] = app_custom_wakeupkey_packet_index(keyid);
+                }
+                else if(i == pos_index[1])
+                {
+                    if(keyid == 0xff)
+                    {
+                        if(index)
+                            tx_power_wakeup.data[i] = wakeup_key_keycount;
+                        else
+                            tx_power_wakeup.data[i] = 0;
+                    }
+                    else
+                        tx_power_wakeup.data[i] = wakeup_key_keycount;
+                }
+                else if(i == pos_index[2])
+                {
+                     memcpy(&(tx_power_wakeup.data[i]), bondInfo.peer_addr, 6);
+                     i += 5;
+                }
+            }
+        }
+        else
+            return;
+    }
+    else
+    {
+        //google format
+        tx_power_wakeup.rf_len = 19;
+        tx_power_wakeup.data[0] = 0x0c;
+        tx_power_wakeup.data[1] = 0x16;
+        tx_power_wakeup.data[2] = 0x36;
+        tx_power_wakeup.data[3] = 0xfd;
+        tx_power_wakeup.data[4] = 0x01;
+        if(keyid == 0xff)
+        {
+            tx_power_wakeup.data[5] = 0x02;  //schedule ota wakeup packet
+        }
+        else
+        {
+            tx_power_wakeup.data[5] = app_custom_wakeupkey_packet_index(keyid);
+        }
+        tx_power_wakeup.data[6] = wakeup_key_keycount;
+        memcpy(&(tx_power_wakeup.data[7]), bondInfo.peer_addr, 6);
+    }
+    printf("raw packet =\r\n");
+    for(i=0;i<20;i++)
+       printf(" %x",tx_power_wakeup.data[i]);
+    app_start_send_wakeup(tx_power_wakeup);
+
+}
+
+void app_send_wakeup_loop(void)
+{
+    if(wakeup_key_send_flag == 0) return;
+    if(wakeup_key_send_flag == 2)
+    {
+        wakeup_key_send_flag = 1;
+        advertise_begin_tick = 0;
+        wakeup_packet_format = 0x55;
+    }
+    if(wakeup_tick == 0)
+    {
+        app_tx_power_wakeup(wakeup_key_keyid);
+        wakeup_tick = clock_time() | 1;
+    }
+    if(clock_time_exceed(wakeup_tick, 3000000) && wakeup_tick)
+    {
+        if(wakeup_packet_format == 0x55)
+        {
+            printf("app_send_wakeup_loop 3s timeout\r\n");
+            wakeup_tick = 0;
+            wakeup_packet_format = 0xaa;
+        }
+        else
+        {
+            wakeup_tick = 0;
+            bls_ll_setAdvEnable(0);
+            advertise_begin_tick = clock_time() | 1;
+            printf("app_send_wakeup_loop 6s timeout\r\n");
+            wakeup_key_send_flag = 0;
+            app_send_wakeup_resume();
+        }
+    }
+}
+
 void main_loop (void)
 {
     //test_toggle();
@@ -1563,6 +1595,7 @@ void main_loop (void)
     mtu_exchange_loop();
     ir_flash_erase_loop();
     ir_flash_save_loop();
+    app_send_wakeup_loop();
     ////////////////////////////////////// UI entry /////////////////////////////////
     #if (BLE_AUDIO_ENABLE)
         app_audio_task();

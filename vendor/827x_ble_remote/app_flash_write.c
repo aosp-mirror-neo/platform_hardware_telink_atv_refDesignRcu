@@ -391,19 +391,18 @@ u8 is_wakeup_keyindex_flash_info_full(void)
     }
     return 0;
 }
-
+extern u8 wakeup_key_keycount;
 void init_wakeup_keyindex(void)
 {
-    u8 index=0;
-    if(read_wakeup_keyindex_info(&index) == 0)
+    if(read_wakeup_keyindex_info(&wakeup_key_keycount) == 0)
     {
         if(is_wakeup_keyindex_flash_info_full())
         {
             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR+0x1000);
-            write_wakeup_keyindex_info(index);
+            write_wakeup_keyindex_info(wakeup_key_keycount);
         }
-        printf("wakeup_keyindex=%x\r\n",index);
+        printf("wakeup_key_keycount=%x\r\n",wakeup_key_keycount);
     }
     else
     {
