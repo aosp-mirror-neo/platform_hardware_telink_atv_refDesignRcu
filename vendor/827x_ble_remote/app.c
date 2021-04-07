@@ -162,6 +162,8 @@ _attribute_data_retention_    u8 power_down_flag=1;          //1: the rcu previo
 _attribute_data_retention_    u8 wakeup_key_send_flag=0;     //1: sending wake up packet 2:schedule ota flag
 _attribute_data_retention_    u8 wakeup_key_keyid=0;         //Save the wake-up key keyid
 _attribute_data_retention_    u8 wakeup_key_keycount=0;
+_attribute_data_retention_    u32 wakeup_packet_format=0x55;
+_attribute_data_retention_    u32 wakeup_tick=0;
 
 
 u8  mac_public[6];
@@ -745,7 +747,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             device_in_connection_state = 1;
             is_pairing_mode = 0;
             is_reconn_mode = 0;
-
+            wakeup_key_send_flag = 0;
+            wakeup_tick = 0;
             mtuExchange_check_tick = clock_time() | 1;
             notify_get_rsp_tick = clock_time()|1;
             wakeup_key_keycount = 0;
@@ -1410,10 +1413,6 @@ void test_toggle(void)
     }
 }
 #endif
-
-_attribute_data_retention_ u32 wakeup_packet_format=0x55;
-_attribute_data_retention_ u32 wakeup_tick=0;
-
 
 void app_send_wakeup_resume(void)
 {

@@ -1555,7 +1555,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
         {
             printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
-            device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
+            //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state)
             {
                 consumer_key[0] = G00GLE_MKEY_BACK;
