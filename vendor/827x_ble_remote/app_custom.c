@@ -40,19 +40,31 @@ extern u8 my_devNamelen;
 extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 extern void kb_p_map_init(void);
 
+
+
+#define LAYOUT_MASK_BIT0               0X01
+#define LAYOUT_MASK_BIT1               0X02
+#define LAYOUT_MASK_BIT2               0X04
+#define LAYOUT_MASK_BIT5               0X20
+
+
 _attribute_data_retention_  u8 device_type=1;
 _attribute_data_retention_  u8 en_powerkey_cache=1;
 _attribute_data_retention_  u8 en_google_wakeuppack=1;
-_attribute_data_retention_  u8 key_setting_or_noti[2]={IR_DASHBOARD,G00GLE_MKEY_DASHBOARD};
-_attribute_data_retention_  u8 key_guide_or_livetv[2]={IR_GUIDE,G00GLE_MKEY_GUIDE};
-_attribute_data_retention_  u16 key_subtitle_or_teletext[2]={IR_SUBTITLE,G00GLE_MKEY_SUBTITLE};
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key_pos=0;
-_attribute_data_retention_  u8 comb_key_keyid[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
+_attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
+_attribute_data_retention_  u8 nec_ir_addr1_table[48]={0};
+_attribute_data_retention_  u8 nec_ir_addr2_table[48]={0};
+_attribute_data_retention_  u8 nec_ir_cmd1_table[48]={0};
+_attribute_data_retention_  u8 nec_ir_cmd2_table[48]={0};
+_attribute_data_retention_  u8 key_map_ble[48]={0};
 
-const unsigned char Kb_CombKey_KeyId_G10[8] = {7,  0xa, 0x15,0x16,0x0c,0x0d,0xff,4};      //back,home,center,mute,setting,guide,subtitle,down keyid in g10
-const unsigned char Kb_CombKey_KeyId_G20[8] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f,7};      //back,home,center,mute,setting,guide,subtitle,dwon keyid in g20
+
+
+const unsigned char Kb_CombKey_KeyId_G10[9] = {7,  0xa, 0x15,0x16,0x0c,0x0d,0xff,4,6};       //back,home,center,mute,setting,guide,subtitle,down,bookmark keyid in g10
+const unsigned char Kb_CombKey_KeyId_G20[9] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f,7,12};      //back,home,center,mute,setting,guide,subtitle,dwon,bookmark keyid in g20
 
 const unsigned char Kb_Map_Normal_G10[8][3] = {\
                         {0,          1,             2}, \
@@ -86,6 +98,7 @@ const unsigned char Kb_Map_Ir_G10[] =  {\
                         IR_CENTER,     IR_MUTE,        VK_NONE    };
 
 const unsigned char Kb_Map_Correspend_Index_G10[] =  {VOICE,10,0,3,8,11,14,17};
+const unsigned char Kb_Map_devicelayout_Correspend_Index_G10[] =  {12,13,6};  //notification,livetv,,userprofile/allapps
 
 const unsigned char Kb_Map_Normal_G20[8][6] = \
                         {\
@@ -119,77 +132,155 @@ const unsigned char Kb_Map_Ir_G20[] =  {\
                         IR_CENTER,     IR_MUTE,         VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE};
 
 const unsigned char Kb_Map_Correspend_Index_G20[] =  {VOICE,19,0,6,14,20,26,32,28,5,11,34};
+const unsigned char Kb_Map_devicelayout_Correspend_Index_G20[] =  {24,25,15,12,11,5,34,28}; //notification,livetv,teletext,userprofile/allapps,fast rewind,record,play/pause,fast forward
+
+
 
 const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
 const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
 
 
-#define IR_SETTING                     0X0F
-#define CR_SETTING                     0X0096
-
-#define IR_NOTIFICATION                0X10
-#define CR_NOTIFICATION                0X009f
-
-#define IR_LIVE                        0X61
-#define CR_LIVE                        0X0089
-
-#define IR_TEXT                        0X75
-#define CR_TEXT                        0X0185
-
-#define LAYOUT_MASK_BIT0               0X01
-#define LAYOUT_MASK_BIT1               0X02
-#define LAYOUT_MASK_BIT2               0X04
-
 void app_custom_ui_layout(u8 ui_layout)
 {
-    if(ui_layout == 0xff)
-        ui_layout = 0;
-    if((ui_layout&LAYOUT_MASK_BIT0))
+    printf("ui_layout=%x\r\n",ui_layout);
+    if((ui_layout == 0xff) || (ui_layout == 0))
     {
-        key_setting_or_noti[0] = IR_NOTIFICATION;
-        key_setting_or_noti[1] = CR_NOTIFICATION;
+        return;
+    }
+    if(device_type == REMOTE_G10)
+    {
+        if((ui_layout&LAYOUT_MASK_BIT0))
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G10[0]] = CR_NOTIFICATION;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G10[0]] = IR_NOTIFICATION;
+        }
+        if((ui_layout&LAYOUT_MASK_BIT1))
+        {
+
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G10[1]] = CR_LIVETV;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G10[1]] = IR_LIVETV;
+        }
+        if((ui_layout&0x18) == 0x08)
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G10[2]] = CR_USERPROFILE;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G10[2]] = IR_USERPROFILE;
+        }
+        else if((ui_layout&0x18) == 0x10)
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G10[2]] = CR_ALLAPPS;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G10[2]] = IR_ALLAPPS;
+        }
     }
     else
     {
-        key_setting_or_noti[0] = IR_SETTING;
-        key_setting_or_noti[1] = CR_SETTING;
-    }
-    if((ui_layout&LAYOUT_MASK_BIT1))
-    {
-        key_guide_or_livetv[0] = IR_LIVE;
-        key_guide_or_livetv[1] = CR_LIVE;
-    }
-    else
-    {
-        key_guide_or_livetv[0] = IR_GUIDE;
-        key_guide_or_livetv[1] = G00GLE_MKEY_GUIDE;
-    }
-    if((ui_layout&LAYOUT_MASK_BIT2))
-    {
-        key_subtitle_or_teletext[0] = IR_TEXT;
-        key_subtitle_or_teletext[1] = CR_TEXT;
-    }
-    else
-    {
-        key_subtitle_or_teletext[0] = IR_SUBTITLE;
-        key_subtitle_or_teletext[1] = G00GLE_MKEY_SUBTITLE;
+        if((ui_layout&LAYOUT_MASK_BIT0))
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[0]] = CR_NOTIFICATION;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[0]] = IR_NOTIFICATION;
+        }
+        if((ui_layout&LAYOUT_MASK_BIT1))
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[1]] = CR_LIVETV;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[1]] = IR_LIVETV;
+        }
+        if((ui_layout&LAYOUT_MASK_BIT2))
+        {
+           key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[2]] = CR_TELETEXT;
+           nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[2]] = IR_TELETEXT;
+        }
+        if((ui_layout&0x18) == 0x08)
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[3]] = CR_USERPROFILE;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[3]] = IR_USERPROFILE;
+        }
+        else if((ui_layout&0x18) == 0x10)
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[3]] = CR_ALLAPPS;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[3]] = IR_ALLAPPS;
+        }
+        if((ui_layout&LAYOUT_MASK_BIT5))
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[4]] = CR_FASTREWIND;
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[5]] = CR_RECORD;
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[6]] = CR_PLAYPAUSE;
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[7]] = CR_FASTFORWARD;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[4]] = IR_FASTREWIND;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[5]] = IR_RECORD;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[6]] = IR_PLAYPAUSE;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[7]] = IR_FASTFORWARD;
+        }
     }
 }
 
-void app_custom_param_init(u8 device)
+void app_custom_set_new_ir_table(void)
 {
-    if(device == REMOTE_G10)
+    u8 dat[192];
+    u8 g10_table[96];
+    u8 i,j;
+
+    if(device_type == REMOTE_G10)
     {
-        p_kb_map_ble    = (u8 *)Kb_Map_Ble_G10;
-        p_kb_map_ir     = (u8 *)Kb_Map_Ir_G10;
+        flash_read_page(APP_NEC_IR_CODE_TABLE, 48*4, dat);
+        //line up g10,g20
+        for(i=0;i<8;i++)
+        {
+            for(j=0;j<3;j++)
+            {
+                g10_table[i*12+4*j]   = dat[i*24+4*j];
+                g10_table[i*12+4*j+1] = dat[i*24+4*j+1];
+                g10_table[i*12+4*j+2] = dat[i*24+4*j+2];
+                g10_table[i*12+4*j+3] = dat[i*24+4*j+3];
+            }
+        }
+        memcpy(dat,g10_table,24*4);
+        for(i=0;i<24;i++)
+        {
+            nec_ir_addr1_table[i] = dat[i*4];
+            nec_ir_addr2_table[i] = dat[i*4+1];
+            if(dat[i*4+2] != 0xff)
+            {
+                nec_ir_cmd1_table[i]  = dat[i*4+2];
+            }
+            nec_ir_cmd2_table[i]  = dat[i*4+3];
+        }
+    }
+    else if(device_type == REMOTE_G20)
+    {
+        flash_read_page(APP_NEC_IR_CODE_TABLE, 48*4, dat);
+        for(i=0;i<48;i++)
+        {
+            nec_ir_addr1_table[i] = dat[i*4];
+            nec_ir_addr2_table[i] = dat[i*4+1];
+            if(dat[i*4+2] != 0xff)
+            {
+                nec_ir_cmd1_table[i]  = dat[i*4+2];
+            }
+            nec_ir_cmd2_table[i]  = dat[i*4+3];
+        }
+    }
+}
+
+void app_custom_param_init(u8 device_layout)
+{
+    if(device_type == REMOTE_G10)
+    {
+        p_kb_map_ble =  key_map_ble;
+        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G10,24);
+        p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
+        memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G10,sizeof(Kb_Map_Ir_G10));
+
         p_kb_map_normal = (u8 *)Kb_Map_Normal_G10;
     }
-    else if(device == REMOTE_G20)
+    else if(device_type == REMOTE_G20)
     {
-        p_kb_map_ble    = (u8 *)Kb_Map_Ble_G20;
-        p_kb_map_ir     = (u8 *)Kb_Map_Ir_G20;
+        p_kb_map_ble =  key_map_ble;
+        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G20,48);
         p_kb_map_normal = (u8 *)Kb_Map_Normal_G20;
+        p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
+        memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G20,sizeof(Kb_Map_Ir_G20));
     }
+    app_custom_ui_layout(device_layout);
+    app_custom_set_new_ir_table();
     kb_p_map_init();
 }
 
@@ -260,8 +351,7 @@ void app_custom_init(void)
         device_type = REMOTE_G10;
         my_devNamelen = 10;
         memcpy(my_devName,pREMOTE_B046,10);
-        app_custom_ui_layout(0);
-        app_custom_param_init(device_type);
+        app_custom_param_init(0);
         my_FWRevtrs[3] = (device_type) + 0x30;
         my_FWRevtrs[4] = 0x30;
         wakeup_key_pos = 24;
@@ -277,8 +367,7 @@ void app_custom_init(void)
             device_type = REMOTE_G10;
             my_devNamelen = 10;
             memcpy(my_devName,pREMOTE_B046,10);
-            app_custom_ui_layout(0);
-            app_custom_param_init(device_type);
+            app_custom_param_init(0);
             my_FWRevtrs[3] = (device_type) + 0x30;
             my_FWRevtrs[4] = 0x30;
             wakeup_key_pos = 24;
@@ -298,13 +387,12 @@ void app_custom_init(void)
         wakeupkey2_mask = (u16)(((u16)buffer[addr_pos+2]<<8) | ((u16)buffer[addr_pos+3]));
         printf("wakeupkey1_mask=%x,wakeupkey2_mask=%x\r\n",wakeupkey1_mask,wakeupkey2_mask);
         app_custom_wakeup_key_load(wakeupkey1_mask,wakeupkey2_mask);
-        app_custom_ui_layout(device_ui_layout_type);
         wakeup_key_pos = addr_pos + 4;
         printf("wakeup_key_pos=%x\r\n",wakeup_key_pos);
         if(my_devNamelen>16)
             my_devNamelen = 16;
     }
-    app_custom_param_init(device_type);
+    app_custom_param_init(device_ui_layout_type);
     my_FWRevtrs[3] = (device_type) + 0x30;
     my_FWRevtrs[4] = (device_ui_layout_type) + 0x30;
 

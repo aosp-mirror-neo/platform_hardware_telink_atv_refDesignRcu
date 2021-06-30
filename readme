@@ -87,6 +87,18 @@
 1. Follow the instructions in the document "Telink Linux tcdb user guide.pdf" to flash a bin file.
 
 
+========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
+========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
+========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
+
+1. The hardware reference design files can be downloaded from the following link
+
+   https://meta.box.lenovo.com/v/link/view/af115a5f96ab4601b204b6eb994f352c
+
+   with password: telink123
+
+   The design files can be found in folder "Reference Design".
+
 
 ========== Instructions for updateing the new bin file into RCU via OTA process ==========
 

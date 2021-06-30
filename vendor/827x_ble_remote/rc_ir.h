@@ -103,7 +103,6 @@ extern pwm_dma_data_t T_dmaData_buf;
 typedef struct{
     u8 is_sending;
     u8 repeat_enable;
-    u8 last_cmd;
     u8 rsvd;
     u8 is_full_sequence;
     u32 sending_start_time;
@@ -139,6 +138,7 @@ void ir_repeat_handle(void);
 
 
 void ir_nec_send(u8 addr1, u8 addr2, u8 cmd);
+void ir_nec_send_ext(u8 *dat);
 
 void  ir_send_specil (u16 freq, u8 cycle);
 

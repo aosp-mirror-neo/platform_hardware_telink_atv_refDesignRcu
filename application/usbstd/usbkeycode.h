@@ -354,6 +354,17 @@ typedef enum {
 // media key, consumer key
 //reference:  <<HID Usage Tables>>  Consumer Page(0x0C)
 typedef enum {
+//device_layout
+    G00GLE_MKEY_NOTIFICATION = 0x009f,
+    G00GLE_MKEY_LIVETV     = 0x0089,
+    G00GLE_MKEY_TELETEXT   = 0x0185,
+    G00GLE_MKEY_USERPROFILE= 0x0229,
+    G00GLE_MKEY_ALLAPPS    = 0x01A2,
+    G00GLE_MKEY_FASTREWIND = 0x00B4,
+    G00GLE_MKEY_RECORD     = 0x00CE,
+    G00GLE_MKEY_PLAYPAUSE  = 0x00CD,
+    G00GLE_MKEY_FASTFORWARD= 0x00B3,
+
 //g20
     G00GLE_MKEY_INFO       = 0x01BD,
     G00GLE_MKEY_SUBTITLE   = 0x0061,

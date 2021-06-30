@@ -72,7 +72,7 @@ _attribute_data_retention_ u16 google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM
 _attribute_data_retention_ u32 app_audio_start_delay = 0;
 _attribute_data_retention_ u32 app_active_remote_timer = 0;     //Wait mic open cmd after send START_SEARCH
 _attribute_data_retention_ u32 app_audio_transfer_timer = 0;    //Used for google voice timeout
-
+_attribute_data_retention_ u32 g_delay_send_audio_stop = 0;
 extern int device_in_connection_state;
 
 /**
@@ -707,6 +707,8 @@ void google_cmd_v0p4_proc(){
  * @param   none
  * @return  none
  */
+
+
 void google_cmd_v1p0_proc(){
 
     if(!atv_char_rx_ccc && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
@@ -719,22 +721,42 @@ void google_cmd_v1p0_proc(){
     if(google_voice_ctl & FLAG_AUDIO_CLOSE){
         //audio stop. google voice auido end
         //printf("google_cmd_v1p0_proc_close\r\n");
-        ble_sts_t ret;
-        u8 sendBuff[2] = {0};
-        sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_STOP;
-        sendBuff[1] = audio_stop_reason;
+
+        u8 send_audio_stop = 1;
+        if(REASON_RELEASE_HTT == audio_stop_reason){
+            // If the voice is stopped by HTT, wait for adpcm buffer to be empty before sending the stop command
+            send_audio_stop = 0;
+
+            // If the adpcm data is not sent within 1 second, send the stop command
+            if(clock_time_exceed(g_delay_send_audio_stop,1000000)){
+                send_audio_stop = 1;
+            }
+
+            // adpcm buffer is empty
+            int *p = mic_encoder_data_buffer ();
+            if(!p){
+                send_audio_stop = 1;
+            }
+        }
+
+        if(send_audio_stop){
+            ble_sts_t ret;
+            u8 sendBuff[2] = {0};
+            sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_STOP;
+            sendBuff[1] = audio_stop_reason;
 
         ret  = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 2);
         printf("google_cmd_v1p0_proc_close ret=%x\r\n",ret);
         if(ret == BLE_SUCCESS){
-
+            g_delay_send_audio_stop = 0;
             printf("ATV_MIC_CHAR_CTL_AUDIO_STOP:0x%x\n",audio_stop_reason);
             google_voice_ctl &= ~FLAG_AUDIO_CLOSE;
             google_voice_ctl = 0;
             ui_enable_mic(0);
 
-            if(audio_stop_reason == REASON_UPCOMING_AUDIO_START){
-                google_voice_ctl |= FLAG_GOOGLE_AUDIO_START;
+                if(audio_stop_reason == REASON_UPCOMING_AUDIO_START){
+                    google_voice_ctl |= FLAG_GOOGLE_AUDIO_START;
+                }
             }
         }
     }
@@ -1010,7 +1032,7 @@ void google_voice_data_notify_v1p0_proc(){
 
         app_audio_sync_serial ++;
         if(app_audio_sync_serial >= 20){
-            app_audio_sync_serial = 0;
+            //app_audio_sync_serial = 0;
             send_sync_cmd_flag |= SYNC_PACKET;
             need_buffer_count = 1;
         }
@@ -1093,6 +1115,8 @@ void google_voice_data_notify_v1p0_proc(){
                 app_audio_send_index = 0;
                 //printf("notify data:");
                 //array_printf(pd,10);
+
+                app_audio_sync_serial = 0;
 
                 mic_encoder_data_read_ok();
 

@@ -54,6 +54,7 @@ extern "C" {
 #define APP_CUSTOM_ADDR                       0x78000
 #define APP_EN_GOOGLE_WAKEUPPACK              0x780FE
 #define APP_EN_CACHEKEY                       0x780FF
+#define APP_NEC_IR_CODE_TABLE                 0x79000
 
 
 #define IR_DATA_SECT_MAX_NUM                  12   //Each sector can be written 3 times ,4*3
@@ -197,7 +198,18 @@ extern "C" {
 #define CR_VOL_DN                             0x81
 
 
-#define CR_MEDIA_KEY_INDEX                    CR_INFO//CR_YOUTUBE
+#define CR_MEDIA_KEY_INDEX                    CR_NOTIFICATION
+
+//device layout
+#define CR_NOTIFICATION                       0xdd
+#define CR_LIVETV                             0xde
+#define CR_TELETEXT                           0xdf
+#define CR_USERPROFILE                        0xe0
+#define CR_ALLAPPS                            0xe1
+#define CR_FASTREWIND                         0xe2
+#define CR_RECORD                             0xe3
+#define CR_PLAYPAUSE                          0xe4
+#define CR_FASTFORWARD                        0xe5
 
 //G20
 #define CR_INFO                               0xe6
@@ -276,7 +288,7 @@ extern "C" {
 #define IR_BOOKMARK                           0x74
 #define IR_INPUT                              0x60
 #define IR_MUTE                               0x25
-#define IR_DASHBOARD                          0X0F
+#define IR_DASHBOARD                          0x0F
 
 
 #define T_VK_CH_UP                            0xd0
@@ -290,6 +302,16 @@ extern "C" {
 #define IR_YELLOW                             0x49
 #define IR_BLUE                               0x4c
 
+//device lyaout
+#define IR_NOTIFICATION                       0x10
+#define IR_LIVETV                             0x61
+#define IR_TELETEXT                           0x75
+#define IR_USERPROFILE                        0x59
+#define IR_ALLAPPS                            0x57
+#define IR_FASTREWIND                         0x51
+#define IR_RECORD                             0x54
+#define IR_PLAYPAUSE                          0x52
+#define IR_FASTFORWARD                        0x53
 
 #define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
 

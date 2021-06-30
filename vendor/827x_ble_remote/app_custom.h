@@ -30,14 +30,16 @@
 #define APP_CUSTOM_WAKEUPKEY_NUM 12
 
 extern u8 device_type;
-extern u8 key_setting_or_noti[2];
-extern u8 key_guide_or_livetv[2];
-extern u16 key_subtitle_or_teletext[2];
 extern u8 wakeup_key_pos;
 extern const unsigned char Kb_Map_Normal[8][3];
+extern u8 nec_ir_addr1_table[48];
+extern u8 nec_ir_addr2_table[48];
+extern u8 nec_ir_cmd1_table[48];
+extern u8 nec_ir_cmd2_table[48];
+
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);
-extern void app_custom_param_init(u8 device);
+extern void app_custom_param_init(u8 device_layout);
 extern u8 app_custom_is_enable_wakeup_key(void);
 extern u8  app_custom_wakeupkey_packet_index(u8 keyid);
 

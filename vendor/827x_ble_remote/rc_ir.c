@@ -82,15 +82,11 @@ int ir_sending_check(void);
 void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
 {
 
-    if(ir_send_ctrl.last_cmd != cmd)
     {
         if(ir_sending_check())
         {
             return;
         }
-
-
-        ir_send_ctrl.last_cmd = cmd;
 
     //// set waveform input in sequence //////
         T_dmaData_buf.data_num = 0;
@@ -146,6 +142,66 @@ void ir_nec_send(u8 addr1, u8 addr2, u8 cmd)
 }
 
 
+void ir_nec_send_ext(u8 *dat)
+{
+    {
+        if(ir_sending_check())
+        {
+            return;
+        }
+
+    //// set waveform input in sequence //////
+        T_dmaData_buf.data_num = 0;
+
+        //waveform for start bit
+        T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_start_bit_1st;
+        T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_start_bit_2nd;
+
+
+        //add data
+        u32 data = (dat[3])<<24 | (dat[2])<<16 | (dat[1]<<8) | dat[0];
+
+        for(int i=0;i<32;i++){
+            if(data & BIT(i)){
+                //waveform for logic_1
+                T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_1_1st;
+                T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_1_2nd;
+            }
+            else{
+                //waveform for logic_0
+                T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_0_1st;
+                T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_0_2nd;
+            }
+        }
+
+        //waveform for stop bit
+        T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_stop_bit_1st;
+        T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_stop_bit_2nd;
+
+
+        T_dmaData_buf.dma_len = T_dmaData_buf.data_num * 2;
+
+        if(1){  //need repeat
+            ir_send_ctrl.repeat_enable = 1;  //need repeat signal
+        }
+        else{  //no need repeat
+            ir_send_ctrl.repeat_enable = 0;  //no need repeat signal
+        }
+
+
+        reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear  dma fifo mode done irq status
+        reg_pwm_irq_mask |= FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //enable dma fifo mode done irq mask
+
+
+        bls_pm_setSuspendMask(0);
+        ir_send_ctrl.is_sending = IR_SENDING_DATA;
+
+        ir_send_ctrl.sending_start_time = clock_time();
+
+        pwm_start_dma_ir_sending();
+
+    }
+}
 
 
 
@@ -174,7 +230,6 @@ int ir_sending_check(void)
 }
 
 
-#if 1
 void ir_send_release(void)
 {
     //u8 r = irq_disable();
@@ -182,13 +237,11 @@ void ir_send_release(void)
     if(ir_send_ctrl.is_full_sequence == 0)
     {
         printf("ir_send_release (not full sequence)\r\n");
-        ir_send_ctrl.last_cmd = 0xff;
         ir_send_ctrl.is_sending = IR_SENDING_STOP;
     }
     else
     {
         printf("ir_send_release (is full sequence)\r\n");
-        ir_send_ctrl.last_cmd = 0xff;
 
 #if(!ADD_REPEAT_ONE_BY_ONE)
     if(ir_send_ctrl.is_sending != IR_SENDING_NONE){
@@ -204,15 +257,7 @@ void ir_send_release(void)
     }
     //irq_restore(r);
 }
-#else
-void ir_send_release(void)
-{
-    printf("ir_send_release\r\n");
-    ir_send_ctrl.last_cmd = 0xff;
-    ir_send_ctrl.is_sending = IR_SENDING_STOP;
-}
 
-#endif
 
 
 #if (REMOTE_IR_ENABLE)
@@ -336,7 +381,6 @@ void rc_ir_init(void)
     reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //clear irq status
 //    reg_pwm_irq_mask |= FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;
 
-    ir_send_ctrl.last_cmd = 0xff; //must
 }
 
 
@@ -379,7 +423,6 @@ void  ir_send_specil (u16 freq, u8 cycle)
 
     pwm_start_dma_ir_sending();
 
-    ir_send_ctrl.last_cmd = 0xff; //must
     ir_send_ctrl.is_full_sequence = 0;
 }
 

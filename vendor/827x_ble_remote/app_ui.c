@@ -70,7 +70,7 @@ _attribute_data_retention_ u8 is_pairing_mode=0;
 _attribute_data_retention_ u8 is_reconn_mode=0;
 _attribute_data_retention_    u8  ota_flag = 0;  //0:pause 1:continue
 
-extern u8 comb_key_keyid[8];
+extern u8 comb_key_keyid[9];
 extern    u32     latest_user_event_tick;
 extern u8 lowbat;
 extern int device_in_connection_state;
@@ -93,6 +93,15 @@ extern void app_tx_power_wakeup(u8 keyid);
 extern u8  app_custom_is_wakeup_key(u8 keyid);
 extern ble_sts_t app_terminate(u8 reason);
 static const u16 vk_consumer_map[] = {
+    G00GLE_MKEY_NOTIFICATION,
+    G00GLE_MKEY_LIVETV,
+    G00GLE_MKEY_TELETEXT,
+    G00GLE_MKEY_USERPROFILE,
+    G00GLE_MKEY_ALLAPPS,
+    G00GLE_MKEY_FASTREWIND,
+    G00GLE_MKEY_RECORD,
+    G00GLE_MKEY_PLAYPAUSE,
+    G00GLE_MKEY_FASTFORWARD,
     G00GLE_MKEY_INFO,
     G00GLE_MKEY_SUBTITLE,
     G00GLE_MKEY_RED,
@@ -198,6 +207,57 @@ extern u32 keyScanLongPressTick;
             ir_send_release();
         }
     }
+
+
+
+void ir_dispatch_ext(u8 type, u8 keyindex){
+
+    u8 data[4];
+    if(!ir_hw_initialed){
+        ir_hw_initialed = 1;
+        rc_ir_init();
+    }
+    if(type == TYPE_IR_SEND){
+        ir_send_ctrl.is_full_sequence = 0;
+
+        if(keyindex == VOICE)
+        {
+         if(device_type == REMOTE_G10)
+             keyindex = 9;
+         else
+             keyindex = 18;
+        }
+
+        if(nec_ir_addr1_table[keyindex] == 0xff)
+        {
+            data[0] = 0x88;
+        }
+        else
+            data[0] = nec_ir_addr1_table[keyindex];
+
+        if(nec_ir_addr2_table[keyindex] == 0xff)
+        {
+            data[1] = ~data[0];
+        }
+        else
+            data[1] = nec_ir_addr2_table[keyindex];
+
+        data[2] = nec_ir_cmd1_table[keyindex];
+        if(nec_ir_cmd2_table[keyindex] == 0xff)
+        {
+            data[3] = ~nec_ir_cmd1_table[keyindex];
+        }
+        else
+            data[3] = nec_ir_cmd2_table[keyindex];
+
+        printf("\r\nir_dispatch_ext ir_key_value=%x\r\n",data[2]);
+        ir_nec_send_ext(data);
+
+    }
+    else if(type == TYPE_IR_RELEASE){
+        ir_send_release();
+    }
+}
 
 
 #endif
@@ -544,10 +604,10 @@ int app_special_key_delay_timer(void)
 int app_ir_bugreport_key_delay_timer(void)
 {
     printf("app_ir_bugreport_key_delay_timer\r\n");
-    printf("\r\nir_key_value=%x\r\n",(u8)SpecialKey);
+    printf("\r\nSpecialKey keyindex=%x\r\n",(u8)SpecialKey);
     key_type = IR_KEY;
     if(!ir_not_released){
-        ir_dispatch(TYPE_IR_SEND, 0x88, (u8)SpecialKey);
+        ir_dispatch_ext(TYPE_IR_SEND, (u8)SpecialKey);
         ir_not_released = 1;
     }
 
@@ -661,20 +721,7 @@ int app_cachekey_send_timer(void)
         key_value = p_kb_map_ble[key0];
         if(key_value >= CR_MEDIA_KEY_INDEX )
         {
-            if(key_value == CR_DASHBOARD)
-            {
-                consumer_key[0] = key_setting_or_noti[1];
-            }
-            else if(key_value == CR_GUIDE)
-            {
-                consumer_key[0] = key_guide_or_livetv[1];
-            }
-            else if(key_value == CR_SUBTITLE)
-            {
-                consumer_key[0] = key_subtitle_or_teletext[1];
-            }
-            else
-                consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
+            consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
             consumer_key[1] = 0;
             printf("consume key=%x \r\n",consumer_key[0]);     //down
             bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
@@ -736,20 +783,7 @@ void app_key_send_store(void)
         key_value = p_kb_map_ble[key0];
         if(key_value >= CR_MEDIA_KEY_INDEX )
         {
-            if(key_value == CR_DASHBOARD)
-            {
-                consumer_key[0] = key_setting_or_noti[1];
-            }
-            else if(key_value == CR_GUIDE)
-            {
-                consumer_key[0] = key_guide_or_livetv[1];
-            }
-            else if(key_value == CR_SUBTITLE)
-            {
-                consumer_key[0] = key_subtitle_or_teletext[1];
-            }
-            else
-                consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
+            consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
             consumer_key[1] = 0;
             printf("consume key=%x \r\n",consumer_key[0]);   //down
             bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
@@ -1136,16 +1170,8 @@ void key_change_proc(void)
                     printf("double key is navi in ir mode\r\n");
                     if(ir_send_ctrl.is_sending == IR_SENDING_NONE)
                     {
-                        if(key0 == comb_key_keyid[4])              //setting
-                            key_value = key_setting_or_noti[0];
-                        else if(key0 == comb_key_keyid[5])         //guide
-                            key_value = key_guide_or_livetv[0];
-                        else if(key0 == comb_key_keyid[6])         //subtitle
-                            key_value = key_subtitle_or_teletext[0];
-                        else
-                            key_value = p_kb_map_ir[key0];
                         key_type = IR_KEY;
-                        ir_dispatch(TYPE_IR_SEND, 0x88, key_value);
+                        ir_dispatch_ext(TYPE_IR_SEND, key0);
                         if(ir_not_released == 0) ir_not_released = 1;
                     }
                 }
@@ -1252,20 +1278,7 @@ void key_change_proc(void)
                 if(key_value >= CR_MEDIA_KEY_INDEX )
                 {
                     key_type = CONSUMER_KEY;
-                    if(key_value == CR_DASHBOARD)
-                    {
-                        consumer_key[0] = key_setting_or_noti[1];
-                    }
-                    else if(key_value == CR_GUIDE)
-                    {
-                        consumer_key[0] = key_guide_or_livetv[1];
-                    }
-                    else if(key_value == CR_SUBTITLE)
-                    {
-                        consumer_key[0] = key_subtitle_or_teletext[1];
-                    }
-                    else
-                        consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
+                    consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
                     consumer_key[1] = 0;
                     printf("consume key=%x \r\n",consumer_key[0]);
                     if((key0 == comb_key_keyid[0]) || (key0 == comb_key_keyid[1])) //back or home key
@@ -1292,17 +1305,7 @@ void key_change_proc(void)
           }
           else
           {
-             if(key0 == VOICE)
-                 key_value = 0x46;
-             else if(key0 == comb_key_keyid[4])
-                 key_value = key_setting_or_noti[0];
-             else if(key0 == comb_key_keyid[5])
-                 key_value = key_guide_or_livetv[0];
-             else if(key0 == comb_key_keyid[6])
-                 key_value = key_subtitle_or_teletext[0];
-             else
-                 key_value = p_kb_map_ir[key0];
-             if((key_value == IR_BACK) &&(is_pairing_mode == 0x55))
+             if((key0 == comb_key_keyid[0]) && (is_pairing_mode == 0x55))
              {
                  printf("back key, stop adv\r\n");
                  device_led_off(APP_LED_GREEN);
@@ -1315,15 +1318,15 @@ void key_change_proc(void)
              }
              if((key0 == comb_key_keyid[0]) || (key0 == comb_key_keyid[2]))    //center or back
              {
-                 SpecialKey = key_value;
+                 SpecialKey = key0;
                  blt_soft_timer_add(app_ir_bugreport_key_delay_timer, 80000);
                  return;
              }
-             printf("\r\nir_key_value=%x\r\n",key_value);
+
              key_type = IR_KEY;
              if(!ir_not_released){
                   printf("ir_dispatch send\r\n");
-                 ir_dispatch(TYPE_IR_SEND, 0x88, key_value);
+                 ir_dispatch_ext(TYPE_IR_SEND, key0);
                  ir_not_released = 1;
              }
           }
@@ -1338,6 +1341,8 @@ void key_change_proc(void)
             google_voice_ctl |= FLAG_AUDIO_CLOSE;
             audio_stop_reason = REASON_RELEASE_HTT;
             audio_start_reason = 0;
+            ui_enable_mic(0);
+            g_delay_send_audio_stop = clock_time();
         }
         key_not_released = 0;
         keyScanLongPressTick = 0;

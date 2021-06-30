@@ -161,6 +161,7 @@ extern u8  app_mtu_size;
 
 extern u8 notify_get_rsp_en;
 extern u32 notify_get_rsp_tick;
+extern u32 g_delay_send_audio_stop;
 
 void google_voice_on_request();
 void google_voice_dpad_select();
