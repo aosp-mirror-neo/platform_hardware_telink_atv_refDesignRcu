@@ -1381,7 +1381,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 
 void ir_flash_erase_loop(void)
 {
-    if((ir_flash_erase_tick))
+    if((ir_flash_erase_tick) && (ir_send_ctrl.is_sending== 0))
     {
         if(ir_flash_erase_timeoutcb() == -1)
         {
