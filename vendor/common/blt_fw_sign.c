@@ -28,7 +28,7 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "blt_fw_sign.h"
-#include "stack/ble/blt_config.h"
+#include "stack/ble/ble_config.h"
 #include "blt_common.h"
 #include "proj_lib/firmware_encrypt.h"
 

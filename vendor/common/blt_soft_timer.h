@@ -28,6 +28,9 @@
 #define BLT_SOFT_TIMER_H_
 
 
+
+#include "vendor/common/user_config.h"
+
 //user define
 #ifndef BLT_SOFTWARE_TIMER_ENABLE
 #define BLT_SOFTWARE_TIMER_ENABLE                    0   //enable or disable
@@ -49,8 +52,16 @@
 #define        TIME_COMPARE_BIG(t1,t2)     ( (u32)((t1) - (t2)) < BIT(30)  )
 
 
-#define        BLT_TIMER_SAFE_MARGIN_PRE      (CLOCK_16M_SYS_TIMER_CLK_1US<<7)  //128 us
-#define        BLT_TIMER_SAFE_MARGIN_POST     (CLOCK_16M_SYS_TIMER_CLK_1S<<2)   // 4S
+#define        BLT_TIMER_SAFE_MARGIN_PRE      (SYSTEM_TIMER_TICK_1US<<7)  //128 us
+#define        BLT_TIMER_SAFE_MARGIN_POST      (SYSTEM_TIMER_TICK_1S<<2)   // 4S
+
+/**
+ * @brief        This function is used to check the current time is what the timer expects or not
+ * @param[in]    t - the time is expired for setting
+ * @param[in]   now - Current system clock time
+ * @return        0 - The current time isn't what the timer expects
+ *                 1 - The current time is what the timer expects
+ */
 static int inline blt_is_timer_expired(u32 t, u32 now) {
     return ((u32)(now + BLT_TIMER_SAFE_MARGIN_PRE - t) < BLT_TIMER_SAFE_MARGIN_POST);
 }
@@ -81,18 +92,53 @@ typedef struct blt_soft_timer_t {
 
 //////////////////////// USER  INTERFACE ///////////////////////////////////
 //return 0 means Fail, others OK
+/**
+ * @brief        This function is used to add new software timer task
+ * @param[in]    func - callback function for software timer task
+ * @param[in]    interval_us - the interval for software timer task
+ * @return      0 - timer task is full, add fail
+ *                 1 - create successfully
+ */
 int     blt_soft_timer_add(blt_timer_callback_t func, u32 interval_us);
+/**
+ * @brief        This function is used to delete timer tasks
+ * @param[in]    func - callback function for software timer task
+ * @return      0 - delete fail
+ *                 1 - delete successfully
+ */
 int     blt_soft_timer_delete(blt_timer_callback_t func);
 
 
 
 
 //////////////////////// SOFT TIMER MANAGEMENT  INTERFACE ///////////////////////////////////
+/**
+ * @brief        This function is used to register the call back for pm_appWakeupLowPowerCb
+ * @param[in]    none
+ * @return      none
+ */
 void     blt_soft_timer_init(void);
+/**
+ * @brief        This function is used to manage software timer tasks
+ * @param[in]    type - the type for trigger
+ * @return      none
+ */
 void     blt_soft_timer_process(int type);
-void      blt_soft_timer_delete_by_index(u8 index);
+/**
+ * @brief        Timer tasks are originally ordered. When deleting, it will
+ *                 be overwritten forward, so the order will not be destroyed
+ *                 and there is no need to reorder
+ * @param[in]    index - the index for some software timer task
+ * @return      0 - delete fail
+ *                 other - delete successfully
+ */
+int     blt_soft_timer_delete_by_index(u8 index);
 
-
+/**
+ * @brief        This function is used to check the current time is what the timer expects or not
+ * @param[in]    e - callback function for software timer task
+ * @return        none
+ */
 int is_timer_expired(blt_timer_callback_t *e);
 
 

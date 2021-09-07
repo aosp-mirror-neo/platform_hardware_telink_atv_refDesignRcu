@@ -28,9 +28,8 @@
 #include "app_ecdsa.h"
 #include "./pke_common/app_pke.h"
 
-#if (PKE_TEST_MODE == PKE_ECDSA)
 
-
+/*
 unsigned int secp256r1_p[8]    = {0xFFFFFFFF,0xFFFFFFFF,0xFFFFFFFF,0x00000000,0x00000000,0x00000000,0x00000001,0xFFFFFFFF};
 unsigned int secp256r1_p_h[8]  = {0x00000003,0x00000000,0xFFFFFFFF,0xFFFFFFFB,0xFFFFFFFE,0xFFFFFFFF,0xFFFFFFFD,0x00000004};
 unsigned int secp256r1_p_n1[1] = {1};
@@ -56,6 +55,7 @@ eccp_curve_t secp256r1[1]={
     secp256r1_n_h,
     secp256r1_n_n1,}
 };
+*/
 
 /**
  * @brief        Generate ECDSA Signature in U32 little-endian big integer style
@@ -438,7 +438,6 @@ unsigned char ecdsa_verify(eccp_curve_t *curve, unsigned char *E, unsigned int E
     return ECDSA_SUCCESS;
 }
 
-#endif
 
 
 

@@ -40,20 +40,18 @@ _attribute_data_retention_    u32 flash_sector_calibration = CFG_ADR_CALIBRATION
 
 void blc_readFlashSize_autoConfigCustomFlashSector(void)
 {
-    u8 temp_buf[4];
-    flash_read_mid(temp_buf);
-    u8    flash_cap = temp_buf[2];
+
+
+    u8    flash_cap = ((get_flash_mid&0x00ff0000)>>16);
+    unsigned char adc_vref_calib_value_rd[4] = {0};
 
     if(flash_cap == FLASH_SIZE_512K){
         flash_sector_mac_address = CFG_ADR_MAC_512K_FLASH;
         flash_sector_calibration = CFG_ADR_CALIBRATION_512K_FLASH;
     }
     else if(flash_cap == FLASH_SIZE_1M){
-        flash_sector_mac_address = CFG_ADR_MAC_512K_FLASH;
-        flash_sector_calibration = CFG_ADR_CALIBRATION_512K_FLASH;
-
-//        flash_sector_mac_address = CFG_ADR_MAC_1M_FLASH;
-//        flash_sector_calibration = CFG_ADR_CALIBRATION_1M_FLASH;
+        flash_sector_mac_address = CFG_ADR_MAC_1M_FLASH;
+        flash_sector_calibration = CFG_ADR_CALIBRATION_1M_FLASH;
     }
     else{
         //This SDK do not support flash size other than 512K/1M
@@ -61,6 +59,18 @@ void blc_readFlashSize_autoConfigCustomFlashSector(void)
         while(1);
     }
 
+    //load adc vref value from flash
+    if(adc_vref_cfg.adc_calib_en)
+    {
+        flash_read_page(flash_sector_calibration+CALIB_OFFSET_ADC_VREF, 4, adc_vref_calib_value_rd);
+        if((adc_vref_calib_value_rd[2] != 0xff) || (adc_vref_calib_value_rd[3]  != 0xff ))
+        {
+            /******Method of calculating calibration Flash_vbat_Vref value: ********/
+            /******Vref = [1175 +First_Byte-255+Second_Byte] mV =  [920 + First_Byte + Second_Byte] mV  ********/
+            adc_vref_cfg.adc_vref = 920 + adc_vref_calib_value_rd[2] + adc_vref_calib_value_rd[3];
+        }
+        //else use the value init in efuse
+    }
 
     flash_set_capacity(flash_cap);
 }
@@ -99,11 +109,11 @@ void blc_initMacAddress(int flash_addr, u8 *mac_public, u8 *mac_random_static)
         mac_public[1] = value_rand[1];
         mac_public[2] = value_rand[2];
 
-        #if(MCU_CORE_TYPE == MCU_CORE_8258)
+        #if(MCU_CORE_TYPE == MCU_CORE_825x)
             mac_public[3] = 0x38;             //company id: 0xA4C138
             mac_public[4] = 0xC1;
             mac_public[5] = 0xA4;
-        #elif(MCU_CORE_TYPE == MCU_CORE_8278)
+        #elif(MCU_CORE_TYPE == MCU_CORE_827x)
             mac_public[3] = 0xD1;             //company id: 0xC119D1
             mac_public[4] = 0x19;
             mac_public[5] = 0xC4;

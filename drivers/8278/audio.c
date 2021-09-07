@@ -482,6 +482,8 @@ void audio_i2s_init(void)
  */
 void audio_set_i2s_output(AudioInput_Typedef InType,AudioRate_Typedef Audio_Rate)
 {
+
+    //volatile unsigned int i;
     //if system clock=24M_Crystal. PWM0 2 frequency division output, for 12Mhz to offer the MCLK of CORDEC. select pd5 as PWM0 output.
     sub_wr(0x5af, 0x0, 3, 2); //PD5=0
     sub_wr(0x59e, 0x0, 5, 5); //PD5=0

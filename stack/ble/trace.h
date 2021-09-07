@@ -23,76 +23,76 @@
  *  limitations under the License.
  *
  *****************************************************************************/
-
 #ifndef TRACE_H_
 #define TRACE_H_
 
-#define TR_T_irq                     0
-#define TR_T_irq_rx                  1
-#define    TR_T_irq_tx               2
-#define TR_T_irq_sysTimer            3
 
-#define TR_T_irq_cmddone             4
-#define TR_T_irq_rxTmt               5
-#define TR_T_irq_rxFirstTmt          6
-#define TR_T_irq_fsmTmt              7
+//    event: 0 for time stamp; 1 reserved; eid2 - eid31
+#define            SLEV_timestamp                0
+#define            SLEV_reserved                1
 
-#define TR_T_irq_rxCrcErr            8
+#define         SLEV_irq_rf                    2
+#define         SLEV_irq_sysTimer            3
 
-#define TR_T_ll_brx_start            9
-#define TR_T_ll_brx_end              10
+#define         SLEV_irq_rx                    5
+#define         SLEV_irq_rxCrc                6
+#define         SLEV_irq_rxTimStamp            7
+#define         SLEV_irq_rxNew                8
 
-#define TR_T_ll_durationInit         11
-#define TR_T_ll_durationUpdate       12
+#define            SLEV_irq_tx                    10
 
-#define TR_T_ll_1stRx                13
-#define TR_T_ll_chn_map              14
-#define TR_T_ll_chn_timing           15
-#define TR_T_ll_scanRsp              16
-#define TR_T_ll_connReq              17
+#define         SLEV_irq_cmddone            12
+#define         SLEV_irq_rxTmt                13
+#define         SLEV_irq_rxFirstTmt            14
+#define         SLEV_irq_fsmTmt                15
 
-#define TR_T_ll_sync                 18
-#define TR_T_ll_adv                  19
+#define         SLEV_slave_1stRx            16
 
-#define TR_T_ll_stopRf               20
-
-
-#define TR_T_audioTask               24
-#define TR_T_audioData               25
-#define TR_T_adpcm                   26
-#define TR_T_adpcm_enc_overflow      27
-
-
-
-#define TR_T_master_irq              30
-#define TR_T_master_rx               31
-#define TR_T_master_tx               32
-#define TR_T_master_sysTimer         33
-#define TR_T_master_connDone         34
-
-#define TR_T_master_adv_report       35
-
-#define TR_T_master_createConn       40
-#define TR_T_master_init             41
-#define TR_T_master_connnect         42
-#define TR_T_master_terminate        43
-#define TR_T_master_btx              44
-#define TR_T_master_scan             45
-
-#define TR_T_master_update           50
-#define TR_T_master_update_req       51
+#define            SLEV_txFifo_push            17
+#define            SLEV_txFifo_empty            18
 
 
 
 
-#define TR_24_ll_chn                 0
-#define TR_24_ll_duration            1
+#define         SLEV_test_event                31
 
 
 
-#define TR_24_slot_idx               5
-#define TR_24_scan_chn               6
-#define TR_24_master_state           7
+
+
+
+
+
+// 1-bit data: 0/1/2 for hardware signal
+#define            SL01_irq                    1
+#define            SL01_sysTimer                2
+#define            SL01_adv                     3
+#define            SL01_brx                     4
+#define            SL01_btx                     5
+
+// 8-bit data: cid0 - cid63
+#define            SL08_test_1B                0
+
+
+
+// 16-bit data: sid0 - sid63
+#define            SL16_tf_hw_push                1
+#define            SL16_tf_sw_push                2
+#define            SL16_tf_hw_load1            3
+#define            SL16_tf_sw_load1            4
+#define            SL16_tf_hw_load2            5
+#define            SL16_tf_sw_load2            6
+#define            SL16_tf_hw_RX                7
+#define            SL16_tf_sw_RX                8
+#define            SL16_tf_hw_TX                9
+#define            SL16_tf_sw_TX                10
+
+#define            SL16_seq_notify                15
+#define            SL16_seq_write                16
+
+//#define            SL01_test_task                0
+//#define            SL08_test_1B                0
+//#define            SL16_test_2B                0
 
 
 #endif

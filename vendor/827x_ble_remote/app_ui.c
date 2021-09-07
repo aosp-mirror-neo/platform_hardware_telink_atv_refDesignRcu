@@ -92,6 +92,8 @@ extern void app_set_adv_interval_downgrade_indirect(void);
 extern void app_tx_power_wakeup(u8 keyid);
 extern u8  app_custom_is_wakeup_key(u8 keyid);
 extern ble_sts_t app_terminate(u8 reason);
+extern int bls_smp_param_deleteByIndex(u8 index);
+
 static const u16 vk_consumer_map[] = {
     G00GLE_MKEY_NOTIFICATION,
     G00GLE_MKEY_LIVETV,
@@ -178,35 +180,35 @@ extern u32 keyScanLongPressTick;
 
 
 #if (REMOTE_IR_ENABLE)
-    //ir key
-    #define TYPE_IR_SEND               1
-    #define TYPE_IR_RELEASE            2
+//ir key
+#define TYPE_IR_SEND               1
+#define TYPE_IR_RELEASE            2
 
-    ///////////////////// key mode //////////////////////
-    #define KEY_MODE_BLE               0    //ble key
-    #define KEY_MODE_IR                1    //ir  key
-
-
-    _attribute_data_retention_ u8 *p_kb_map_ble;
-    _attribute_data_retention_ u8 *p_kb_map_ir;
-    _attribute_data_retention_ u8 *p_kb_map_normal;
+///////////////////// key mode //////////////////////
+#define KEY_MODE_BLE               0    //ble key
+#define KEY_MODE_IR                1    //ir  key
 
 
-    void ir_dispatch(u8 type, u8 syscode ,u8 ircode){
+_attribute_data_retention_ u8 *p_kb_map_ble;
+_attribute_data_retention_ u8 *p_kb_map_ir;
+_attribute_data_retention_ u8 *p_kb_map_normal;
 
-        if(!ir_hw_initialed){
-            ir_hw_initialed = 1;
-            rc_ir_init();
-        }
-        if(type == TYPE_IR_SEND){
-            ir_send_ctrl.is_full_sequence = 0;
-            ir_nec_send(syscode,~(syscode),ircode);
 
-        }
-        else if(type == TYPE_IR_RELEASE){
-            ir_send_release();
-        }
+void ir_dispatch(u8 type, u8 syscode ,u8 ircode){
+
+    if(!ir_hw_initialed){
+        ir_hw_initialed = 1;
+        rc_ir_init();
     }
+    if(type == TYPE_IR_SEND){
+        ir_send_ctrl.is_full_sequence = 0;
+        ir_nec_send(syscode,~(syscode),ircode);
+
+    }
+    else if(type == TYPE_IR_RELEASE){
+        ir_send_release();
+    }
+}
 
 
 
@@ -250,7 +252,7 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
         else
             data[3] = nec_ir_cmd2_table[keyindex];
 
-        printf("\r\nir_dispatch_ext ir_key_value=%x\r\n",data[2]);
+        printf("\r\nir_dispatch_ext ir_cm1_value=%x,ir_cm2_value=%x,\r\n",data[2],data[3]);
         ir_nec_send_ext(data);
 
     }
@@ -261,8 +263,6 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 
 
 #endif
-
-
 
 #if (BLE_REMOTE_OTA_ENABLE)
 #include "app_ota.h"
@@ -277,7 +277,7 @@ u8 app_enter_ota_mode(u8 *data)
 
     if(memcmp(check_data,data,4 )){
 
-        u8 report_data[3] ={CLIENT_REPORT_CMD, TYPE_OTA_RESULT, OTA_START_KEY_ERR};
+        u8 report_data[3] ={CLIENT_REPORT_CMD, TYPE_OTA_RESULT, GOOGLE_OTA_START_KEY_ERR};
 
         bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3);
         printf("OTA_START_KEY_ERR\n");
@@ -292,7 +292,6 @@ u8 app_enter_ota_mode(u8 *data)
     device_led_setup(led_cfg[LED_OTA_START]);
     ota_is_working = 1;
     bls_ota_setTimeout(90 * 1000 * 1000); //set OTA timeout  90 seconds
-
     return 0;
 }
 
@@ -388,7 +387,7 @@ void app_schedule_ota(u8 *data)
 int app_ota_timeoutcb(void)
 {
     printf("app_ota_timeoutcb\r\n");
-    app_ota_terminate(OTA_TIMEOUT);
+    app_ota_terminate(GOOGLE_OTA_TIMEOUT);
     return -1;
 }
 
@@ -423,7 +422,7 @@ void app_ota_status(u8 status)
 void app_ota_slave_terminate(void)
 {
     printf("app_ota_slave_terminate\n");
-    u8 report_data[3] = {CLIENT_REPORT_CMD, TYPE_OTA_RESULT, OTA_USER_TERMINATE};
+    u8 report_data[3] = {CLIENT_REPORT_CMD, TYPE_OTA_RESULT, GOOGLE_OTA_USER_TERMINATE};
 
     u16 i = 0;
     while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
@@ -880,9 +879,12 @@ void comb_key_stop_ir(void)
     blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
     if(device_in_connection_state == 0)
     {
+        printf("comb_key_stop_ir_1\r\n");
         if(ir_not_released)ir_not_released = 0;
         if( ir_send_ctrl.is_sending)
         {
+             printf("comb_key_stop_ir_2\r\n");
+             programming_key_set(0);
              ir_send_release();
         }
     }
@@ -1654,7 +1656,7 @@ extern u16 atv_char_rx_ccc;
 int att_ccc_control(void* p){
     printf("att_ccc_control\n");
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
-    u16 handle = (pw->hh << 8) + pw->hl;
+    u16 handle = pw->handle;
 
     u16 data = (pw->dat[1] << 8) + pw->dat[0];
 

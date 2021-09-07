@@ -23,6 +23,7 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+
 #include "clock.h"
 #include "i2c.h"
 #include "gpio.h"
@@ -61,12 +62,13 @@ void i2c_gpio_set(I2C_GPIO_SdaTypeDef sda_pin,I2C_GPIO_SclTypeDef scl_pin)
         reg_pin_i2c_spi_en &= ~(FLD_PIN_PD7_SPI_EN);
     }
 
+    gpio_set_input_en(sda_pin, 1);//enable sda input
+    gpio_set_input_en(scl_pin, 1);//enable scl input
     gpio_setup_up_down_resistor(sda_pin, PM_PIN_PULLUP_10K);
     gpio_setup_up_down_resistor(scl_pin, PM_PIN_PULLUP_10K);
     gpio_set_func(sda_pin, AS_I2C);
     gpio_set_func(scl_pin, AS_I2C);
-    gpio_set_input_en(sda_pin, 1);//enable sda input
-    gpio_set_input_en(scl_pin, 1);//enable scl input
+
 
 }
 

@@ -63,6 +63,7 @@ extern u8 edp_toggle[8];
 
 void usb_init();
 
+void usb_handle_irq(void);
 #ifndef        USB_SOFTWARE_CRC_CHECK
 #define        USB_SOFTWARE_CRC_CHECK        0
 #endif

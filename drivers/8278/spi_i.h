@@ -31,7 +31,7 @@
   * @param[in] none
   * @return    none
   */
-_attribute_ram_code_ static inline void mspi_wait(void){
+_attribute_ram_code_sec_ static inline void mspi_wait(void){
     while(reg_mspi_ctrl & FLD_MSPI_BUSY)
         ;
 }
@@ -41,7 +41,7 @@ _attribute_ram_code_ static inline void mspi_wait(void){
  * @param[in] none
  * @return    none
  */
-_attribute_ram_code_ static inline void mspi_high(void){
+_attribute_ram_code_sec_ static inline void mspi_high(void){
     reg_mspi_ctrl = FLD_MSPI_CS;
 }
 
@@ -50,7 +50,7 @@ _attribute_ram_code_ static inline void mspi_high(void){
  * @param[in] none
  * @return    none
  */
-_attribute_ram_code_ static inline void mspi_low(void){
+_attribute_ram_code_sec_ static inline void mspi_low(void){
     reg_mspi_ctrl = 0;
 }
 
@@ -59,7 +59,7 @@ _attribute_ram_code_ static inline void mspi_low(void){
  * @param[in] none.
  * @return    the spi data.
  */
-_attribute_ram_code_ static inline unsigned char mspi_get(void){
+_attribute_ram_code_sec_ static inline unsigned char mspi_get(void){
     return reg_mspi_data;
 }
 
@@ -68,7 +68,7 @@ _attribute_ram_code_ static inline unsigned char mspi_get(void){
  * @param[in] c - the char need to be write.
  * @return    none
  */
-_attribute_ram_code_ static inline void mspi_write(unsigned char c){
+_attribute_ram_code_sec_ static inline void mspi_write(unsigned char c){
     reg_mspi_data = c;
 }
 
@@ -77,7 +77,7 @@ _attribute_ram_code_ static inline void mspi_write(unsigned char c){
  * @param[in] c - need to be write.
  * @return    none
  */
-_attribute_ram_code_ static inline void mspi_ctrl_write(unsigned char c){
+_attribute_ram_code_sec_ static inline void mspi_ctrl_write(unsigned char c){
     reg_mspi_ctrl = c;
 }
 
@@ -86,7 +86,7 @@ _attribute_ram_code_ static inline void mspi_ctrl_write(unsigned char c){
  * @param[in] none.
  * @return    read reault.
  */
-_attribute_ram_code_ static inline unsigned char mspi_read(void){
+_attribute_ram_code_sec_ static inline unsigned char mspi_read(void){
     mspi_write(0);        // dummy, issue clock
     mspi_wait();
     return mspi_get();

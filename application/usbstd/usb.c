@@ -874,7 +874,7 @@ void usb_init() {
 #endif
 
     usb_init_interrupt();
-#if 1 //FLOW_NO_OS
+#if FLOW_NO_OS
 #else
     usb_handle_irq();
 #endif

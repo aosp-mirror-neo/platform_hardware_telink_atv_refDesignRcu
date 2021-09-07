@@ -33,12 +33,18 @@
 #include "common/static_assert.h"
 #include "common/assert.h"
 
+#include "application/print/u_printf.h"
 
 #include "vendor/common/user_config.h"
 #include "config.h"
-
-#include "common/breakpoint.h"
-#include "common/log.h"
-
 #include "common/string.h"
+#include "stack/ble/ble_common.h"
 
+
+
+#include "common/usb_dbg/myudb.h"
+#include "vendor/common/blt_common.h"
+#include "vendor/common/blt_fw_sign.h"
+#include "vendor/common/blt_led.h"
+#include "vendor/common/blt_soft_timer.h"
+#include "vendor/common/flash_fw_check.h"

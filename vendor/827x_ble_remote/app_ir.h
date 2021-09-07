@@ -66,4 +66,8 @@ extern void ir_init_key_event_notify(u8 value);
 extern int ir_flash_erase_timeoutcb(void);
 extern void ir_flash_save_loop(void);
 extern u8 ir_flash_busy(void);
+extern void ir_nec_ir_table_process(u8 *data,u16 len);
+extern void ir_nec_ir_table_erase_loop(void);
+extern void ir_flash_erase_loop(void);
+extern void app_custom_set_new_ir_table(void);
 #endif

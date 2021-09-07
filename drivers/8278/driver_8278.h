@@ -23,6 +23,7 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+
 #pragma once
 
 
@@ -57,7 +58,8 @@
 #include "drivers/8278/qdec.h"
 #include "drivers/8278/lpc.h"
 
+#include "drivers/8278/pke.h"
 
 #include "drivers/8278/rf_pa.h"
 
-#include "drivers/8278/pke.h"
+#include "drivers/8278/flash/flash_type.h"

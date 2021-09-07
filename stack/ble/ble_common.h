@@ -26,237 +26,8 @@
 #ifndef BLE_COMMON_H
 #define BLE_COMMON_H
 
-#include "blt_config.h"
+#include "ble_config.h"
 #include "tl_common.h"
-/*********************************************************************
- * CONSTANTS
- */
-
-
-/**
- *  @brief  Definition for Link Layer Feature Support
- */
-#define LL_FEATURE_SIZE                                      8
-#define LL_FEATURE_MASK_LL_ENCRYPTION                        (0x00000001)   //core_4.0
-#define LL_FEATURE_MASK_CONNECTION_PARA_REQUEST_PROCEDURE    (0x00000002)    //core_4.1
-#define LL_FEATURE_MASK_EXTENDED_REJECT_INDICATION           (0x00000004)    //core_4.1
-#define LL_FEATURE_MASK_SLAVE_INITIATED_FEATURES_EXCHANGE    (0x00000008)    //core_4.1
-#define LL_FEATURE_MASK_LE_PING                              (0x00000010)   //core_4.1
-#define LL_FEATURE_MASK_LE_DATA_LENGTH_EXTENSION             (0x00000020)    //core_4.2
-#define LL_FEATURE_MASK_LL_PRIVACY                           (0x00000040)    //core_4.2
-#define LL_FEATURE_MASK_EXTENDED_SCANNER_FILTER_POLICIES     (0x00000080)   //core_4.2
-#define LL_FEATURE_MASK_LE_2M_PHY                            (0x00000100)    //core_5.0
-#define LL_FEATURE_MASK_STABLE_MODULATION_INDEX_TX           (0x00000200)    //core_5.0
-#define LL_FEATURE_MASK_STABLE_MODULATION_INDEX_RX           (0x00000400)    //core_5.0
-#define LL_FEATURE_MASK_LE_CODED_PHY                         (0x00000800)    //core_5.0
-#define LL_FEATURE_MASK_LE_EXTENDED_ADVERTISING              (0x00001000)    //core_5.0
-#define LL_FEATURE_MASK_LE_PERIODIC_ADVERTISING              (0x00002000)    //core_5.0
-#define LL_FEATURE_MASK_CHANNEL_SELECTION_ALGORITHM2         (0x00004000)    //core_5.0
-#define LL_FEATURE_MASK_LE_POWER_CLASS_1                     (0x00008000)    //core_5.0
-#define LL_FEATURE_MASK_MIN_USED_OF_USED_CHANNELS            (0x00010000)    //core_5.0
-
-/////////////////////////////////////////////////////////////////////////////
-
-#define         VENDOR_ID                       0x0211
-#define         VENDOR_ID_HI_B                  U16_HI(VENDOR_ID)
-#define         VENDOR_ID_LO_B                  U16_LO(VENDOR_ID)
-
-#define            BLUETOOTH_VER_4_0                6
-#define            BLUETOOTH_VER_4_1                7
-#define            BLUETOOTH_VER_4_2                8
-#define            BLUETOOTH_VER_5_0                9
-
-#ifndef         BLUETOOTH_VER
-#define            BLUETOOTH_VER                    BLUETOOTH_VER_5_0
-#endif
-
-
-#if (BLUETOOTH_VER == BLUETOOTH_VER_4_2)
-    #define            BLUETOOTH_VER_SUBVER            0x22BB
-#elif (BLUETOOTH_VER == BLUETOOTH_VER_5_0)
-    #define            BLUETOOTH_VER_SUBVER            0x1C1C
-#else
-    #define            BLUETOOTH_VER_SUBVER            0x4103
-#endif
-
-
-
-
-#if (BLUETOOTH_VER == BLUETOOTH_VER_4_0)
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                                1
-    #define LL_CMD_MAX                                                     LL_REJECT_IND
-
-#elif (BLUETOOTH_VER == BLUETOOTH_VER_4_1)
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
-    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
-    #define LL_FEATURE_ENABLE_LE_PING                                   1
-
-    #define LL_CMD_MAX                                                  LL_PING_RSP
-
-#elif (BLUETOOTH_VER == BLUETOOTH_VER_4_2)
-
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
-    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
-    #define LL_FEATURE_ENABLE_LE_PING                                   1
-    #define LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                  BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
-
-    #define LL_CMD_MAX                                                  LL_LENGTH_RSP
-
-#elif (BLUETOOTH_VER == BLUETOOTH_VER_5_0)
-
-    #define LL_FEATURE_ENABLE_LE_ENCRYPTION                             1
-    #define LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION                1
-    #define LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE         1
-    #define LL_FEATURE_ENABLE_LE_PING                                   1
-    #define LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                  BLE_CORE42_DATA_LENGTH_EXTENSION_ENABLE
-
-    #define LL_FEATURE_ENABLE_LE_2M_PHY                                 LL_FEATURE_SUPPORT_LE_2M_PHY
-    #define LL_FEATURE_ENABLE_LE_CODED_PHY                              LL_FEATURE_SUPPORT_LE_CODED_PHY
-    #define LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                   LL_FEATURE_SUPPORT_LE_EXTENDED_ADVERTISING
-    #define LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                   LL_FEATURE_SUPPORT_LE_PERIODIC_ADVERTISING
-    #define LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2              LL_FEATURE_SUPPORT_CHANNEL_SELECTION_ALGORITHM2
-
-    #define LL_CMD_MAX                                                  LL_MIN_USED_CHN_IND
-#else
-
-
-#endif
-
-
-#ifndef         LL_FEATURE_ENABLE_LE_ENCRYPTION
-#define         LL_FEATURE_ENABLE_LE_ENCRYPTION                            0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_CONNECTION_PARA_REQUEST_PROCEDURE
-#define         LL_FEATURE_ENABLE_CONNECTION_PARA_REQUEST_PROCEDURE        0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION
-#define         LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION               0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE
-#define         LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE        0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_PING
-#define         LL_FEATURE_ENABLE_LE_PING                                  0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION
-#define         LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                 0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LL_PRIVACY
-#define         LL_FEATURE_ENABLE_LL_PRIVACY                               0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES
-#define         LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES         0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_2M_PHY
-#define         LL_FEATURE_ENABLE_LE_2M_PHY                                0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX
-#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX               0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX
-#define         LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX               0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_CODED_PHY
-#define         LL_FEATURE_ENABLE_LE_CODED_PHY                             0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING
-#define         LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                  0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING
-#define         LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                  0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2
-#define         LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2             0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_LE_POWER_CLASS_1
-#define         LL_FEATURE_ENABLE_LE_POWER_CLASS_1                         0
-#endif
-
-#ifndef         LL_FEATURE_ENABLE_MIN_USED_OF_USED_CHANNELS
-#define         LL_FEATURE_ENABLE_MIN_USED_OF_USED_CHANNELS                0
-#endif
-
-
-
-
-//BIT<0:31>
-#if 1
-
-// feature below is conFiged by application layer
-// LL_FEATURE_ENABLE_LE_2M_PHY
-// LL_FEATURE_ENABLE_LE_CODED_PHY
-// LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING
-// LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2
-
-#define LL_FEATURE_MASK_BASE0                                            (    LL_FEATURE_ENABLE_LE_ENCRYPTION                     <<0        |  \
-                                                                                                                        LL_FEATURE_ENABLE_CONNECTION_PARA_REQUEST_PROCEDURE <<1        |  \
-                                                                                                                        LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION            <<2        |  \
-                                                                                                                        LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE <<3        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_PING                                <<4        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                <<5        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LL_PRIVACY                            <<6        |  \
-                                                                                                                        LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES  <<7        |  \
-                                                                                                                        LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX            <<9        |  \
-                                                                                                                        LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX             <<10    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                <<13    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_POWER_CLASS_1                        <<15    |  \
-                                                                                                                        LL_FEATURE_ENABLE_MIN_USED_OF_USED_CHANNELS         <<16     )
-#else
-#define LL_FEATURE_MASK_0                                                (    LL_FEATURE_ENABLE_LE_ENCRYPTION                     <<0        |  \
-                                                                                                                        LL_FEATURE_ENABLE_CONNECTION_PARA_REQUEST_PROCEDURE <<1        |  \
-                                                                                                                        LL_FEATURE_ENABLE_EXTENDED_REJECT_INDICATION            <<2        |  \
-                                                                                                                        LL_FEATURE_ENABLE_SLAVE_INITIATED_FEATURES_EXCHANGE <<3        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_PING                                <<4        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_DATA_LENGTH_EXTENSION                <<5        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LL_PRIVACY                            <<6        |  \
-                                                                                                                        LL_FEATURE_ENABLE_EXTENDED_SCANNER_FILTER_POLICIES  <<7        |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_2M_PHY                         <<8        |  \
-                                                                                                                        LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_TX            <<9        |  \
-                                                                                                                        LL_FEATURE_ENABLE_STABLE_MODULATION_INDEX_RX             <<10    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_CODED_PHY                            <<11    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_EXTENDED_ADVERTISING                 <<12    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_PERIODIC_ADVERTISING                <<13    |  \
-                                                                                                                        LL_FEATURE_ENABLE_CHANNEL_SELECTION_ALGORITHM2            <<14    |  \
-                                                                                                                        LL_FEATURE_ENABLE_LE_POWER_CLASS_1                        <<15    |  \
-                                                                                                                        LL_FEATURE_ENABLE_MIN_USED_OF_USED_CHANNELS         <<16     )
-
-#endif
-
-
-extern u32 LL_FEATURE_MASK_0;
-
-//BIT<32:63>
-#define LL_FEATURE_MASK_1                                                0
-
-
-#define LL_FEATURE_BYTE_0                                                U32_BYTE0(LL_FEATURE_MASK_0)
-#define LL_FEATURE_BYTE_1                                                U32_BYTE1(LL_FEATURE_MASK_0)
-#define LL_FEATURE_BYTE_2                                                U32_BYTE2(LL_FEATURE_MASK_0)
-#define LL_FEATURE_BYTE_3                                                U32_BYTE3(LL_FEATURE_MASK_0)
-#define LL_FEATURE_BYTE_4                                                U32_BYTE0(LL_FEATURE_MASK_1)
-#define LL_FEATURE_BYTE_5                                                U32_BYTE1(LL_FEATURE_MASK_1)
-#define LL_FEATURE_BYTE_6                                                U32_BYTE2(LL_FEATURE_MASK_1)
-#define LL_FEATURE_BYTE_7                                                U32_BYTE3(LL_FEATURE_MASK_1)
-
-
-
 
 
 
@@ -332,6 +103,7 @@ typedef enum {
     HCI_ERR_UNKNOWN_ADV_IDENTIFIER                                 = 0x42,
     HCI_ERR_LIMIT_REACHED                                          = 0x43,
     HCI_ERR_OP_CANCELLED_BY_HOST                                   = 0x44,
+    HCI_ERR_PACKET_TOO_LONG                                        = 0x45,
 
 
 
@@ -344,9 +116,20 @@ typedef enum {
     LL_ERR_TX_FIFO_NOT_ENOUGH,
     LL_ERR_ENCRYPTION_BUSY,
     LL_ERR_CURRENT_STATE_NOT_SUPPORTED_THIS_CMD,
+    LL_ERR_INVALID_PARAMETER,
+    LL_ERR_UNKNOWN_OPCODE,
+
+    LL_ERR_CIS_SYNC_FAIL,
+    LL_ERR_CIS_DISCONNECT,
+
 
     //L2CAP status
     L2CAP_ERR_INVALID_PARAMETER                                    = 0x90,
+    L2CAP_ERR_INVALID_HANDLE,
+    L2CAP_ERR_INSUFFICIENT_RESOURCES,
+    L2CAP_ERR_PSM_NOT_REGISTER,
+    L2CAP_ERR_CONTROL_NOT_READY,
+    L2CAP_ERR_PSM_HAVE_ESTABLISH,
 
     //SMP status
     SMP_ERR_INVALID_PARAMETER                                      = 0xA0,
@@ -361,8 +144,24 @@ typedef enum {
     GATT_ERR_DATA_LENGTH_EXCEED_MTU_SIZE,
 
     //GAP status
-    GAP_ERR_INVALID_PARAMETER                                       = 0xC0,
+    GAP_ERR_INVALID_PARAMETER                                      = 0xC0,
+    //IAL
+    IAL_ERR_SDU_LEN_EXCEED_SDU_MAX,
+    IAL_ERR_LOSS_SDU_INTRVEL,
+    IAL_ERR_ISO_TX_FIFO_NOT_ENOUGH,
+    IAL_ERR_SDU_BUFF_INVALID,
 
+    //Service status
+    SERVICE_ERR_INVALID_PARAMETER                                    = 0xD0,
+
+    //Application buffer check error code
+    LL_ACL_RX_BUF_NO_INIT                                                 = 0xE0,
+    LL_ACL_RX_BUF_PARAM_INVALID,
+    LL_ACL_RX_BUF_SIZE_NOT_MEET_MAX_RX_OCT,
+    LL_ACL_TX_BUF_NO_INIT,
+    LL_ACL_TX_BUF_PARAM_INVALID,
+    LL_ACL_TX_BUF_SIZE_MUL_NUM_EXCEED_4K,
+    LL_ACL_TX_BUF_SIZE_NOT_MEET_MAX_TX_OCT,
 
 } ble_sts_t;
 
@@ -374,11 +173,6 @@ typedef enum {
 
 
 
-
-
-
-
-/******************************************** Link Layer **************************************************************/
 
 
 /////////////////////////////// BLE  MAC ADDRESS //////////////////////////////////////////////
@@ -415,96 +209,108 @@ typedef enum {
 #define IS_RESOLVABLE_PRIVATE_ADDR(Type, Addr)          ( (Type)==BLE_ADDR_RANDOM && (Addr[5] & 0xC0) == 0x40 )
 
 
-
-
-
-
-
-
-///////////////// ADV Interval/Scan Interval/Scan Window/Connection Interval  /////////////////
-#define         ADV_INTERVAL_3_125MS                        5
-#define         ADV_INTERVAL_3_75MS                         6
-#define         ADV_INTERVAL_10MS                           16
-#define         ADV_INTERVAL_15MS                           24
-#define         ADV_INTERVAL_20MS                           32
-#define         ADV_INTERVAL_25MS                           40
-#define         ADV_INTERVAL_30MS                           48
-#define         ADV_INTERVAL_35MS                           56
-#define         ADV_INTERVAL_40MS                           64
-#define         ADV_INTERVAL_45MS                           72
-#define         ADV_INTERVAL_50MS                           80
-#define         ADV_INTERVAL_55MS                           88
-#define         ADV_INTERVAL_60MS                           96
-#define         ADV_INTERVAL_70MS                           112
-#define         ADV_INTERVAL_80MS                           128
-#define         ADV_INTERVAL_90MS                           144
-#define         ADV_INTERVAL_100MS                          160
-#define         ADV_INTERVAL_105MS                          168
-#define         ADV_INTERVAL_200MS                          320
-#define         ADV_INTERVAL_205MS                          328
-#define         ADV_INTERVAL_300MS                          480
-#define         ADV_INTERVAL_305MS                          488
-#define         ADV_INTERVAL_400MS                          640
-#define         ADV_INTERVAL_405MS                          648
-#define         ADV_INTERVAL_500MS                          800
-#define         ADV_INTERVAL_505MS                          808
-
-#define         ADV_INTERVAL_1S                             1600
-#define         ADV_INTERVAL_1S5                            2400
-#define         ADV_INTERVAL_2S                             3200
-#define         ADV_INTERVAL_1_28_S                         0x0800
-#define         ADV_INTERVAL_10_24S                         16384
-
-
-
-#define         SCAN_INTERVAL_10MS                          16
-#define         SCAN_INTERVAL_30MS                          48
-#define         SCAN_INTERVAL_50MS                          80
-#define         SCAN_INTERVAL_60MS                          96
-#define         SCAN_INTERVAL_90MS                          144
-#define         SCAN_INTERVAL_100MS                         160
-#define         SCAN_INTERVAL_200MS                         320
-#define         SCAN_INTERVAL_300MS                         480
-#define         SCAN_INTERVAL_400MS                         640
-#define         SCAN_INTERVAL_500MS                         800
-
-
-#define         CONN_INTERVAL_7P5MS                          6
-#define         CONN_INTERVAL_10MS                           8
-#define         CONN_INTERVAL_11P25MS                        9
-#define         CONN_INTERVAL_15MS                           12
-#define         CONN_INTERVAL_16P25MS                        13
-#define         CONN_INTERVAL_18P75MS                        15
-#define         CONN_INTERVAL_20MS                           16
-#define         CONN_INTERVAL_30MS                           24
-#define         CONN_INTERVAL_31P25MS                        25
-#define         CONN_INTERVAL_38P75MS                        31
-#define         CONN_INTERVAL_40MS                           32
-#define         CONN_INTERVAL_48P75MS                        39
-#define         CONN_INTERVAL_50MS                           40
-#define         CONN_INTERVAL_100MS                          80
-
-
-#define         CONN_TIMEOUT_500MS                           50
-#define         CONN_TIMEOUT_1S                              100
-#define         CONN_TIMEOUT_4S                              400
-#define         CONN_TIMEOUT_10S                             1000
-#define         CONN_TIMEOUT_20S                             2000
-
-
-
+#define        MAC_MATCH8(md,ms)    (md[0]==ms[0] && md[1]==ms[1] && md[2]==ms[2] && md[3]==ms[3] && md[4]==ms[4] && md[5]==ms[5])
+#define        MAC_MATCH16(md,ms)    (md[0]==ms[0] && md[1]==ms[1] && md[2]==ms[2])
+#define        MAC_MATCH32(md,ms)    (md[0]==ms[0] && md[1]==ms[1])
 /////////////////////////////////////////////////////////////////////////////
 
-#define                 LLID_RESERVED                0x00
-#define                 LLID_DATA_CONTINUE           0x01
-#define                 LLID_DATA_START              0x02
-#define                 LLID_CONTROL                 0x03
+/******************************************** ATT ***************************************************************/
 
-/////////////////////////////////////////////////////////////////////////////
-                                                                                // rf_len without MIC
-#define                 LL_CONNECTION_UPDATE_REQ     0x00                            //    12
-#define                 LL_CHANNEL_MAP_REQ           0x01                            //    8
-#define                 LL_TERMINATE_IND             0x02                            //    2
+/**
+ *  @brief  Definition for Attribute protocol PDUs
+ */
+typedef enum{
+    ATT_OP_ERROR_RSP                    = 0x01,
+    ATT_OP_EXCHANGE_MTU_REQ                = 0x02,
+    ATT_OP_EXCHANGE_MTU_RSP                = 0x03,
+    ATT_OP_FIND_INFORMATION_REQ            = 0x04,        ATT_OP_FIND_INFO_REQ = 0x04,
+    ATT_OP_FIND_INFORMATION_RSP            = 0x05,        ATT_OP_FIND_INFO_RSP = 0x05,
+    ATT_OP_FIND_BY_TYPE_VALUE_REQ        = 0x06,
+    ATT_OP_FIND_BY_TYPE_VALUE_RSP        = 0x07,
+    ATT_OP_READ_BY_TYPE_REQ                = 0x08,
+    ATT_OP_READ_BY_TYPE_RSP                = 0x09,
+    ATT_OP_READ_REQ                        = 0x0A,
+    ATT_OP_READ_RSP                        = 0x0B,
+    ATT_OP_READ_BLOB_REQ                = 0x0C,
+    ATT_OP_READ_BLOB_RSP                = 0x0D,
+    ATT_OP_READ_MULTIPLE_REQ            = 0x0E,        ATT_OP_READ_MULTI_REQ = 0x0E,
+    ATT_OP_READ_MULTIPLE_RSP            = 0x0F,
+    ATT_OP_READ_BY_GROUP_TYPE_REQ        = 0x10,
+    ATT_OP_READ_BY_GROUP_TYPE_RSP        = 0x11,
+    ATT_OP_WRITE_REQ                    = 0x12,
+    ATT_OP_WRITE_RSP                    = 0x13,
+    ATT_OP_PREPARE_WRITE_REQ            = 0x16,
+    ATT_OP_PREPARE_WRITE_RSP            = 0x17,
+    ATT_OP_EXECUTE_WRITE_REQ            = 0x18,
+    ATT_OP_EXECUTE_WRITE_RSP            = 0x19,
+
+    ATT_OP_HANDLE_VALUE_NTF                = 0x1B,        ATT_OP_HANDLE_VALUE_NOTI = 0x1B,
+    ATT_OP_HANDLE_VALUE_IND                = 0x1D,
+    ATT_OP_HANDLE_VALUE_CFM                = 0x1E,
+
+    ATT_OP_READ_MULTIPLE_VARIABLE_REQ    = 0x20,    //core_5.2
+    ATT_OP_READ_MULTIPLE_VARIABLE_RSP    = 0x21, //core_5.2
+    ATT_OP_MULTIPLE_HANDLE_VALUE_NTF    = 0x23, //core_5.2
+
+    ATT_OP_WRITE_CMD                    = 0x52,
+    ATT_OP_SIGNED_WRITE_CMD                = 0xD2,
+}att_pdu_type;
+
+
+
+
+/******************************************** L2CAP ***************************************************************/
+
+/**
+ *  @brief  Definition for L2CAP CID name space for the LE-U
+ */
+typedef enum{
+    L2CAP_CID_NULL                = 0x0000,
+    L2CAP_CID_ATTR_PROTOCOL        = 0x0004,
+    L2CAP_CID_SIG_CHANNEL        = 0x0005,
+    L2CAP_CID_SMP                = 0x0006,
+}l2cap_cid_type;
+
+/**
+ *  @brief  Definition for L2CAP signal packet formats
+ */
+typedef enum{
+    L2CAP_COMMAND_REJECT_RSP                   = 0x01,
+    L2CAP_CONNECTION_REQ                     = 0x02,
+    L2CAP_CONNECTION_RSP                     = 0x03,
+    L2CAP_CONFIGURATION_REQ                    = 0x04,
+    L2CAP_CONFIGURATION_RSP                   = 0x05,
+    L2CAP_DISCONNECTION_REQ                   = 0x06,
+    L2CAP_DISCONNECTION_RSP                   = 0x07,
+    L2CAP_ECHO_REQ                           = 0x08,
+    L2CAP_ECHO_RSP                           = 0x09,
+    L2CAP_INFORMATION_REQ                   = 0x0A,
+    L2CAP_INFORMATION_RSP                   = 0x0B,
+    L2CAP_CREATE_CHANNEL_REQ                  = 0x0C,
+    L2CAP_CREATE_CHANNEL_RSP                   = 0x0D,
+    L2CAP_MOVE_CHANNEL_REQ                   = 0x0E,
+    L2CAP_MOVE_CHANNEL_RSP                   = 0x0F,
+    L2CAP_MOVE_CHANNEL_CONFIRMATION_REQ        = 0x10,
+    L2CAP_MOVE_CHANNEL_CONFIRMATION_RSP     = 0x11,
+    L2CAP_CONNECTION_PARAMETER_UPDATE_REQ    = 0x12,        L2CAP_CMD_CONN_UPD_PARA_REQ        = 0x12,
+    L2CAP_CONNECTION_PARAMETER_UPDATE_RSP    = 0x13,        L2CAP_CMD_CONN_UPD_PARA_RESP     = 0x13,
+    L2CAP_LE_CREDIT_BASED_CONNECTION_REQ     = 0x14,
+    L2CAP_LE_CREDIT_BASED_CONNECTION_RSP     = 0x15,
+    L2CAP_FLOW_CONTROL_CREDIT_IND             = 0x16,
+    L2CAP_CREDIT_BASED_CONNECTION_REQ         = 0x17,    //core_5.2
+    L2CAP_CREDIT_BASED_CONNECTION_RSP         = 0x18,    //core_5.2
+    L2CAP_CREDIT_BASED_RECONFIGURE_REQ         = 0x19,    //core_5.2
+    L2CAP_CREDIT_BASED_RECONFIGURE_RSP         = 0x1A,    //core_5.2
+}l2cap_sig_pkt_format;
+
+/******************************************** LINKLAYER ***************************************************************/
+
+/**
+ *  @brief  Definition for LL Control PDU Opcode
+ */                                                                        // rf_len without MIC
+#define                    LL_CONNECTION_UPDATE_REQ    0x00                            // 12
+#define                    LL_CHANNEL_MAP_REQ            0x01                            //    8
+#define                    LL_TERMINATE_IND            0x02                            //    2
 
 #define                 LL_ENC_REQ                   0x03    // encryption            //    23
 #define                 LL_ENC_RSP                   0x04    // encryption            //    13
@@ -547,118 +353,6 @@ typedef enum {
 #define                 LL_POWER_CONTROL_REQ          0x23    //core_5.2                //    4
 #define                 LL_POWER_CONTROL_RSP          0x24    //core_5.2                //    5
 #define                 LL_POWER_CHANGE_IND           0x25    //core_5.2                //    5
-
-/////////////////////////////// Link Layer: ADV //////////////////////////////////////////////
-
-// Advertise channel PDU Type
-typedef enum advChannelPDUType_e {
-    LL_TYPE_ADV_IND           = 0x00,
-    LL_TYPE_ADV_DIRECT_IND    = 0x01,
-    LL_TYPE_ADV_NONCONN_IND   = 0x02,
-    LL_TYPE_SCAN_REQ          = 0x03,        LL_TYPE_AUX_SCAN_REQ      = 0x03,
-    LL_TYPE_SCAN_RSP          = 0x04,
-    LL_TYPE_CONNNECT_REQ      = 0x05,        LL_TYPE_AUX_CONNNECT_REQ = 0x05,
-    LL_TYPE_ADV_SCAN_IND      = 0x06,
-
-    LL_TYPE_ADV_EXT_IND       = 0x07,        LL_TYPE_AUX_ADV_IND      = 0x07,    LL_TYPE_AUX_SCAN_RSP = 0x07,    LL_TYPE_AUX_SYNC_IND = 0x07,    LL_TYPE_AUX_CHAIN_IND = 0x07,
-    LL_TYPE_AUX_CONNNECT_RSP  = 0x08,
-} advChannelPDUType_t;
-
-
-
-
-
-
-
-
-
-
-
-/******************************************** HCI **************************************************************/
-/**
- *  @brief  Definition for HCI request type
- */
-typedef enum hci_type_e {
-    HCI_TYPE_CMD = 0x01,
-    HCI_TYPE_ACL_DATA,
-    HCI_TYPE_SCO_DATA,
-    HCI_TYPE_EVENT,
-} hci_type_t;
-
-
-
-#define         HCI_FIRST_NAF_PACKET                         0x00    //LE Host to Controller
-#define         HCI_CONTINUING_PACKET                        0x01    //LE Host to Controller / Controller to Host
-#define         HCI_FIRST_AF_PACKET                          0x02    //LE                       Controller to Host
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/******************************************** L2CAP **************************************************************/
-
-
-
-// l2cap pb flag type
-#define L2CAP_FRIST_PKT_H2C              0x00
-#define L2CAP_CONTINUING_PKT             0x01
-#define L2CAP_FIRST_PKT_C2H              0x02
-
-
-// define the l2cap CID for BLE
-#define L2CAP_CID_NULL                   0x0000
-#define L2CAP_CID_ATTR_PROTOCOL          0x0004
-#define L2CAP_CID_SIG_CHANNEL            0x0005
-#define L2CAP_CID_SMP                    0x0006
-#define L2CAP_CID_GENERIC                0x0007
-#define L2CAP_CID_DYNAMIC                0x0040
-
-
-//signal packet formats of code define
-#define L2CAP_CMD_REJECT                 0x01
-#define L2CAP_CMD_DISC_CONN_REQ          0x06
-#define L2CAP_CMD_DISC_CONN_RESP         0x07
-#define L2CAP_CMD_CONN_UPD_PARA_REQ      0x12
-#define L2CAP_CMD_CONN_UPD_PARA_RESP     0x13
-#define L2CAP_CMD_CONN_REQ               0x14
-#define L2CAP_CMD_CONN_RESP              0x15
-#define L2CAP_CMD_FLOW_CTRL_CRED         0x16
-
-
-#define L2CAP_SIGNAL_MSG_TYPE            1
-#define L2CAP_DATA_MSG_TYPE              2
-#define L2CAP_REJECT_CMD_NOT_UNDERSTOOD  0
-#define L2CAP_REJECT_SIGNAL_MTU_EXCEED   1
-#define L2CAP_REJECT_INVALID_CID         2
-
-
-
-
-
-
-/******************************************** ATT ***************************************************************/
-
-
-
-
-
-
-
-
-
-/******************************************** GATT **************************************************************/
-
-
-
 
 
 

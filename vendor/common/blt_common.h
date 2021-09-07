@@ -27,6 +27,8 @@
 #ifndef BLT_COMMON_H_
 #define BLT_COMMON_H_
 
+#include "drivers.h"
+
 
 #define            BLMS_STATE_SCAN                                 BIT(2)
 #define            BLMS_STATE_SCAN_POST                            BIT(3)
@@ -72,8 +74,7 @@
 
 #define        CALIB_OFFSET_FIRMWARE_SIGNKEY                        0x180
 
-
-
+#define     CALIB_OFFSET_FLASH_VREF                                0x1c0
 
 
 
@@ -111,6 +112,37 @@ static inline void blc_app_loadCustomizedParameters(void)
              }
          }
      }
+#if(MCU_CORE_TYPE == MCU_CORE_827x)
+    u16 calib_value = *(unsigned short*)(flash_sector_calibration+CALIB_OFFSET_FLASH_VREF);
+
+    if((0xffff == calib_value) || (0 != (calib_value & 0xf8f8)))
+    {
+        if(flash_type == FLASH_ETOX_ZB)
+        {
+            analog_write(0x09, ((analog_read(0x09) & 0x8f) | (FLASH_VOLTAGE_1V95 << 4)));            //ldo mode flash ldo trim 1.95V
+            analog_write(0x0c, ((analog_read(0x0c) & 0xf8) | FLASH_VOLTAGE_1V9));                    //dcdc mode flash ldo trim 1.90V
+        }
+    }
+    else
+    {
+        analog_write(0x09, ((analog_read(0x09) & 0x8f)  | ((calib_value & 0xff00) >> 4) ));
+        analog_write(0x0c, ((analog_read(0x0c) & 0xf8)  | (calib_value & 0xff)));
+    }
+#elif(MCU_CORE_TYPE == MCU_CORE_825x)
+    u8 calib_value = *(unsigned char*)(flash_sector_calibration+CALIB_OFFSET_FLASH_VREF);
+
+    if((0xff == calib_value))
+    {
+        if(flash_type == FLASH_ETOX_ZB)
+        {
+            analog_write(0x0c, ((analog_read(0x0c) & 0xf8)  | FLASH_VOLTAGE_1V95));//1.95
+        }
+    }
+    else
+    {
+        analog_write(0x0c, ((analog_read(0x0c) & 0xf8)  | (calib_value&0x7)));
+    }
+#endif
 }
 
 

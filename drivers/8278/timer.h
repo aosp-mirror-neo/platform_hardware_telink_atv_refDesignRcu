@@ -50,14 +50,21 @@ typedef enum{
     TIMER_MODE_TICK          = 3,
 }TIMER_ModeTypeDef;
 
-#define        sys_tick_per_us                   16
-#define        CLOCK_SYS_CLOCK_1250US            (1250 * sys_tick_per_us)
 
 /**
  * @brief   system Timer : 16Mhz, Constant
  */
 enum{
-    CLOCK_16M_SYS_TIMER_CLK_1S  = 16*1000*1000,
+    SYSTEM_TIMER_TICK_1US         = 16,
+    SYSTEM_TIMER_TICK_1MS         = 16000,
+    SYSTEM_TIMER_TICK_1S         = 16000000,
+
+    SYSTEM_TIMER_TICK_625US      = 10000,  //625*16
+    SYSTEM_TIMER_TICK_1250US     = 20000,  //1250*16
+};
+
+enum{
+    CLOCK_16M_SYS_TIMER_CLK_1S  =  16*1000*1000,
     CLOCK_16M_SYS_TIMER_CLK_1MS = 16*1000,
     CLOCK_16M_SYS_TIMER_CLK_1US = 16,
 };

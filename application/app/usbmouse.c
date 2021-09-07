@@ -44,7 +44,7 @@ static mouse_data_t mouse_dat_buff[USBMOUSE_BUFF_DATA_NUM];
 
 static u8  usbmouse_wptr, usbmouse_rptr;
 static u32 usbmouse_not_released;
-static u32 usbmouse_data_report_time;
+volatile static u32 usbmouse_data_report_time;
 
 
 

@@ -23,6 +23,7 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+
 #include "emi.h"
 #include "clock.h"
 #include "timer.h"

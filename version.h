@@ -27,6 +27,6 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define FW_VERSION                  0x11110144//FW:v1.1.1  SW:v1.44
+#define FW_VERSION                  0x11110146//FW:v3.4.2  SW:v1.46
 
 #endif /* VERSION_H_ */

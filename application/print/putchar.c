@@ -166,6 +166,8 @@ int putchar(int c){
     }else{
         return swire_putc((char)c);
     }
+#else
+    return c;
 #endif
 }
 

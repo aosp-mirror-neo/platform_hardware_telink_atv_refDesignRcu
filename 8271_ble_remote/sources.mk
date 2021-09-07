@@ -20,6 +20,7 @@ vendor/common \
 vendor/827x_ble_remote \
 vendor/827x_ble_remote/pke_common \
 drivers/8278 \
+drivers/8278/flash \
 . \
 common \
 boot/8271 \

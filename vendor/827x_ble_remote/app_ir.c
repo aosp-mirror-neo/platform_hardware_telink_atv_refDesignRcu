@@ -30,9 +30,10 @@
 #include "app_ir.h"
 #include "rc_ir.h"
 #include "app_ir.h"
-#include "../../stack/ble/attr/att.h"
 #include "app_flash_write.h"
 #include "app_ui.h"
+#include "app_custom.h"
+#include "../../stack/ble/host/attr/att.h"
 
 extern void google_reset_rsp_delay(void);
 extern u8 is_mic_enable(void);
@@ -48,6 +49,11 @@ extern u8 is_mic_enable(void);
 #define MAX_KEY_COUNT       5              /*  The maximum number of key for ir programming.*/
 
 #define KEY_IDX_NULL        0xff
+
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_PREPARE      0xEF00
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_START        0xEF01
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_END          0xEF02
+
 
 typedef struct{
     u16 key_id;                    //Key ID, comes from ATV (host keyid)
@@ -102,6 +108,17 @@ typedef struct {
     u8  button_idx;
     u8  button;
 }key_button_pair_t;
+
+typedef enum
+{
+    APP_NEC_IR_TABLE_PREPARE=1,
+    APP_NEC_IR_TABLE_PREPARE_END,
+    APP_NEC_IR_TABLE_START,
+    APP_NEC_IR_TABLE_WRITEFAIL,
+    APP_NEC_IR_TABLE_END
+}app_nec_ir_table_sts;
+
+_attribute_data_retention_ app_nec_ir_table_sts nec_ir_table_start = APP_NEC_IR_TABLE_END;
 
 //keyid: receive from the host. button_idx: Corresponding to the key index in the memory ir_table[].button:The actual keyid corresponding to the board
 const key_button_pair_t key_button_map_g10[MAX_KEY_COUNT] = {
@@ -1554,6 +1571,17 @@ void ir_flash_save_loop(void)
     }
 }
 
+void ir_flash_erase_loop(void)
+{
+    if((ir_flash_erase_tick) && (ir_send_ctrl.is_sending== 0))
+    {
+        if(ir_flash_erase_timeoutcb() == -1)
+        {
+            ir_flash_erase_tick = 0;
+        }
+    }
+}
+
 u8 ir_flash_busy(void)
 {
      if(ir_app_parm.ir_save.ir_save_en || ir_flash_erase_tick || ir_app_parm.ir_programming.programming_start)
@@ -1561,3 +1589,113 @@ u8 ir_flash_busy(void)
      else
         return 0;
 }
+
+
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_PREPARE      0xEF00
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_START        0xEF01
+#define APP_IR_CMD_OTA_NEC_IR_TABLE_END          0xEF02
+
+void ir_nec_ir_table_process(u8 *data,u16 len)
+{
+    u8 datasend[3];
+    u16 crc=0;
+    u32 flash_addr=0,pos=0;
+    u8 readdata[16];
+    u8 result=0;
+    u16 cmd = data[0] | (data[1]<<8);
+
+    if(cmd == APP_IR_CMD_OTA_NEC_IR_TABLE_PREPARE)
+    {
+        nec_ir_table_start = APP_NEC_IR_TABLE_PREPARE;
+    }
+    else if(cmd == APP_IR_CMD_OTA_NEC_IR_TABLE_START)
+    {
+        nec_ir_table_start = APP_NEC_IR_TABLE_START;
+    }
+    else if(((data[0] == 2) && (data[1] == 0xEF)))  //IR end
+    {
+        datasend[0] = 0xEE;
+        datasend[1] = 2;
+        datasend[2] = 0;
+        bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, datasend, sizeof(datasend));
+        if(nec_ir_table_start == APP_NEC_IR_TABLE_START)
+        {
+            app_custom_set_new_ir_table();
+        }
+        nec_ir_table_start = APP_NEC_IR_TABLE_END;
+    }
+
+    if(nec_ir_table_start == APP_NEC_IR_TABLE_START)
+    {
+        if(len == 20)
+        {
+            crc = (data[19]<<8) | data[18];
+            pos = (data[0]) | (data[1]<<8);
+            extern unsigned short crc16 (unsigned char *pD, int len);
+            if(crc == crc16(data,18))
+            {
+                printf("recv data index=%x\r\n",data[0]);
+                flash_addr = APP_NEC_IR_CODE_TABLE +  pos*16;
+                flash_write_page(flash_addr,16,&data[2]);
+                flash_read_page(flash_addr,16, readdata);
+                if(memcmp(&data[2],readdata,16) == 1)
+                {
+                    result = 1;
+                }
+            }
+            else
+            {
+                result = 1;
+            }
+            if(result == 1)
+            {
+                datasend[0] = 0xEE;
+                datasend[1] = 2;
+                datasend[2] = 1;
+                bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, datasend, sizeof(datasend));
+                nec_ir_table_start = APP_NEC_IR_TABLE_WRITEFAIL;   //data invalid, must erase
+            }
+        }
+    }
+}
+
+int ir_nec_ir_table_erase_timeoutcb(void)
+{
+    if(is_mic_enable() == 1)
+        return 0;
+    printf("ir_nec_ir_table_erase_timeoutcb\r\n");
+    if(bls_ll_requestConnBrxEventDisable() > 120)
+    {
+        printf("ir_nec_ir_table_erase_timeoutcb_2\r\n");
+        bls_ll_disableConnBrxEvent();
+        flash_erase_sector(APP_NEC_IR_CODE_TABLE);
+        bls_ll_restoreConnBrxEvent();
+        return -1;
+    }
+    return 0;
+}
+
+void ir_nec_ir_table_erase_loop(void)
+{
+    u8 datasend[3];
+    if((nec_ir_table_start == APP_NEC_IR_TABLE_PREPARE) || (nec_ir_table_start == APP_NEC_IR_TABLE_WRITEFAIL))
+    {
+        if(ir_send_ctrl.is_sending == 0)
+        {
+            if(ir_nec_ir_table_erase_timeoutcb() == -1)
+            {
+                if(device_in_connection_state && (nec_ir_table_start == APP_NEC_IR_TABLE_PREPARE))
+                {
+                    printf("ir_nec_ir_table_erase_end\r\n");
+                    datasend[0] = 0XEE;
+                    datasend[1] = 0;
+                    datasend[2] = 0;
+                    bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, datasend, sizeof(datasend));
+                }
+                nec_ir_table_start = APP_NEC_IR_TABLE_PREPARE_END;
+            }
+        }
+    }
+}
+
+

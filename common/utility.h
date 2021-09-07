@@ -156,5 +156,28 @@ int my_fifo_push (my_fifo_t *f, u8 *p, int n);
 void my_fifo_pop (my_fifo_t *f);
 u8 * my_fifo_get (my_fifo_t *f);
 
+static inline u64 mul64_32x32(u32 u, u32 v)
+{
+#if 1
+    u32  u0,   v0,   w0;
+    u32  u1,   v1,   w1,   w2,   t;
+    u32  x, y;
+    u0   =   u & 0xFFFF;
+    u1   =   u >> 16;
+    v0   =   v & 0xFFFF;
+    v1   =   v >> 16;
+    w0   =   u0 * v0;
+    t    =   u1 * v0 + (w0 >> 16);
+    w1   =   t & 0xFFFF;
+    w2   =   t >> 16;
+    w1   =   u0 * v1 + w1;
+    x = u1 * v1 + w2 + (w1 >> 16);
+    y = u * v;
+    return(((u64)x << 32) | y);
+#else //Eagle HW support this process
+    return (u64)u*v;
+#endif
+}
 #define        MYFIFO_INIT(name,size,n)        u8 name##_b[size * n]={0};my_fifo_t name = {size,n,0,0, name##_b}
+#define        ATT_ALIGN4_DMA_BUFF(n)            (((n + 10) + 3) / 4 * 4)
 

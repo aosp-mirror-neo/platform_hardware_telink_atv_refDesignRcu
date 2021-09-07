@@ -23,6 +23,7 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+
 #ifndef _RF_DRV_H_
 #define _RF_DRV_H_
 
@@ -115,7 +116,7 @@ typedef enum {
      /*VANT*/
      RF_POWER_P3p50dBm  = BIT(7) | 63,   //   3.50 dbm
      RF_POWER_P3p33dBm  = BIT(7) | 61,   //   3.33 dbm
-     RF_POWER_P3p13dBm  = BIT(7) | 59,   //   3.13 dbm
+     RF_POWER_P3p13dBm  = BIT(7) | 59,   /*   3.13 dbm */    RF_POWER_P3dBm = RF_POWER_P3p13dBm,
      RF_POWER_P2p93dBm  = BIT(7) | 57,   //   2.93 dbm
      RF_POWER_P2p60dBm  = BIT(7) | 54,   //   2.60 dbm
      RF_POWER_P2p36dBm  = BIT(7) | 52,   //   2.36 dbm
@@ -125,7 +126,7 @@ typedef enum {
      RF_POWER_P1p25dBm  = BIT(7) | 44,   //   1.25 dbm
      RF_POWER_P0p71dBm  = BIT(7) | 41,   //   0.71 dbm
      RF_POWER_P0p52dBm  = BIT(7) | 40,   //   0.52 dbm
-     RF_POWER_N0p28dBm  = BIT(7) | 36,   //  -0.28 dbm
+     RF_POWER_N0p28dBm  = BIT(7) | 36,   /*  -0.28 dbm */    RF_POWER_P0dBm = RF_POWER_N0p28dBm,
      RF_POWER_N0p51dBm  = BIT(7) | 35,   //  -0.51 dbm
      RF_POWER_N0p74dBm  = BIT(7) | 34,   //  -0.74 dbm
      RF_POWER_N1p21dBm  = BIT(7) | 32,   //  -1.21 dbm
@@ -378,8 +379,8 @@ static inline void rf_longrange_access_code_comm (unsigned int acc)
 *    @brief        this function is to enable/disable each access_code channel for
 *                RF Rx terminal.
 *    @param[in]    pipe      Bit0~bit5 correspond to channel 0~5, respectively.
-*                        0£ºDisable 1£ºEnable
-*                        If ¡°enable¡± is set as 0x3f (i.e. 00111111),
+*                        0Disable 1Enable
+*                        If enable is set as 0x3f (i.e. 00111111),
 *                        all access_code channels (0~5) are enabled.
 *    @return         none
 */
@@ -391,8 +392,8 @@ static inline void rf_rx_acc_code_enable(unsigned char pipe)
 /**
 *    @brief        this function is to select access_code channel for RF Rx terminal.
 *    @param[in]    pipe      Bit0~bit5 correspond to channel 0~5, respectively.
-*                        0£ºDisable 1£ºEnable
-*                        If ¡°enable¡± is set as 0x3f (i.e. 00111111),
+*                        0Disable 1Enable
+*                        If enable is set as 0x3f (i.e. 00111111),
 *                        all access_code channels (0~5) are enabled.
 *    @return         none
 */
@@ -497,7 +498,7 @@ static inline unsigned char rf_tx_finish(void)
 *    @brief          This function serves to clear the Tx finish flag bit.
 *                After all packet data are sent, corresponding Tx finish flag bit
 *                will be set as 1.By reading this flag bit, it can check whether
-*                packet transmission is finished. After the check, it¡¯s needed to
+*                packet transmission is finished. After the check, its needed to
 *                manually clear this flag bit so as to avoid misjudgment.
 *   @param      none
 *    @return         none
@@ -523,17 +524,17 @@ static inline unsigned char rf_is_rx_finish(void)
 /**
 *    @brief          This function is to set rx buffer
 *
-*    @param[out]    RF_RxAddr      Pointer for Rx buffer in RAM(Generally it¡¯s starting
+*    @param[out]    RF_RxAddr      Pointer for Rx buffer in RAM(Generally its starting
 *                            address of an array.Should be 4-byte aligned)
-*    @param[in]    size           Rx buffer size (It¡¯s an integral multiple of 16)
-*    @param[in]    PingpongEn     Enable/Disable Ping-Pong buffer 1£ºEnable 0£ºDisable
+*    @param[in]    size           Rx buffer size (It's an integral multiple of 16)
+*    @param[in]    PingpongEn     Enable/Disable Ping-Pong buffer 1Enable 0Disable
 *                            Note:
-*                            When ¡°PingpongEn¡± is set as 0, received RF data will
-*                            be stored in RAM pointed by ¡° RF_RxAddr¡±.
-*                            When ¡°PingpongEn¡± is set as 1, received RF data will
+*                            When PingpongEn is set as 0, received RF data will
+*                            be stored in RAM pointed by  RF_RxAddr.
+*                            When PingpongEn is set as 1, received RF data will
 *                            be stored in buffer0 and buffer1 successively.
 *                            The RAM size reserved for received RF data should be
-*                            double of ¡°Size¡±.
+*                            double of Size.
 *
 *    @return         none
 */
@@ -542,7 +543,7 @@ extern void  rf_rx_buffer_set(unsigned char *  RF_RxAddr, int size, unsigned cha
 
 /**
 *    @brief          This function serves to  reconfigure the buffer
-*    @param[out]    RF_RxAddr      Pointer for Rx buffer in RAM(Generally it¡¯s starting
+*    @param[out]    RF_RxAddr      Pointer for Rx buffer in RAM(Generally its starting
 *                            address of an array.Should be 4-byte aligned)
 *    @return         Yes: 1, NO: 0.
 */
@@ -566,7 +567,7 @@ static inline unsigned char rf_is_rx_right(void)
 *    @brief          This function serves to clear the Rx finish flag bit.
 *                After all packet data are resive, corresponding Rx finish flag bit
 *                will be set as 1.By reading this flag bit, it can check whether
-*                packet transmission is finished. After the check, it¡¯s needed to
+*                packet transmission is finished. After the check, its needed to
 *                manually clear this flag bit so as to avoid misjudgment.
 *   @param      none
 *    @return         none
@@ -604,7 +605,7 @@ extern void rf_start_btx (void* addr, unsigned int tick);
 *    @brief          This function serves to start Rx of auto mode. In this mode,
 *                RF module stays in Rx status until a packet is received or it fails to receive packet when timeout expires.
 *                Timeout duration is set by the parameter "tick".
-*                The address to store received data is set by the function ¡°addr¡±.
+*                The address to store received data is set by the function addr.
 *    @param[in]    addr - The address to store received data.
 *    @param[in]    tick - Unit is us. It indicates timeout duration in Rx status.Max value: 0xffffff (16777215)
 *    @return         none
@@ -633,8 +634,8 @@ extern void rf_start_srx  (unsigned int tick);
 *                In this mode, a packet is sent first,RF module waits for 10us,
 *                stays in Rx status until data is received or timeout expires,
 *                then exits this mode.Timeout duration is set by the parameter
-*                ¡°timeout_us¡±.The address to store received data is set by the
-*                function ¡°RF_RxBufferSet¡±.
+*                timeout_us.The address to store received data is set by the
+*                function RF_RxBufferSet.
 *
 *    @param[in]    addr  Tx packet address in RAM. Should be 4-byte aligned.
 *    @param[in]    tick       Tick value of system timer. It determines when
@@ -659,7 +660,7 @@ extern void rf_start_stx2rx  (void* addr, unsigned int tick);
 *                If it fails to receive packet when timeout expires, RF module
 *                will directly exit this mode.Timeout duration is set by the
 *                parameter "timeout_us".    The address to store received data is set
-*                by the function ¡°RF_RxBufferSet¡±.
+*                by the function RF_RxBufferSet.
 *
 *    @param[in]    addr     Tx packet address in RAM. Should be 4-byte aligned.
 *    @param[in]    tick   Tick value of system timer. It determines when to
@@ -910,7 +911,7 @@ extern void rf_rffe_set_pin(RF_PATxPinDef tx_pin, RF_LNARxPinDef rx_pin);
 
 /**
  * @brief      This function process the received packet in 1mbps shockburst mode only for hanshow for the
- *             compatiblity with third-party chips. The process includes data-whitening
+ *             compatibility with third-party chips. The process includes data-whitening
                transformation and crc check.
  * @param[in]  rx_buf - the rf rx buffer containing the received packet(dma length+payload+3 byte crc)
  * @param[in]  len - the expected rx length of shockburst mode, containing payload and 3byte crc
@@ -920,7 +921,7 @@ extern void rf_rffe_set_pin(RF_PATxPinDef tx_pin, RF_LNARxPinDef rx_pin);
 unsigned char rx_packet_process_1mbps(unsigned char *rx_buf, unsigned int len);
 /**
  * @brief      This function process the tx packet in 1mbps shockburst mode only for hanshow for the
- *             compatiblity with third-party chips. The process includes data-whitening
+ *             compatibility with third-party chips. The process includes data-whitening
                transformation and crc padding.
  * @param[in]  tx_buf - the rf tx buffer containing the tx packet(dma length+payload+3 byte crc)
  * @param[in]  len - the expected tx length of shockburst mode, containing payload and 3byte crc

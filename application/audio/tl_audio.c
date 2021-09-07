@@ -30,7 +30,11 @@
 #include    "audio_config.h"
 #include    "adpcm.h"
 #include    "gl_audio.h"
+#include    "../../common/log.h"
 
+//temp wangxin
+#define TR_T_adpcm                   26
+#define TR_T_adpcm_enc_overflow      27
 
 
 #if (TL_AUDIO_MODE & RCU_PROJECT)                //RCU

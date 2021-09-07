@@ -67,7 +67,7 @@ void clock_rc_set(SYS_CLK_TypeDef SYS_CLK)
  * @return      none
  */
 #if (BLC_PM_DEEP_RETENTION_MODE_EN)
-_attribute_ram_code_
+_attribute_ram_code_sec_noinline_
 #endif
 void clock_init(SYS_CLK_TypeDef SYS_CLK)
 {
@@ -77,7 +77,7 @@ void clock_init(SYS_CLK_TypeDef SYS_CLK)
 #if 0 //vulture is normal
     if(SYS_CLK == SYS_CLK_48M_Crystal)
     {
-        /*default c4: dcdc 1.8V  -> GD flash£º 48M clock may error £¬ need higher DCDC voltage
+        /*default c4: dcdc 1.8V  -> GD flash 48M clock may error  need higher DCDC voltage
                   c6: dcdc 1.9V
         */
         analog_write(0x0c, 0xc6);

@@ -40,6 +40,7 @@ typedef struct{
 MYFIFO_INIT(hci_rx_fifo, 20, 2);
 MYFIFO_INIT(hci_tx_fifo, 20, 2);
 
+extern void blc_phy_preamble_length_set(unsigned char len);
 
 
 

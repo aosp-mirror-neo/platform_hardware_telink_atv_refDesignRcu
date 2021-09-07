@@ -124,6 +124,8 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
 
+    set_disBrxRequest_thresold(2);
+
     if( deepRetWakeUp ){
         //printf("user_init_deepRetn\n");
         user_init_deepRetn ();

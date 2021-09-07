@@ -23,8 +23,10 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+#ifndef COMMON_STRING_H_
+#define COMMON_STRING_H_
 
-#pragma once
+
 
 void *  memmove(void * dest, const void * src, unsigned int n);
 void *  memset(void * d, int c, unsigned int  n);
@@ -59,4 +61,4 @@ int ismemf4(void *data, unsigned int len);
 void * memset4(void * dest, int val, unsigned int len);
 void zeromem4(void *data, unsigned int len);
 
-
+#endif /* COMMON_STRING_H_ */

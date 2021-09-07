@@ -31,6 +31,8 @@
 #include "app_ir.h"
 
 extern void         bls_pm_setSuspendMask (u8 mask);
+extern u8      ir_hw_initialed;
+
 #if (REMOTE_IR_ENABLE)
 
 
@@ -424,6 +426,7 @@ void  ir_send_specil (u16 freq, u8 cycle)
     pwm_start_dma_ir_sending();
 
     ir_send_ctrl.is_full_sequence = 0;
+    ir_hw_initialed = 0;
 }
 
 

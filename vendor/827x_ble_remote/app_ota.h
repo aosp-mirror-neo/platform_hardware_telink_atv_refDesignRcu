@@ -30,12 +30,11 @@
 
 #define CMD_REPORT_VERSION                    0xfe00
 #define CMD_CONTROL                           0xfe01
-#define CMD_OTA_RESULT                        0xfe02
 
 #define OTA_PROTECT_VOLTAGE                   2300    //mv
 
-
 #define CLIENT_REPORT_CMD                     0xfe
+
 
 //report type
 enum{
@@ -57,6 +56,23 @@ typedef enum{
     OTA_AUTHENTICATION,
     OTA_PROCESS,
 }ota_status_type_t;
+
+enum{
+     GOOGLE_OTA_SUCCESS = 0,      //success
+     GOOGLE_OTA_PACKET_LOSS,      //lost one or more OTA PDU
+     GOOGLE_OTA_DATA_CRC_ERR,     //data CRC err
+     GOOGLE_OTA_WRITE_FLASH_ERR,  //write OTA data to flash ERR
+     GOOGLE_OTA_DATA_UNCOMPLETE,  //lost last one or more OTA PDU
+     GOOGLE_OTA_TIMEOUT,           //
+     GOOGLE_OTA_FW_CHECK_ERR,
+     GOOGLE_OTA_LOW_VOLTAGE,
+     GOOGLE_OTA_START_KEY_ERR,    //8
+
+     //app not
+     GOOGLE_OTA_USER_TERMINATE,   //9
+     GOOGLE_OTA_SIGNATURE_ERR,   //
+
+};
 
 void bls_ota_init_handle(u16 handle);
 

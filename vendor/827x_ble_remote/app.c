@@ -46,7 +46,6 @@
 #include "app_config.h"
 #include "app_flash_write.h"
 
-#include "../../application/audio/gl_audio.h"
 
 
 #if (MP_TEST_MODE)
@@ -183,6 +182,8 @@ extern void device_led_off(u8 led);
 extern void app_connect_led(void);
 extern void ir_flash_set_flag(u8 flag);
 extern u8 init_ir_key_event_notify(void);
+extern int bls_smp_param_deleteByIndex(u8 index);
+
 
 #if (UART_PRINT_ENABLE)
 _attribute_data_retention_    u8 printf_uart_flag=0;
@@ -419,7 +420,6 @@ void mtu_exchange_loop(void)
             bls_l2cap_requestConnParamUpdate (8, 8, 99, 400);
             flag_dle |= 0x80;
         }
-        //app_service_change();
     }
 }
 
@@ -470,7 +470,7 @@ void ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
 int app_ota_terminate_timeoutcb(void)
 {
     printf("app_ota_terminate_timeoutcb\r\n");
-    app_ota_terminate(OTA_USER_TERMINATE);
+    app_ota_terminate(GOOGLE_OTA_USER_TERMINATE);
 
     return -1;
 }
@@ -1144,10 +1144,8 @@ void user_init_normal(void)
     extern void my_att_init ();
     my_att_init (); //gatt initialization
     blc_l2cap_register_handler (blc_l2cap_packet_receive);      //l2cap initialization
-    extern ble_sts_t blc_att_prepareWriteBufferCfg (u8 *pBuf, u16 bufSize);
-    u8 status = blc_att_prepareWriteBufferCfg (prepareWrite_b, sizeof(prepareWrite_b));
-    if(status != BLE_SUCCESS) {   while(1); }  //debug: l2cap buffer setting err
-
+    extern void   blc_att_setPrepareWriteBuffer(u8 *p, u16 len);
+    blc_att_setPrepareWriteBuffer (prepareWrite_b, sizeof(prepareWrite_b));
     blc_att_setRxMtuSize(MTU_SIZE_SETTING);
 
     //Smp Initialization may involve flash write/erase(when one sector stores too much information,
@@ -1379,17 +1377,6 @@ _attribute_ram_code_ void user_init_deepRetn(void)
 // main loop flow
 /////////////////////////////////////////////////////////////////////
 
-void ir_flash_erase_loop(void)
-{
-    if((ir_flash_erase_tick) && (ir_send_ctrl.is_sending== 0))
-    {
-        if(ir_flash_erase_timeoutcb() == -1)
-        {
-            ir_flash_erase_tick = 0;
-        }
-    }
-}
-
 #if 0
 _attribute_data_retention_ u32 test_toggle_tick=0;
 _attribute_data_retention_ u8 test_toggle_level=0;
@@ -1594,6 +1581,7 @@ void main_loop (void)
     mtu_exchange_loop();
     ir_flash_erase_loop();
     ir_flash_save_loop();
+    ir_nec_ir_table_erase_loop();
     app_send_wakeup_loop();
     ////////////////////////////////////// UI entry /////////////////////////////////
     #if (BLE_AUDIO_ENABLE)

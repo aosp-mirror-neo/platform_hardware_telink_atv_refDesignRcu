@@ -194,7 +194,6 @@ void adc_init(void){
 }
 
 
-const unsigned char  VBAT_Scale_tab[4] = {1,4,3,2};
 
 /**
  * @brief This function is used for ADC configuration of ADC IO voltage sampling.

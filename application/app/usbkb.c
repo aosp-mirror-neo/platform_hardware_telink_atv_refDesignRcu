@@ -89,7 +89,7 @@ kb_data_t kb_dat_buff[USBKB_BUFF_DATA_NUM];
 //static
 u8  usbkb_wptr, usbkb_rptr;
 static u32 usbkb_not_released;
-static u32 usbkb_data_report_time;
+volatile static u32 usbkb_data_report_time;
 
 
 void usbkb_add_frame (rf_packet_keyboard_t *packet_kb)
@@ -99,7 +99,7 @@ void usbkb_add_frame (rf_packet_keyboard_t *packet_kb)
     {
             memcpy4((int*)(&kb_dat_buff[usbkb_wptr]), (int*)(&packet_kb->data[i*sizeof(kb_data_t)]), sizeof(kb_data_t));
             BOUND_INC_POW2(usbkb_wptr,USBKB_BUFF_DATA_NUM);
-            if(usbkb_wptr == usbkb_wptr)
+            if(usbkb_wptr == usbkb_rptr)
             {
                     break;
             }
@@ -382,11 +382,15 @@ int usb_hid_report_fifo_proc(void)
         }
         else{
 
-            usbkb_hid_report_normal(pData[1], pData + 2);
-
-            usb_ff_rptr ++;
-
-            return 1;
+            if(usbkb_hid_report_normal(pData[1], pData + 2))
+            {
+                usb_ff_rptr ++;
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
     else if(pData[0] == DAT_TYPE_MOUSE){
@@ -395,11 +399,15 @@ int usb_hid_report_fifo_proc(void)
         }
         else{
 
-            usbmouse_hid_report(pData[1], pData + 4, pData[2]);
-
-            usb_ff_rptr ++;
-
-            return 1;
+            if(usbmouse_hid_report(pData[1], pData + 4, pData[2]))
+            {
+                usb_ff_rptr ++;
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 

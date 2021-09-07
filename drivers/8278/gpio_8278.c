@@ -94,7 +94,7 @@ static void gpio_analog_resistance_init(void)
  * do not use pull-up or pull-down resistance on the board in the process of practical
  * application because it may have the risk of electric leakage .
  */
-_attribute_ram_code_ void gpio_init(int anaRes_init_en)
+_attribute_ram_code_sec_noinline_ void gpio_init(int anaRes_init_en)
 {
 
     reg_gpio_pa_setting1 =
@@ -671,7 +671,7 @@ static void gpio_set_mux(GPIO_PinTypeDef pin, GPIO_FuncTypeDef func)
             //0x5ae[7:6]
             //0. PWM1_N
             //1. I2S_SDI
-            //2. UART_TX£¨7816£©
+            //2. UART_TX7816
             mask = (unsigned char)~(BIT(7)|BIT(6));
             if(func == AS_PWM1_N){
 

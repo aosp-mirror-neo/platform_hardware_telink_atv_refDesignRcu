@@ -23,6 +23,7 @@
  *  limitations under the License.
  *
  *****************************************************************************/
+
 #pragma once
 
 #include "clock.h"
@@ -66,7 +67,7 @@ typedef enum
 #define reg_qdec_channel_a 0xd2
 #define reg_qdec_channel_b 0xd3
 
-#define reg_qdec_mode      0xd7
+#define reg_qdec_mode 0xd7
 
 /**
  * qedc mode

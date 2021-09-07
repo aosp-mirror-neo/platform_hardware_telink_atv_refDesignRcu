@@ -300,8 +300,6 @@ static u16 extServiceUUID;
 static const u8 my_OtaUUID[16]           = {TELINK_SPP_DATA_OTA};
 static const u8 my_OtaServiceUUID[16]    = TELINK_OTA_UUID_SERVICE;
 
-
-
 static u8 my_OtaData         = 0x00;
 _attribute_data_retention_ u16 my_Otaccc = 0;
 
@@ -492,11 +490,11 @@ u8      ir_data[1] = {0};
     u8      atv_char_rx_data[1] = {0};
     u8      atv_char_ctl_data[1] = {0};
 
-    static const u8 ATVV_Server_UUID[16]         = {AUDIO_GOOGLE_SERVICE_UUID};
+    static const u8 ATVV_Server_UUID[16]         = AUDIO_GOOGLE_SERVICE_UUID;
 
     static const u8 ATVV_Char_UUID_TX[16]         = {AUDIO_GOOGL_TX_CHAR_UUID};
     static const u8 ATVV_Char_UUID_RX[16]         = {AUDIO_GOOGL_RX_CHAR_UUID};
-    static const u8 ATVV_Char_UUID_CTL[16]         = {AUDIO_GOOGL_CTL_CHAR_UUID};
+    static const u8 ATVV_Char_UUID_CTL[16]        = {AUDIO_GOOGL_CTL_CHAR_UUID};
 
     static const u8 my_MicCharTx[20] = {
         CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,
@@ -527,7 +525,7 @@ int app_ir_callback(void *p)
     u16 i;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
-    handle = (u16)((pw->hh)<<8) | (u16)(pw->hl);
+    handle = pw->handle;
 
     //printf("handle = %x\r\n",handle);
     //printf("pw->l2cap=%x\r\n",pw->l2cap-3);
@@ -541,10 +539,47 @@ int app_ir_callback(void *p)
     for(i=0;i<printf_len;i++)
         printf(" %x",pw->dat[i]);
     #endif
+    printf("len=%x\r\n",len);
     app_set_mtusize();
     ir_fallback_process(handle,pw->dat,len);
 
     return 0;
+}
+
+int app_nec_ir_table_callback(void *p)
+{
+    u16 handle,len;
+    u16 printf_len;
+    u16 i;
+
+    rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
+    handle = pw->handle;
+
+    //printf("handle = %x\r\n",handle);
+    //printf("pw->l2cap=%x\r\n",pw->l2cap-3);
+    //printf("app_nec_ir_table_callback handle=%x\r\n",handle);
+
+    len = pw->l2cap-3;//pw->rf_len-7;
+    printf_len = len;
+
+    #if 0
+    printf("len=%x\r\n",len);
+    for(i=0;i<printf_len;i++)
+        printf(" %x",pw->dat[i]);
+    #endif
+
+    ir_nec_ir_table_process(pw->dat,len);
+    return 0;
+}
+
+int app_ota_handle(void * p){
+
+    int result=0;
+
+    app_nec_ir_table_callback(p);
+    result = app_ota_write(p);
+
+    return result;
 }
 
 
@@ -655,9 +690,9 @@ int app_ir_callback(void *p)
 
         ////////////////////////////////////// OTA /////////////////////////////////////////////////////
         // 002e - 0031                                                  (52-56)
-        {5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
+        {8,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},                //prop
-        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_write, &otaRead},            //value
+        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_handle, 0},//&otaRead},            //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_Otaccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_Otaccc), &att_ccc_control},
         {0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
@@ -808,7 +843,7 @@ int app_ir_callback(void *p)
         // 0034 - 0038              (52-56)
         {5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},                //prop
-        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_write, &otaRead},            //value
+        {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_write, 0},//&otaRead},            //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_Otaccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_Otaccc), &att_ccc_control},
         {0,ATT_PERMISSIONS_READ, 2,sizeof (my_OtaName),(u8*)(&userdesc_UUID), (u8*)(my_OtaName), 0},
 
