@@ -45,7 +45,7 @@
 #include "app_custom.h"
 #include "app_config.h"
 #include "app_flash_write.h"
-
+#include "app_custom_lib.h"
 
 
 #if (MP_TEST_MODE)
@@ -119,14 +119,10 @@ _attribute_data_retention_    my_fifo_t    blt_rxfifo = {
                                                     blt_txfifo_b,};
 #endif
 
-typedef struct{
-    u8    rf_len;             //LEN(6)_RFU(2)
-    u8    data[31];           //0-31 byte
-}rf_packet_adv_ind_module_t;
 
 //u8 flag_mtu=0;
 _attribute_data_retention_    u8 flag_dle=0;
-_attribute_data_retention_    int device_in_connection_state=0;
+_attribute_data_retention_    u8 device_in_connection_state=0;
 
 _attribute_data_retention_    u32 advertise_begin_tick;
 _attribute_data_retention_    u8 advertise_downgrade_flag=0;
@@ -169,7 +165,6 @@ u8  mac_public[6];
 
 extern u8 is_pairing_mode;
 extern u8 is_reconn_mode;
-extern u8 en_google_wakeuppack;
 extern u8 my_devNamelen;
 extern u8 my_devName[20];
 extern u8 ir_flash_erase_flag;
@@ -310,7 +305,6 @@ void app_adv_interval_downgrade_register(app_adv_interval_downgradeCb_t cb)
 {
     app_adv_interval_downgradeCb = cb;
 }
-
 
 void app_set_adv_interval_downgrade_indirect(void)
 {
@@ -1214,7 +1208,9 @@ void user_init_normal(void)
         smp_param_save_t  bondInfo;
         if(bond_number)   //at least 1 bonding device exist
         {
-           bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+            bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+            ll_resolvingList_reset();
+            ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
         }
 
         if(bond_number)   //set direct adv
@@ -1417,16 +1413,10 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
 
     printf("app_start_send_wakeup\r\n");
     bls_ll_setAdvEnable(0);
-   // tbl_advData[0] = advdata.rf_len;
     memcpy(tbl_advData,advdata.data,advdata.rf_len);
-    //tbl_scanRsp[0] = my_devNamelen+1;
-    //tbl_scanRsp[1] = 0x09;
-   // memcpy(&tbl_scanRsp[2],my_devName,my_devNamelen);
     for(u8 i=0;i<25;i++)
         printf(" %x",tbl_advData[i]);
     bls_ll_setAdvData( (u8 *)tbl_advData, advdata.rf_len);
-
-    //bls_ll_setScanRspData( (u8 *)tbl_scanRsp, my_devNamelen+2);
 
     bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_30MS,
         ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
@@ -1434,110 +1424,12 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
         MY_APP_ADV_CHANNEL,
         ADV_FP_NONE);
     bls_ll_setAdvEnable(1);
-}
-
-void app_tx_power_wakeup(u8 keyid)
-{
-    rf_packet_adv_ind_module_t tx_power_wakeup;
-    smp_param_save_t  bondInfo;
-    u8 buffer[40];
-    u8 index=0,i;
-    u8 pos_index[3]={0};
-    u8 format=0;
-
-    bls_smp_param_loadByIndex(0, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-
-    if(en_google_wakeuppack == 0)
-    {
-        format = 0;
-    }
-    else
-    {
-        if(wakeup_packet_format == 0x55)
-        {
-            format = 0;
-        }
-        else
-            format = 1;
-    }
-    if(format == 0)
-    {
-        flash_read_page(0x78000+wakeup_key_pos, 40, buffer);
-        if((buffer[0] != 0xff))
-        {
-            //custom format
-            tx_power_wakeup.rf_len = buffer[0];
-            for(i=0;i<buffer[0];i++)
-                tx_power_wakeup.data[i] = buffer[4+i];
-            for(i=0;i<3;i++)
-            {
-                if(buffer[i])
-                {
-                    pos_index[i] = buffer[i+1];
-                }
-                else
-                    pos_index[i] = 0xff;
-            }
-            for(i=0;i<buffer[0];i++)
-            {
-                if(i == pos_index[0])
-                {
-                    if(keyid == 0xff)
-                        tx_power_wakeup.data[i] = 2;
-                    else
-                        tx_power_wakeup.data[i] = app_custom_wakeupkey_packet_index(keyid);
-                }
-                else if(i == pos_index[1])
-                {
-                    if(keyid == 0xff)
-                    {
-                        if(index)
-                            tx_power_wakeup.data[i] = wakeup_key_keycount;
-                        else
-                            tx_power_wakeup.data[i] = 0;
-                    }
-                    else
-                        tx_power_wakeup.data[i] = wakeup_key_keycount;
-                }
-                else if(i == pos_index[2])
-                {
-                     memcpy(&(tx_power_wakeup.data[i]), bondInfo.peer_addr, 6);
-                     i += 5;
-                }
-            }
-        }
-        else
-            return;
-    }
-    else
-    {
-        //google format
-        tx_power_wakeup.rf_len = 19;
-        tx_power_wakeup.data[0] = 0x0c;
-        tx_power_wakeup.data[1] = 0x16;
-        tx_power_wakeup.data[2] = 0x36;
-        tx_power_wakeup.data[3] = 0xfd;
-        tx_power_wakeup.data[4] = 0x01;
-        if(keyid == 0xff)
-        {
-            tx_power_wakeup.data[5] = 0x02;  //schedule ota wakeup packet
-        }
-        else
-        {
-            tx_power_wakeup.data[5] = app_custom_wakeupkey_packet_index(keyid);
-        }
-        tx_power_wakeup.data[6] = wakeup_key_keycount;
-        memcpy(&(tx_power_wakeup.data[7]), bondInfo.peer_addr, 6);
-    }
-    printf("raw packet =\r\n");
-    for(i=0;i<20;i++)
-       printf(" %x",tx_power_wakeup.data[i]);
-    app_start_send_wakeup(tx_power_wakeup);
 
 }
 
 void app_send_wakeup_loop(void)
 {
+    u32 wakeup_tick_timer=0;
     if(wakeup_key_send_flag == 0) return;
     if(wakeup_key_send_flag == 2)
     {
@@ -1547,14 +1439,15 @@ void app_send_wakeup_loop(void)
     }
     if(wakeup_tick == 0)
     {
-        app_tx_power_wakeup(wakeup_key_keyid);
+        app_send_wakeup_packet(wakeup_key_keyid);
         wakeup_tick = clock_time() | 1;
     }
-    if(clock_time_exceed(wakeup_tick, 3000000) && wakeup_tick)
+    wakeup_tick_timer = app_custom_wakeup_tick();
+    if(clock_time_exceed(wakeup_tick, wakeup_tick_timer) && wakeup_tick)
     {
         if(wakeup_packet_format == 0x55)
         {
-            printf("app_send_wakeup_loop 3s timeout\r\n");
+            printf("app_send_wakeup_loop one part\r\n");
             wakeup_tick = 0;
             wakeup_packet_format = 0xaa;
         }
@@ -1563,11 +1456,20 @@ void app_send_wakeup_loop(void)
             wakeup_tick = 0;
             bls_ll_setAdvEnable(0);
             advertise_begin_tick = clock_time() | 1;
-            printf("app_send_wakeup_loop 6s timeout\r\n");
+            printf("app_send_wakeup_loop second part\r\n");
             wakeup_key_send_flag = 0;
             app_send_wakeup_resume();
         }
     }
+}
+
+void app_stop_wakeup_loop(void)
+{
+     if(wakeup_key_send_flag == 0) return;
+     printf("app_stop_wakeup_loop\r\n");
+     wakeup_tick = 0;
+     bls_ll_setAdvEnable(0);
+     wakeup_key_send_flag = 0;
 }
 
 void main_loop (void)

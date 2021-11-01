@@ -167,7 +167,7 @@ _attribute_data_retention_ u8 ir_flash_erase_flag=0;
 _attribute_data_retention_ u8 ir_save_error_flag=0;
 
 
-extern _attribute_data_retention_    int device_in_connection_state;
+extern _attribute_data_retention_    u8 device_in_connection_state;
 extern int     blt_soft_timer_delete(blt_timer_callback_t func);
 extern int bls_ll_requestConnBrxEventDisable(void);
 extern void  bls_ll_disableConnBrxEvent(void);

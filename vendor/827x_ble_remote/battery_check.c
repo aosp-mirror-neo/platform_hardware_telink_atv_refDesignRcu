@@ -227,7 +227,7 @@ _attribute_ram_code_ void adc_vbat_detect_init(void)
 }
 
 extern u8 my_batVal[1];
-extern int device_in_connection_state;
+extern u8 device_in_connection_state;
 
 _attribute_data_retention_ u8 bak_batpercent=0;
 _attribute_data_retention_ u8 lowbat=0;

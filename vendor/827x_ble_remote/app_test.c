@@ -453,6 +453,17 @@ void test_proc_key(void)
                 _stat = TEST_STAT_LED;
                 break;
 
+            case _KEY_IDX_PROGRAM_UP:
+                {
+                    u8 vender_id[2] = { 0x00, };
+                    u8 product_id[2] = { 0x00, };
+
+                    flash_read_page(_FLASH_CUSTOM_DATA_AREA + 2, 2, vender_id);
+                    flash_read_page(_FLASH_CUSTOM_DATA_AREA + 4, 2, product_id);
+                    _output_ir_nec_custom(vender_id[1], vender_id[0], product_id[1], product_id[0]);
+                }
+                break;
+
             default:
                 _ctrl_led(_ON, _ON);
                 break;

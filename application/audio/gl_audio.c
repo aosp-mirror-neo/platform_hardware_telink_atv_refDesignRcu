@@ -73,7 +73,7 @@ _attribute_data_retention_ u32 app_audio_start_delay = 0;
 _attribute_data_retention_ u32 app_active_remote_timer = 0;     //Wait mic open cmd after send START_SEARCH
 _attribute_data_retention_ u32 app_audio_transfer_timer = 0;    //Used for google voice timeout
 _attribute_data_retention_ u32 g_delay_send_audio_stop = 0;
-extern int device_in_connection_state;
+extern u8 device_in_connection_state;
 
 /**
  * @brief   initialize packet parameters according to the version of google voice

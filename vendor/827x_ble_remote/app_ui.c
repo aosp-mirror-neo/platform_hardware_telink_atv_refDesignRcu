@@ -73,7 +73,7 @@ _attribute_data_retention_    u8  ota_flag = 0;  //0:pause 1:continue
 extern u8 comb_key_keyid[9];
 extern    u32     latest_user_event_tick;
 extern u8 lowbat;
-extern int device_in_connection_state;
+extern u8 device_in_connection_state;
 extern u8 flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8 wakeup_src;
@@ -89,10 +89,10 @@ extern int ir_fallback_send(u8 key_down);
 extern void device_led_off(u8 led);
 extern void app_enter_deep_timeset(void);
 extern void app_set_adv_interval_downgrade_indirect(void);
-extern void app_tx_power_wakeup(u8 keyid);
 extern u8  app_custom_is_wakeup_key(u8 keyid);
 extern ble_sts_t app_terminate(u8 reason);
 extern int bls_smp_param_deleteByIndex(u8 index);
+extern void app_stop_wakeup_loop(void);
 
 static const u16 vk_consumer_map[] = {
     G00GLE_MKEY_NOTIFICATION,
@@ -295,12 +295,15 @@ u8 app_enter_ota_mode(u8 *data)
     return 0;
 }
 
-/*******************************************************************
- *** Use the following functions to modify various types of keys ***
- *******************************************************************/
-/*
+/***************************************************************************
+ ***     Use the following functions to modify various types of keys     ***
+ *** These 3 keys can be applied to google or configured by yourselves   ***
+ **************************************************************************/
 
-//change authentication plaintext and plaintext key
+/*
+// change authentication plaintext and plaintext key.
+// This key needs to be consistent with the ota key selected in the demo ota app.
+// Otherwise it will trigger an authentication error
 void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_auth_key){
 
     u8 auth_plaintext[16] = {'0','1','2','3','4','5','6','7','8','9','a','b',0x00,0x00,0x00,0x00,};
@@ -310,13 +313,21 @@ void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_auth_key){
     memcpy(cus_auth_key,auth_key,16);
 }
 
+// Set FW encryption key
+// This key needs to be consistent with the FW_ENC_KEY in the 8271_ble_remote folder.
+// Otherwise, the OTA will fail due to decryption errors
 void app_ota_get_fw_decryption_key(u8 *dec_key){
 
     u8 key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};
     memcpy(dec_key,key,16);
 }
 
-//change ecdsa public key
+// change ecdsa public key
+// This key needs to be consistent with public_key.bin in the 8271_ble_remote folder.
+// Otherwise it will trigger a signature error
+// The private key and public key pair will be automatically generated after the SDK is compiled.
+// Private key file name : priv.pem
+// Public key file name  : public_key.bin
 void app_ota_get_ecdsa_pub_key(u8 *pub_key){
     u8 key[64] = {0x8d,0x82,0x79,0xc1,0xbb,0x22,0xe7,0x99,0xe6,0x97,0x49,0xf6,0xab,0x28,0x44,0x6d,
                   0x9f,0x21,0xce,0x13,0x5b,0x43,0xfa,0x74,0x87,0xe2,0x96,0x49,0xcd,0xc8,0xdd,0xc3,
@@ -1068,7 +1079,7 @@ int app_poweron_timeout(void)
 {
      u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
      printf("app_poweron_timeout\r\n");
-     if(bond_number == 0)
+     if((bond_number == 0) && (en_ble_adv))
      {
          is_pairing_mode = 0x55;
          notify_get_rsp_en = 1;
@@ -1228,7 +1239,6 @@ void key_change_proc(void)
                      {
                          extern u8 wakeup_key_keycount;
                          wakeup_key_keycount++;
-                         printf("app_send_wakeup_loop 5s start wakeup_key_keycount=%x\r\n",wakeup_key_keycount);
                          write_wakeup_keyindex_info(wakeup_key_keycount);
                          wakeup_key_send_flag = 1;
                          wakeup_key_keyid = key0;
@@ -1512,8 +1522,9 @@ void proc_keyboard (u8 e, u8 *p, int n)
             if(is_reconn_mode)
                 is_reconn_mode = 0;
             notify_get_rsp_en = 1;
-            if( device_in_connection_state == 0)
+            if(device_in_connection_state == 0)
             {
+                app_stop_wakeup_loop();
                 ir_table_init();
                 ir_flash_set_flag(0);
                 app_set_adv_interval_downgrade_indirect();

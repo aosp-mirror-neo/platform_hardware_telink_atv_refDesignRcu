@@ -27,6 +27,8 @@
 #include "drivers.h"
 #include "app_config.h"
 #include "app_custom.h"
+#include "stack/ble/ble.h"
+
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
@@ -39,7 +41,7 @@ extern u8 my_devName[20];
 extern u8 my_devNamelen;
 extern  _attribute_data_retention_ u8 my_FWRevtrs [];
 extern void kb_p_map_init(void);
-
+extern u8 device_in_connection_state;
 
 
 #define LAYOUT_MASK_BIT0               0X01
@@ -47,10 +49,9 @@ extern void kb_p_map_init(void);
 #define LAYOUT_MASK_BIT2               0X04
 #define LAYOUT_MASK_BIT5               0X20
 
-
 _attribute_data_retention_  u8 device_type=1;
 _attribute_data_retention_  u8 en_powerkey_cache=1;
-_attribute_data_retention_  u8 en_google_wakeuppack=1;
+_attribute_data_retention_  u8 en_ble_adv=1;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key_pos=0;
@@ -62,10 +63,28 @@ _attribute_data_retention_  u8 nec_ir_cmd2_table[48]={0};
 _attribute_data_retention_  u8 key_map_ble[48]={0};
 
 
+/*****************************************************************************************
+ *** If you get a new hardware, and want to modify keymap    :                        ***
+ *** 1) Change the pin setting(drive pin and scan pin) contained in app_config.h      ***
+ *** 2) The following three points also need to be changed synchronously              ***
+ ****************************************************************************************/
 
-const unsigned char Kb_CombKey_KeyId_G10[9] = {7,  0xa, 0x15,0x16,0x0c,0x0d,0xff,4,6};       //back,home,center,mute,setting,guide,subtitle,down,bookmark keyid in g10
-const unsigned char Kb_CombKey_KeyId_G20[9] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f,7,12};      //back,home,center,mute,setting,guide,subtitle,dwon,bookmark keyid in g20
+/* 1. Pin definition */
+const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
+const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
 
+/* 2. The following indexes are all extracted from Kb_Map_Normal_G10/Kb_Map_Normal_G20 */
+const unsigned char Kb_CombKey_KeyId_G10[9] = {7,  0xa, 0x15,0x16,0x0c,0x0d,0xff,4,6};                 //back,home,center,mute,setting,guide,subtitle,down,bookmark keyid in g10
+const unsigned char Kb_CombKey_KeyId_G20[9] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f,7,12};                //back,home,center,mute,setting,guide,subtitle,down,bookmark keyid in g20
+
+const unsigned char Kb_Wakeup_Key_Map_Correspend_Index_G10[] =  {VOICE,10,0,3,8,11,14,17};             //voice,home,power,input,youtobe,netflix,disney,hbomax
+const unsigned char Kb_Wakeup_Key_Map_Correspend_Index_G20[] =  {VOICE,19,0,6,14,20,26,32,28,5,11,34}; //voice,home,power,input,youtobe,netflix,disney,hbomax,blue,green,red,yellow
+
+const unsigned char Kb_Map_devicelayout_Correspend_Index_G10[] =  {12,13,6};                           //notification,livetv,,userprofile/allapps
+const unsigned char Kb_Map_devicelayout_Correspend_Index_G20[] =  {24,25,15,12,11,5,34,28};            //notification,livetv,teletext,userprofile/allapps,fast rewind,record,play/pause,fast forward
+
+
+/* 3. Change key index  and ir/ble value*/
 const unsigned char Kb_Map_Normal_G10[8][3] = {\
                         {0,          1,             2}, \
                         {3,          4,             5}, \
@@ -97,9 +116,6 @@ const unsigned char Kb_Map_Ir_G10[] =  {\
                         IR_LEFT,       IR_CHN_UP,      VK_NONE,      \
                         IR_CENTER,     IR_MUTE,        VK_NONE    };
 
-const unsigned char Kb_Map_Correspend_Index_G10[] =  {VOICE,10,0,3,8,11,14,17};
-const unsigned char Kb_Map_devicelayout_Correspend_Index_G10[] =  {12,13,6};  //notification,livetv,,userprofile/allapps
-
 const unsigned char Kb_Map_Normal_G20[8][6] = \
                         {\
                         {0,            1,               2,             3,          4,         5},  \
@@ -130,15 +146,6 @@ const unsigned char Kb_Map_Ir_G20[] =  {\
                         IR_UP,         IR_VOL_UP,       IR_HBOMAX,     IR_VK_7,     IR_YELLOW, VK_NONE,\
                         IR_LEFT,       IR_CHN_UP,       VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE,\
                         IR_CENTER,     IR_MUTE,         VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE};
-
-const unsigned char Kb_Map_Correspend_Index_G20[] =  {VOICE,19,0,6,14,20,26,32,28,5,11,34};
-const unsigned char Kb_Map_devicelayout_Correspend_Index_G20[] =  {24,25,15,12,11,5,34,28}; //notification,livetv,teletext,userprofile/allapps,fast rewind,record,play/pause,fast forward
-
-
-
-const unsigned int Kb_Drive_Pins_G10[3] = {GPIO_PD2, GPIO_PD3, GPIO_PD4};
-const unsigned int Kb_Drive_Pins_G20[6] = {GPIO_PD2, GPIO_PD3, GPIO_PD4, GPIO_PD7, GPIO_PA0, GPIO_PD1};
-
 
 void app_custom_ui_layout(u8 ui_layout)
 {
@@ -265,7 +272,7 @@ void app_custom_param_init(u8 device_layout)
     if(device_type == REMOTE_G10)
     {
         p_kb_map_ble =  key_map_ble;
-        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G10,24);
+        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G10,sizeof(Kb_Map_Ble_G10));
         p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
         memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G10,sizeof(Kb_Map_Ir_G10));
 
@@ -274,7 +281,7 @@ void app_custom_param_init(u8 device_layout)
     else if(device_type == REMOTE_G20)
     {
         p_kb_map_ble =  key_map_ble;
-        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G20,48);
+        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G20,sizeof(Kb_Map_Ble_G20));
         p_kb_map_normal = (u8 *)Kb_Map_Normal_G20;
         p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
         memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G20,sizeof(Kb_Map_Ir_G20));
@@ -295,12 +302,12 @@ void app_custom_wakeup_key_load(u16 mask1, u16 mask2)
         if(device_type == REMOTE_G10)
         {
             wakeupkey_num = APP_CUSTOM_WAKEUPKEY_NUM-4;
-            p_kb_map = (u8*)Kb_Map_Correspend_Index_G10;
+            p_kb_map = (u8*)Kb_Wakeup_Key_Map_Correspend_Index_G10;
         }
         else
         {
             wakeupkey_num = APP_CUSTOM_WAKEUPKEY_NUM;
-            p_kb_map = (u8*)Kb_Map_Correspend_Index_G20;
+            p_kb_map = (u8*)Kb_Wakeup_Key_Map_Correspend_Index_G20;
         }
         for(i=0;i<wakeupkey_num;i++)
         {
@@ -401,11 +408,7 @@ void app_custom_init(void)
     {
         en_powerkey_cache = 0;
     }
-    flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, buffer);
-    if(buffer[0] == 0)
-    {
-        en_google_wakeuppack = 0;
-    }
+    flash_read_page(APP_EN_BLE_ADV, 1, &en_ble_adv);
 }
 
 u8 app_custom_is_wakeup_key(u8 keyid)
@@ -452,7 +455,6 @@ u8  app_custom_wakeupkey_packet_index(u8 keyid)
     }
     return 0;
 }
-
 u8 app_custom_get_drive_len(void)
 {
     u8 len;
@@ -464,14 +466,5 @@ u8 app_custom_get_drive_len(void)
     return len;
 }
 
-void app_custom_test(void)
-{
-    u8 buffer[]={0x02,0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00,0x09,0x52,0x65,0x6d,0x6f,0x74,0x65,0x47,0x31,0x30,0x07,0x00,0x04,0x00,0x70,0xd,0x5,0x6,0x7,0x0c,0x16,0x36,0xfd,0x01,0,0,0,0,0,0,0,0};
-    u8 ota_key[]={'g','o','o','g','l','e','G','2','0','R','C','U',0x00,0x00,0x00,0x00,'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
-
-    flash_erase_sector(APP_CUSTOM_ADDR);
-    flash_write_page(APP_CUSTOM_ADDR,sizeof(buffer),buffer);
-    flash_write_page(APP_CUSTOM_ADDR+0x100,sizeof(ota_key),ota_key);
-}
 
 

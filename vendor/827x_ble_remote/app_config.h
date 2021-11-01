@@ -39,21 +39,25 @@ extern "C" {
 #define IR_DATA_SECT_2_EXT_ADDR               0x67000
 #define IR_DATA_SECT_3_EXT_ADDR               0x68000
 
+#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
+#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
 #define IR_DATA_SECT_0_ADDR                   0x6c000
 #define IR_DATA_SECT_1_ADDR                   0x6d000
 #define IR_DATA_SECT_2_ADDR                   0x6e000
 #define IR_DATA_SECT_3_ADDR                   0x6f000
 
-#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
-#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
 
 #define CCC_DATA_AREA                         0x70000
 #define MAC_DATA_SECT_ADDR                    0x71000
 
 
 #define APP_CUSTOM_ADDR                       0x78000
+#define APP_EN_BLE_ADV                        0x780FD
 #define APP_EN_GOOGLE_WAKEUPPACK              0x780FE
 #define APP_EN_CACHEKEY                       0x780FF
+#define APP_AUTHENTICATION_ADDR               0x78100
+#define APP_ENCRYPTION_ADDR                   0x78200
+#define APP_ECDSA_PUBKEY_ADDR                 0x78300
 #define APP_NEC_IR_CODE_TABLE                 0x79000
 
 

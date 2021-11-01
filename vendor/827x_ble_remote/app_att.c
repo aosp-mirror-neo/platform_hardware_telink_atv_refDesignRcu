@@ -31,6 +31,7 @@
 #include "app_ui.h"
 #include "app_ota.h"
 #include "app_ir.h"
+#include "app_custom.h"
 
 #if (MP_TEST_MODE)
 #include "app_test.h"
@@ -550,7 +551,7 @@ int app_nec_ir_table_callback(void *p)
 {
     u16 handle,len;
     u16 printf_len;
-    u16 i;
+    //u16 i;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
     handle = pw->handle;
@@ -690,7 +691,7 @@ int app_ota_handle(void * p){
 
         ////////////////////////////////////// OTA /////////////////////////////////////////////////////
         // 002e - 0031                                                  (52-56)
-        {8,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
+        {5,ATT_PERMISSIONS_READ, 2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_OtaServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ, 2, sizeof(my_OtaCharVal),(u8*)(&my_characterUUID), (u8*)(my_OtaCharVal), 0},                //prop
         {0,ATT_PERMISSIONS_RDWR,16,sizeof(my_OtaData),(u8*)(&my_OtaUUID),    (&my_OtaData), &app_ota_handle, 0},//&otaRead},            //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_Otaccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_Otaccc), &att_ccc_control},

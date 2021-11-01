@@ -143,7 +143,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
         user_init_normal ();
     }
-
     irq_enable();
    
 #if (MP_TEST_MODE)

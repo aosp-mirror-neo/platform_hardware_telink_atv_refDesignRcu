@@ -36,7 +36,9 @@ extern u8 nec_ir_addr1_table[48];
 extern u8 nec_ir_addr2_table[48];
 extern u8 nec_ir_cmd1_table[48];
 extern u8 nec_ir_cmd2_table[48];
-
+extern u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
+extern u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
+extern u8 en_ble_adv;
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);
 extern void app_custom_param_init(u8 device_layout);
