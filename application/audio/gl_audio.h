@@ -157,8 +157,6 @@ extern u16 atv_char_rx_ccc;
 
 extern u8  enable_rsp_gaps_rsp;
 
-extern u8  app_mtu_size;
-
 extern u8 notify_get_rsp_en;
 extern u32 notify_get_rsp_tick;
 extern u32 g_delay_send_audio_stop;

@@ -44,5 +44,5 @@ extern u8 app_custom_get_drive_len(void);
 extern void app_custom_param_init(u8 device_layout);
 extern u8 app_custom_is_enable_wakeup_key(void);
 extern u8  app_custom_wakeupkey_packet_index(u8 keyid);
-
+extern void app_custom_flash_data_copy(void);
 #endif

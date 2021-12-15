@@ -271,7 +271,11 @@ void rc_ir_irq_prc(void)
     if(reg_pwm_irq_sta & FLD_IRQ_PWM0_IR_DMA_FIFO_DONE){
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //clear irq status
         ir_send_ctrl.is_full_sequence = 0x55;
+#if APP_IR_OVER_BLE
         if(is_programming_key_send() == 0)
+#else
+        if(1)
+#endif
         {
             if(ir_send_ctrl.repeat_enable){
 
@@ -322,10 +326,12 @@ void rc_ir_irq_prc(void)
         }
         else
         {
+#if APP_IR_OVER_BLE
             if(ir_type_read())
             {
                 pwm_start_dma_ir_sending();
             }
+#endif
         }
     }
 }

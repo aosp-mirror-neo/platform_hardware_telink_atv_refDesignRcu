@@ -291,6 +291,60 @@ void app_custom_param_init(u8 device_layout)
     kb_p_map_init();
 }
 
+
+void app_custom_flash_data_copy(void)
+{
+    u8 buffer[256],i,j;
+
+    flash_read_page(MAC_DATA_SECT_ADDR_COPY, 2, &buffer[0]);
+    if((buffer[0] == 0xff) && (buffer[1] == 0xff))
+    {
+        printf("app_custom_flash_data_copy\r\n");
+
+        for(i=0;i<8;i++)
+            flash_erase_sector(IR_DATA_SECT_0_EXT_ADDR_COPY+0x1000*i);
+
+        for(i=0;i<4;i++)
+        {
+            for(j=0;j<16;j++)
+            {
+                flash_read_page(IR_DATA_SECT_0_ADDR+j*256+i*0x1000, 256, buffer);
+                flash_write_page(IR_DATA_SECT_0_ADDR_COPY+j*256+i*0x1000, 256, buffer);
+            }
+        }
+
+        for(i=0;i<4;i++)
+        {
+            for(j=0;j<16;j++)
+            {
+                flash_read_page(IR_DATA_SECT_0_EXT_ADDR+j*256+i*0x1000, 256, buffer);
+                flash_write_page(IR_DATA_SECT_0_EXT_ADDR_COPY+j*256+i*0x1000, 256, buffer);
+            }
+        }
+
+        for(j=0;j<16;j++)
+        {
+            flash_read_page(CCC_DATA_AREA+j*256, 256, buffer);
+            flash_write_page(CCC_DATA_AREA_COPY+j*256, 256, buffer);
+        }
+        for(u8 j=0;j<16;j++)
+        {
+            flash_read_page(IR_KEY_EVENT_NOTIFY_SECT_ADDR+j*256, 256, buffer);
+            flash_write_page(IR_KEY_EVENT_NOTIFY_SECT_ADDR_COPY+j*256, 256, buffer);
+        }
+        for(u8 j=0;j<16;j++)
+        {
+            flash_read_page(WAKEUP_KEYINDEX_DATA_SECT_ADDR+j*256, 256, buffer);
+            flash_write_page(WAKEUP_KEYINDEX_DATA_SECT_ADDR_COPY+j*256, 256, buffer);
+        }
+        for(u8 j=0;j<16;j++)
+        {
+            flash_read_page(MAC_DATA_SECT_ADDR+j*256, 256, buffer);
+            flash_write_page(MAC_DATA_SECT_ADDR_COPY+j*256, 256, buffer);
+        }
+    }
+}
+
 void app_custom_wakeup_key_load(u16 mask1, u16 mask2)
 {
     u8 j=0,i;

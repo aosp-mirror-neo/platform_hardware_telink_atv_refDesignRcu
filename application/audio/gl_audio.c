@@ -55,7 +55,6 @@ _attribute_data_retention_ u8 google_voice_ver = 4;    //4: ver 0.4e  10:ver 1.0
 _attribute_data_retention_ u8 used_assistant_model = REASON_MICOPEN;
 
 //Google voice v1.0 control parameter
-_attribute_data_retention_ u8 app_mtu_size = 23;
 _attribute_data_retention_ u8 auido_frame_size = 20;      //Byte. this variable is updated after sending CAPS_RESP
 _attribute_data_retention_ u8 stream_id = 0;              //The identifier of an audio stream to extend.
 _attribute_data_retention_ u8 flag_active_mic_open = 0;   //Enable/disable mic open command

@@ -35,6 +35,8 @@
 #include "app_custom.h"
 #include "../../stack/ble/host/attr/att.h"
 
+#if APP_IR_OVER_BLE
+
 extern void google_reset_rsp_delay(void);
 extern u8 is_mic_enable(void);
 
@@ -724,7 +726,6 @@ int ir_flash_save_timeoutcb(void)
     }
 }
 
-
 void ir_init_key_event_notify(u8 value)
 {
     ir_app_parm.ir_programming.key_notification_flag = value;
@@ -737,17 +738,12 @@ void ir_init_key_event_notify(u8 value)
  */
 int ir_flash_erase_timeoutcb(void)
 {
-    //printf("ir_flash_erase_timeoutcb\r\n");
-    //u32 time;
     u8 data;
     u32 pos_addr_ext=0,pos_addr=0;
 
     if(is_mic_enable() == 1)
         return 0;
 
-    //u32 erase_time=clock_time();
-    //printf("flash erase sector=%x \r\n",ir_flash_need_erase_sector);
-   // time = bls_ll_requestConnBrxEventDisable();
     if(ir_flash_need_erase_sector == 0)
     {
         pos_addr = 0;
@@ -798,9 +794,7 @@ int ir_flash_erase_timeoutcb(void)
     }
     if(bls_ll_requestConnBrxEventDisable() > 70)
     {
-        //device_led_on(1);
-        bls_ll_disableConnBrxEvent();
-        //printf("flash erase sector=%x \r\n",ir_flash_need_erase_sector);
+       bls_ll_disableConnBrxEvent();
 
        if(ir_flash_erase_sector_step == 0)
        {
@@ -859,9 +853,6 @@ int ir_flash_erase_timeoutcb(void)
            }
         }
         bls_ll_restoreConnBrxEvent();
-        //device_led_off(1);
-        //erase_time=clock_time();
-        //printf("exit flash erase sector irq end time=%x\r\n",erase_time);
         if(ir_flash_erase_sector_step)
             return 0;
         else
@@ -870,19 +861,6 @@ int ir_flash_erase_timeoutcb(void)
 
     return 0;
 }
-
-#if 0
-/**
- * @brief       Add a timer for erase flash
- * @return      none
- */
-void ir_flash_erase(void)
-{
-    printf("ir_flash_erase\r\n");
-    //blt_soft_timer_add(ir_flash_erase_timeoutcb, FLASH_ERASE_TIMEOUT);
-    ir_flash_erase_timeoutcb();
-}
-#endif
 
 /**
  * @brief       Ir flash factory
@@ -893,7 +871,6 @@ void ir_flash_factory(void)
     printf("ir_flash_factory\r\n");
     ir_flash_set_flag(0);
 }
-
 
 /**
  * @brief       Erase the flash sector
@@ -915,7 +892,6 @@ int ir_key_event_notify_erase_timeoutcb(void)
 
     return 0;
 }
-
 
 /**
  * @brief       ir_programming_timeoutcb
@@ -1401,7 +1377,9 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
                 if (ir_app_parm.ir_programming.programming_start == 1)
                 {
                     printf("ir table programming start\r\n");
+#if BLE_AUDIO_ENABLE
                     google_reset_rsp_delay();
+#endif
                     ir_table_init();
                     ir_flash_set_flag(0);
                     if(ir_flash_index == 0)
@@ -1698,4 +1676,5 @@ void ir_nec_ir_table_erase_loop(void)
     }
 }
 
+#endif
 

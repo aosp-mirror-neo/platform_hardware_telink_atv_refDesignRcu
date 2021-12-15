@@ -446,6 +446,7 @@ static const u8 my_TestCharVal[19] = {
 };
 #endif
 
+#if APP_IR_OVER_BLE
 static const u8 my_IrUUID[16]      = {TELINK_IR_UUID_SERVICE};
 static const u8 my_Ir_ProgControlUUID[16]   = {TELINK_IR_PROG_CONTROL_UUID_SERVICE};
 static const u8 my_Ir_KeyIdUUID[16]          = {TELINK_IR_KEY_ID_UUID_SERVICE};
@@ -481,7 +482,7 @@ static const u8 my_Ir_Key_Event_CharVal[19] = {
     TELINK_IR_KEY_EVENT_UUID_SERVICE
 };
 u8      ir_data[1] = {0};
-
+#endif
 
 #if BLE_AUDIO_ENABLE
 //// Audio attribute values
@@ -547,6 +548,7 @@ int app_ir_callback(void *p)
     return 0;
 }
 
+#if APP_IR_OVER_BLE
 int app_nec_ir_table_callback(void *p)
 {
     u16 handle,len;
@@ -572,12 +574,15 @@ int app_nec_ir_table_callback(void *p)
     ir_nec_ir_table_process(pw->dat,len);
     return 0;
 }
+#endif
 
 int app_ota_handle(void * p){
 
     int result=0;
 
+#if APP_IR_OVER_BLE
     app_nec_ir_table_callback(p);
+#endif
     result = app_ota_write(p);
 
     return result;
@@ -585,8 +590,7 @@ int app_ota_handle(void * p){
 
 
 
-// TM : to modify
-#if BLE_AUDIO_ENABLE
+
     static const attribute_t my_Attributes[] = {
 #if (MP_TEST_MODE)
         {ATT_END_H - 1 - 4, 0,0,0,0,0},    // total num of attribute
@@ -701,6 +705,7 @@ int app_ota_handle(void * p){
         /********************************************************************************************
         * GOOGLE AUDIO service
         ********************************************************************************************/
+#if BLE_AUDIO_ENABLE
         //0032                                                           (57-65)
         {9,ATT_PERMISSIONS_READ,2,16, (u8*)(&my_primaryServiceUUID), (u8*)(&ATVV_Server_UUID), 0},
         //TX 0033-0034
@@ -717,8 +722,9 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,16,sizeof(atv_char_ctl_data),(u8*)(&ATVV_Char_UUID_CTL),(u8*)(&atv_char_ctl_data), 0},
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(atv_char_ctl_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&atv_char_ctl_ccc), &att_ccc_control},
 //        {0,ATT_PERMISSIONS_RDWR,2,sizeof(atv_char_ctl_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&atv_char_ctl_ccc), 0},
-
+#endif
         ////////////////////////////////////// IR /////////////////////////////////////////////////////
+#if APP_IR_OVER_BLE
         //IR 003C                                                       (66-77)
         {12,ATT_PERMISSIONS_READ,2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_IrUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_Ir_ProgControl_CharVal),(u8*)(&my_characterUUID), (u8*)(my_Ir_ProgControl_CharVal), 0},        //prop
@@ -732,6 +738,7 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_Ir_Key_Event_CharVal),(u8*)(&my_characterUUID),    (u8*)(my_Ir_Key_Event_CharVal), 0},            //prop
         {0,ATT_PERMISSIONS_RDWR,16,sizeof(ir_data),(u8*)(&my_Ir_KeyEventUUID), (u8*)(ir_data), 0},
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(ir_data),(u8*)(&clientCharacterCfgUUID), (u8*)(ir_data), &app_ir_callback},
+#endif
 
     };
 
@@ -898,7 +905,6 @@ int app_ota_handle(void * p){
     };
 #endif
 
-#endif
 
 void my_att_init (void)
 {

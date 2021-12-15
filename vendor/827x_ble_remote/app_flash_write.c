@@ -27,7 +27,7 @@
 #include "tl_common.h"
 #include "drivers.h"
 #include "app_flash_write.h"
-
+#include "app_config.h"
 
 _attribute_data_retention_ u8 flag_ccc_data = 0;
 _attribute_data_retention_ u8 peer_mac[6] = {0};
@@ -282,6 +282,8 @@ u8 read_ccc_info(u8 *ccc){
     return ret;
 }
 
+#if (BLE_AUDIO_ENABLE)
+
 extern u16 atv_char_ctl_ccc;
 extern u16 atv_char_rx_ccc;
 
@@ -295,7 +297,7 @@ void init_ccc_value(){
     printf("atv_char_ctl_ccc:%d\n",atv_char_ctl_ccc);
     printf("atv_char_rx_ccc:%d\n",atv_char_rx_ccc);
 }
-
+#endif
 
 void is_flash_info_full(void)
 {

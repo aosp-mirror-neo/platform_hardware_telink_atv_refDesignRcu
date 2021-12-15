@@ -366,9 +366,9 @@ void    task_datalengthexchange (u8 e, u8 *p, int n)
     ll_data_extension_t *data_p = (ll_data_extension_t *)p;
     effective_rx_dle = data_p->connEffectiveMaxRxOctets;
     //printf("connEffective:rx:%d __ tx: %d\n",data_p->connEffectiveMaxRxOctets,data_p->connEffectiveMaxTxOctets);
-
+#if BLE_AUDIO_ENABLE
     set_audio_frame_size(data_p->connMaxTxOctets);
-    //set_audio_frame_size(23);
+#endif
 }
 
 void app_service_change(void)
@@ -424,12 +424,14 @@ int app_enable_adv_timeout(void)
      app_pairing_led();
      app_adv_indirect();
      enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
+#if BLE_AUDIO_ENABLE
      if(google_voice_ctl){
          google_voice_ctl = 0;
      }
      if(ui_mic_enable){
         ui_enable_mic (0);
      }
+#endif
      return -1;
 }
 
@@ -456,8 +458,10 @@ void ble_ll_reject(u8 e,u8 *p, int n) //*p is terminate reason
          blt_soft_timer_add(app_enable_adv_timeout, 3000000);
          ble_sts_t status = app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN);
          printf("status=%x\r\n",status);
+#if (BLE_AUDIO_ENABLE)
          if(google_voice_ctl & FLAG_GOOGLE_CAPS_RESP)
              google_voice_ctl &= ~FLAG_GOOGLE_CAPS_RESP;
+#endif
      }
 }
 
@@ -566,7 +570,9 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
                   enterdeep_time = ADV_IDLE_ENTER_DEEP_COUNT;
               app_adv_direct();
         }
+#if BLE_AUDIO_ENABLE
         google_voice_ctl = 0;
+#endif
     }
 
     device_in_connection_state = 0;
@@ -645,12 +651,16 @@ void app_save_peer_mac_info(u8 *mac)
         {
             printf("new mac\r\n");
             memcpy(peer_mac,mac,6);
+#if APP_IR_OVER_BLE
             ir_table_init();
             write_ir_key_event_notify(0);
+            ir_flash_erase_flag = 0x55;
+#endif
             flag_ccc_data = 0;
+#if BLE_AUDIO_ENABLE
             atv_char_ctl_ccc = 0;
             atv_char_rx_ccc = 0;
-            ir_flash_erase_flag = 0x55;
+#endif
             write_ccc_info(&flag_ccc_data);
             if(is_peer_mac_flash_info_full() == 0)
                write_peer_mac_info(peer_mac);
@@ -723,11 +733,13 @@ int app_host_event_callback (u32 h, u8 *para, int n)
                 printf("first pairing\r\n");
                 app_is_set_mtusize = 0;
                 mtuExchange_check_timer = 12000000;
+#if APP_IR_OVER_BLE
                 if(ir_flash_erase_flag == 0x55)
                 {
                     ir_flash_set_flag(0);
                     ir_flash_erase_flag = 0;
                 }
+#endif
             }
             else if(p->re_connect == SMP_FAST_CONNECT){  //auto connect
                 if(app_mtu_size < MTU_SIZE_SETTING)
@@ -744,7 +756,9 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             wakeup_key_send_flag = 0;
             wakeup_tick = 0;
             mtuExchange_check_tick = clock_time() | 1;
+#if BLE_AUDIO_ENABLE
             notify_get_rsp_tick = clock_time()|1;
+#endif
             wakeup_key_keycount = 0;
             write_wakeup_keyindex_info(wakeup_key_keycount);
 
@@ -1076,7 +1090,9 @@ u8 app_wakeup_src(void)
 void app_delay_set(void)
 {
     //printf("app_delay_set\r\n");
+#if(BLE_AUDIO_ENABLE)
     google_get_rsp_delay();
+#endif
     if((flag_dle & 0x80) == 0)
     {
         mtuExchange_check_tick = clock_time() | 1;
@@ -1329,19 +1345,24 @@ void user_init_normal(void)
     bls_ota_init_handle(OTA_CMD_OUT_DP_H);
 
 #endif
+
     app_ui_init_normal();
     advertise_tick_retime();
 
+#if (BLE_AUDIO_ENABLE)
     //user data init
     init_ccc_value();
     printf("flag_ccc_data:0x%x\n",flag_ccc_data);
-    app_ir_programming_end_register(app_delay_set);
+#endif
     is_flash_info_full();
     init_peer_mac();
+#if APP_IR_OVER_BLE
+    app_ir_programming_end_register(app_delay_set);
     ir_param_init();
     u8 ccc = init_ir_key_event_notify();
     if(ccc != 0xff)
         ir_init_key_event_notify(ccc);
+#endif
     init_wakeup_keyindex();
     extern void init_device_info (void);
     init_device_info();
@@ -1481,9 +1502,11 @@ void main_loop (void)
     ////////////////////////////////////// BLE entry /////////////////////////////////
     blt_sdk_main_loop();
     mtu_exchange_loop();
+#if APP_IR_OVER_BLE
     ir_flash_erase_loop();
     ir_flash_save_loop();
     ir_nec_ir_table_erase_loop();
+#endif
     app_send_wakeup_loop();
     ////////////////////////////////////// UI entry /////////////////////////////////
     #if (BLE_AUDIO_ENABLE)

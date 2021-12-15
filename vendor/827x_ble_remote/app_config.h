@@ -60,6 +60,20 @@ extern "C" {
 #define APP_ECDSA_PUBKEY_ADDR                 0x78300
 #define APP_NEC_IR_CODE_TABLE                 0x79000
 
+#define IR_DATA_SECT_0_EXT_ADDR_COPY          0x38000
+#define IR_DATA_SECT_1_EXT_ADDR_COPY          0x39000
+#define IR_DATA_SECT_2_EXT_ADDR_COPY          0x3a000
+#define IR_DATA_SECT_3_EXT_ADDR_COPY          0x3b000
+
+#define IR_DATA_SECT_0_ADDR_COPY              0x3c000
+#define IR_DATA_SECT_1_ADDR_COPY              0x3d000
+#define IR_DATA_SECT_2_ADDR_COPY              0x3e000
+#define IR_DATA_SECT_3_ADDR_COPY              0x3f000
+
+#define MAC_DATA_SECT_ADDR_COPY               0x7b000
+#define WAKEUP_KEYINDEX_DATA_SECT_ADDR_COPY   0x7c000
+#define IR_KEY_EVENT_NOTIFY_SECT_ADDR_COPY    0x7d000
+#define CCC_DATA_AREA_COPY                    0x7e000
 
 #define IR_DATA_SECT_MAX_NUM                  12   //Each sector can be written 3 times ,4*3
 #define IR_DATA_SECT_NUM                      4
@@ -67,16 +81,17 @@ extern "C" {
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////
-#define BLE_REMOTE_PM_ENABLE                  1
-#define PM_DEEPSLEEP_RETENTION_ENABLE         1
+#define BLE_REMOTE_PM_ENABLE                  0
+#define PM_DEEPSLEEP_RETENTION_ENABLE         0
 #define BLE_REMOTE_SECURITY_ENABLE            1
 #define BLE_REMOTE_OTA_ENABLE                 1
 #define REMOTE_IR_ENABLE                      1
 #define BATT_CHECK_ENABLE                     1   //must enable
-#define BLE_AUDIO_ENABLE                      1
+#define BLE_AUDIO_ENABLE                      0
 #define BLT_APP_LED_ENABLE                    1
 #define BLT_TEST_SOFT_TIMER_ENABLE            1
 #define DEVICE_INFO                           0
+#define APP_IR_OVER_BLE                       0
 
 #define UNUSED_GPIO_PULLDOWN_ENABLE           0
 
@@ -92,7 +107,7 @@ extern "C" {
 #define REMOTE_G20                            2
 
 
-#define MP_TEST_MODE                          1
+#define MP_TEST_MODE                          0
 
 /////////////////// TEST MODE & DUT ////////////////////////////////
 #if (MP_TEST_MODE)
@@ -535,7 +550,6 @@ typedef enum
 
 
 #if (BLE_AUDIO_ENABLE)
-    #if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
     /********************************************************************************************
     * GOOGLE AUDIO service 9:
     ********************************************************************************************/
@@ -548,24 +562,9 @@ typedef enum
     AUDIO_GOOGLE_CTL_CD_H,
     AUDIO_GOOGLE_CTL_DP_H,
     AUDIO_GOOGLE_CTL_CCC_H,
-
-    #elif (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_TLEINK)
-    //// Audio ////
-    /**********************************************************************************************/
-    AUDIO_PS_H,                             //UUID: 2800,     VALUE: telink audio service uuid
-
-    //mic
-    AUDIO_MIC_INPUT_CD_H,                   //UUID: 2803,     VALUE:              Prop: Read | Notify
-    AUDIO_MIC_INPUT_DP_H,                   //UUID: telink mic uuid,  VALUE: micData
-    AUDIO_MIC_INPUT_CCB_H,                  //UUID: 2A19      VALUE: micDataCCC
-    AUDIO_MIC_INPUT_DESC_H,                 //UUID: 2901,     VALUE: micName
-
-    //speaker
-    AUDIO_SPEAKER_OUT_CD_H,                 //UUID: 2803,     VALUE:              Prop: write_without_rsp
-    AUDIO_SPEAKER_OUT_DP_H,                 //UUID: telink speaker uuid,  VALUE: speakerData
-    AUDIO_SPEAKEROUT_DESC_H,                //UUID: 2901,     VALUE: speakerName
-    #endif
 #endif
+
+#if APP_IR_OVER_BLE
 
     //ir
     IR_PS_H,                                //UUID: 2800,     VALUE: telink audio service uuid
@@ -581,6 +580,7 @@ typedef enum
     IR_KEY_EVENT_H,
     IR_KEY_EVENT_CCC_H,
 
+#endif
 
 #if (MP_TEST_MODE)
     //// Test Mode ////

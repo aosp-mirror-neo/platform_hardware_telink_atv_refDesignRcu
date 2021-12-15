@@ -51,15 +51,15 @@ void proc_keyboard (u8 e, u8 *p, int n);
     int att_ccc_control(void* p);
 
 
-extern    u8      key_type;
-extern    int     key_not_released;
+extern u8   key_type;
+extern int  key_not_released;
+extern int  ir_not_released;
+extern u8   user_key_mode;
+extern u8   ir_hw_initialed;
+extern u8   ota_is_working;
+extern int  lowBatt_alarmFlag;
 
-extern    int     ir_not_released;
-extern    u8      user_key_mode;
-extern    u8      ir_hw_initialed;
-extern    u8      ota_is_working;
-extern    int     lowBatt_alarmFlag;
-
+extern u8  app_mtu_size;
 
 extern void app_pairing_led(void);
 extern void app_pairing_error(void);
@@ -71,4 +71,5 @@ extern void app_schedule_ota_send_notify_to_continue_ota(void);
 extern void app_ota_timeout(void);
 extern int app_cachekey_send_timer(void);
 extern u8 app_is_key_released(void);
+
 #endif /* APP_UI_H_ */

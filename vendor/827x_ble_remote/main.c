@@ -71,6 +71,8 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     blc_pm_select_internal_32k_crystal();
 
+    bls_ota_set_fwSize_and_fwBootAddr(92,0x20000);
+
 #if(MCU_CORE_TYPE == MCU_CORE_8258)
     cpu_wakeup_init();
 #elif(MCU_CORE_TYPE == MCU_CORE_8278)
@@ -111,6 +113,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     if(!deepRetWakeUp){//read flash size
         //app_custom_test();
+        app_custom_flash_data_copy();
         app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();

@@ -53,29 +53,26 @@
 #define IR_KEY                     3
 #define VOICE_KEY                  4
 
-_attribute_data_retention_    u8      key_type;
-_attribute_data_retention_    int     key_not_released;
+_attribute_data_retention_ u8  key_type;
+_attribute_data_retention_ int key_not_released;
 
+_attribute_data_retention_ u8  ota_is_working = 0;
+_attribute_data_retention_ u8  app_mtu_size = 23;
 
-_attribute_data_retention_    u8       ota_is_working = 0;
-
-
-
-
-_attribute_data_retention_    int     ir_not_released=0;
-_attribute_data_retention_    u8      user_key_mode;
+_attribute_data_retention_ int ir_not_released=0;
+_attribute_data_retention_ u8  user_key_mode;
 u8      ir_hw_initialed = 0;   //note: can not be retention variable
 _attribute_data_retention_ u8 repairing_flag = 0;
 _attribute_data_retention_ u8 is_pairing_mode=0;
 _attribute_data_retention_ u8 is_reconn_mode=0;
-_attribute_data_retention_    u8  ota_flag = 0;  //0:pause 1:continue
+_attribute_data_retention_ u8 ota_flag = 0;  //0:pause 1:continue
 
 extern u8 comb_key_keyid[9];
 extern    u32     latest_user_event_tick;
 extern u8 lowbat;
 extern u8 device_in_connection_state;
 extern u8 flag_schedule_ota;
-extern u8  device_timeout_state;
+extern u8 device_timeout_state;
 extern u8 wakeup_src;
 extern u8 power_down_flag;
 extern u8 wakeup_key_keyid;
@@ -267,10 +264,15 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 #if (BLE_REMOTE_OTA_ENABLE)
 #include "app_ota.h"
 extern u8  mac_public[6];
+extern u32 ota_program_offset;
+extern int ota_program_bootAddr;
 u8 app_enter_ota_mode(u8 *data)
 {
     printf("start data:");
     array_printf(data,4);
+    //v2p0 must be fixed to 0x40000
+    ota_program_offset = 0x40000;
+    ota_program_bootAddr = 0x40000;
 
     u8 check_data[4];
     bls_ota_get_random(check_data);
@@ -580,7 +582,6 @@ void deepback_post_proc(void)
     }
 #endif
 }
-#if BLE_AUDIO_ENABLE
 
 #include "application/audio/gl_audio.h"
 
@@ -647,7 +648,9 @@ u8 app_repairing(void)
          printf("app_repairing\r\n");
          app_adv_indirect();
          repairing_flag = 0;
+#if BLE_AUDIO_ENABLE
          notify_get_rsp_en = 0;
+#endif
          return 1;
     }
     return 0;
@@ -727,7 +730,9 @@ int app_cachekey_send_timer(void)
     key0 = app_key_store_buffer[0];
     printf("send cache key key=%x\r\n",key0);
     {
+#if APP_IR_OVER_BLE
         programming_key_set(0);
+#endif
         key_value = p_kb_map_ble[key0];
         if(key_value >= CR_MEDIA_KEY_INDEX )
         {
@@ -789,7 +794,9 @@ void app_key_send_store(void)
     else
     */
     {
+#if APP_IR_OVER_BLE
         programming_key_set(0);
+#endif
         key_value = p_kb_map_ble[key0];
         if(key_value >= CR_MEDIA_KEY_INDEX )
         {
@@ -895,7 +902,9 @@ void comb_key_stop_ir(void)
         if( ir_send_ctrl.is_sending)
         {
              printf("comb_key_stop_ir_2\r\n");
+#if APP_IR_OVER_BLE
              programming_key_set(0);
+#endif
              ir_send_release();
         }
     }
@@ -905,7 +914,9 @@ void comb_key_stop_ir(void)
         if(ir_send_ctrl.is_sending)
         {
              printf("comb_key_stop_ir and ir release\r\n");
+#if APP_IR_OVER_BLE
              programming_key_set(0);
+#endif
              ir_send_release();
         }
     }
@@ -920,11 +931,12 @@ _attribute_data_retention_     u8 factory_reset_timer_count = 0;
 int app_factory_reset_timer(void)
 {
     u8 bond_number;
-    u16 i=0;
     printf("app_factory_reset_timer\r\n");
     if(device_in_connection_state)
     {
+#if BLE_AUDIO_ENABLE
         printf("app_factory_reset_timer_google_voice_ctl=%x\r\n",google_voice_ctl);
+        u16 i=0;
         if(((google_voice_ctl & FLAG_AUDIO_CLOSE) == 0) || (ota_is_working))
         {
             if(ota_is_working)
@@ -953,6 +965,7 @@ int app_factory_reset_timer(void)
             }
         }
         else
+#endif
         {
             factory_reset_timer_count++;
             if(factory_reset_timer_count < 20)
@@ -962,7 +975,9 @@ int app_factory_reset_timer(void)
         }
     }
 
+#if APP_IR_OVER_BLE
     ir_flash_factory();
+#endif
     flash_erase_sector(MAC_DATA_SECT_ADDR);
     bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     printf("bond_number=%x\r\n",bond_number);
@@ -974,11 +989,14 @@ int app_factory_reset_timer(void)
     factory_reset_flag = 0;
     factory_reset_temi_conn_flag = 0;
     factory_reset_timer_count = 0;
+#if BLE_AUDIO_ENABLE
     google_voice_ctl = 0;
+#endif
     ota_is_working = 0;
     return -1;
 }
 
+#if BLE_AUDIO_ENABLE
 void app_mic_led(u8 en)
 {
     if(audio_start_reason == REASON_PTT)
@@ -1010,6 +1028,7 @@ void app_mic_led(u8 en)
         }
     }
 }
+#endif
 
 void app_keypress_led(u8         ir_key)
 {
@@ -1082,7 +1101,9 @@ int app_poweron_timeout(void)
      if((bond_number == 0) && (en_ble_adv))
      {
          is_pairing_mode = 0x55;
+#if BLE_AUDIO_ENABLE
          notify_get_rsp_en = 1;
+#endif
          app_pairing_led();
          app_adv_indirect();
      }
@@ -1261,10 +1282,11 @@ void key_change_proc(void)
                 return;
             }
          }
-#endif
+
           active_mic_open();
+#endif
           key_type = IR_KEY;
-          
+#if (APP_IR_OVER_BLE)
           if(ir_key_is_suppress(key0) == 0)
           {
               //printf("is suppress\r\n");
@@ -1276,12 +1298,15 @@ void key_change_proc(void)
                   return;
               }
           }
+#endif
           app_keypress_led(0);
           if(app_keycache(key0) == 1)
           {
               return;
           }
+#if APP_IR_OVER_BLE
           programming_key_set(0);
+#endif
           if(device_in_connection_state)
           {
                 key_value = p_kb_map_ble[key0];
@@ -1300,10 +1325,12 @@ void key_change_proc(void)
                          return;
                     }
                     bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+#if BLE_AUDIO_ENABLE
                     if(consumer_key[0] == G00GLE_MKEY_CENTER)
                     {
                         google_voice_dpad_select();
                     }
+#endif
                 }
                 else
                 {
@@ -1348,6 +1375,7 @@ void key_change_proc(void)
     {
         printf("key release\r\n");
         advertise_tick_retime();
+#if BLE_AUDIO_ENABLE
         if((audio_start_reason == REASON_HTT) && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
             printf("key release_audio_start_reason:0x%x\n",audio_start_reason);
             google_voice_ctl |= FLAG_AUDIO_CLOSE;
@@ -1356,18 +1384,21 @@ void key_change_proc(void)
             ui_enable_mic(0);
             g_delay_send_audio_stop = clock_time();
         }
+#endif
         key_not_released = 0;
         keyScanLongPressTick = 0;
         LongPressTick = 0;
         #if (STUCK_KEY_PROCESS_ENABLE)
         stuckkey_keypresstimer = 0;
         #endif
+#if APP_IR_OVER_BLE
         if(is_programming_key_send() == 1)
         {
            printf("key up\r\n");
            ir_fallback_send(0);
         }
         programming_key_set(0);
+#endif
         printf("key_type=%x\r\n",key_type);
         if(key_type == CONSUMER_KEY)
         {
@@ -1390,7 +1421,9 @@ void key_change_proc(void)
                 {
                     ir_dispatch(TYPE_IR_RELEASE, 0, 0);  //release
                 }
+#if (APP_IR_OVER_BLE)
                 ir_repeat_delay_release_time();
+#endif
             }
         }
 #endif
@@ -1416,26 +1449,32 @@ void app_factory_reset(void)
     is_pairing_mode = 0;
 
     flag_ccc_data = 0;
+#if BLE_AUDIO_ENABLE
     atv_char_ctl_ccc = 0;
     atv_char_rx_ccc = 0;
+#endif
     write_ccc_info(&flag_ccc_data);
     //led
     device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
 
     //ir
     write_ir_key_event_notify(0);
+#if APP_IR_OVER_BLE
     ir_table_init();
+#endif
     analog_write(DEEP_ANA_REG2, 0);
     bls_ll_setAdvEnable(0);
     if(device_in_connection_state)
     {
         printf("Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
+#if BLE_AUDIO_ENABLE
         if(ui_mic_enable)
         {
             audio_open = 1;
             extern u8 app_audio_key_stop(u8 reason);
             app_audio_key_stop(REASON_OTHERS);
         }
+#endif
     }
     extern void app_enter_deep_timeset(void);
     app_enter_deep_timeset();
@@ -1521,12 +1560,16 @@ void proc_keyboard (u8 e, u8 *p, int n)
             is_pairing_mode = 0x55;
             if(is_reconn_mode)
                 is_reconn_mode = 0;
+#if BLE_AUDIO_ENABLE
             notify_get_rsp_en = 1;
+#endif
             if(device_in_connection_state == 0)
             {
                 app_stop_wakeup_loop();
+#if APP_IR_OVER_BLE
                 ir_table_init();
                 ir_flash_set_flag(0);
+#endif
                 app_set_adv_interval_downgrade_indirect();
                 extern void app_adv_indirect(void);
                 app_adv_indirect();
@@ -1586,7 +1629,6 @@ void proc_keyboard (u8 e, u8 *p, int n)
 
     //app_key_send_store();
 }
-#endif
 
 extern u32    scan_pin_need;
 
@@ -1676,6 +1718,8 @@ int att_ccc_control(void* p){
     u8 save_to_flash = 1;
 
     switch(handle){
+#if BLE_AUDIO_ENABLE
+
         case AUDIO_GOOGLE_RX_CCC_H:
         {
             printf("AUDIO_GOOGLE_RX_CCC_H\n");
@@ -1720,6 +1764,7 @@ int att_ccc_control(void* p){
             }
             break;
         }
+#endif
         case OTA_CMD_OUT_CCC_H:
         {
             printf("OTA_CMD_OUT_CCC_H\n");
