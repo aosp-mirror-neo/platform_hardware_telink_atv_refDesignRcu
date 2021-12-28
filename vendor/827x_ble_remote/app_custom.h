@@ -29,8 +29,6 @@
 
 #define APP_CUSTOM_WAKEUPKEY_NUM 12
 
-extern u8 device_type;
-extern u8 wakeup_key_pos;
 extern const unsigned char Kb_Map_Normal[8][3];
 extern u8 nec_ir_addr1_table[48];
 extern u8 nec_ir_addr2_table[48];
@@ -38,11 +36,15 @@ extern u8 nec_ir_cmd1_table[48];
 extern u8 nec_ir_cmd2_table[48];
 extern u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
+extern u8 en_google_wakeuppack;
 extern u8 en_ble_adv;
+
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);
+extern u8 app_custom_get_device_type(void);
 extern void app_custom_param_init(u8 device_layout);
 extern u8 app_custom_is_enable_wakeup_key(void);
 extern u8  app_custom_wakeupkey_packet_index(u8 keyid);
-extern void app_custom_flash_data_copy(void);
+extern void app_custom_data_update_process(u8 *data,u16 len);
+extern void app_custom_data_update_sector_erase_loop(void);
 #endif

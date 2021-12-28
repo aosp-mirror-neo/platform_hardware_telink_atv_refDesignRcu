@@ -161,7 +161,7 @@ void sub_u32(unsigned int *a, unsigned int *b, unsigned int *c, unsigned int wor
  *                   type of aWordLen is int32_t, not uint32_t
  */
 //unsigned int uint32_big_div2n(unsigned int a[], signed int aWordLen, unsigned int n);
-unsigned int div2n_u32(unsigned int a[], signed int aWordLen, unsigned int n);
+unsigned int div2n_u32(unsigned int a[], unsigned int aWordLen, unsigned int n);
 /**
  * @brief      This function serves to get pke status.
  * @param[in]  none.

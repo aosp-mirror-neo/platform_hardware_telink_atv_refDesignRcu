@@ -32,10 +32,7 @@
 #include "app_ota.h"
 #include "app_ir.h"
 #include "app_custom.h"
-
-#if (MP_TEST_MODE)
 #include "app_test.h"
-#endif
 
 typedef struct
 {
@@ -98,15 +95,11 @@ static const u16 my_appearance = GAP_APPEARE_UNKNOWN;
 
 static const u16 my_gattServiceUUID = SERVICE_UUID_GENERIC_ATTRIBUTE;
 
-_attribute_data_retention_ u8 my_devName[20];
-_attribute_data_retention_ u8 my_devNamelen;
-
 static u16 serviceChangeVal[2] = {0};
 
 static u8 serviceChangeCCC[2] = {0,0};
 
 static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
-_attribute_data_retention_ u8 my_PnPtrs []       = {0x02, 0x8a, 0x24, 0x66, 0x82, 0x01, 0x00};
 
 
  _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','1'};
@@ -216,10 +209,10 @@ static const u8 reportMap[] =
     // Key arrays (6 bytes)
     0x95, 0x06,     // Report Count (6)
     0x75, 0x08,     // Report Size (8)
-    0x15, 0x00,     // Log Min (0)
+    0x15, 0x1e,     // Log Min (0)
     0x25, 0xF1,     // Log Max (241)
     0x05, 0x07,     // Usage Pg (Key Codes)
-    0x19, 0x00,     // Usage Min (0)
+    0x19, 0x1e,     // Usage Min (0)
     0x29, 0xf1,     // Usage Max (241)
     0x81, 0x00,     // Input: (Data, Array)
 
@@ -524,7 +517,6 @@ int app_ir_callback(void *p)
 {
     u16 handle,len;
     u16 printf_len;
-    u16 i;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
     handle = pw->handle;
@@ -535,10 +527,10 @@ int app_ir_callback(void *p)
 
     len = pw->l2cap-3;//pw->rf_len-7;
     printf_len = len;
-    #if 1
+    #if 0
     if(printf_len > 6)
         printf_len = 6;
-    for(i=0;i<printf_len;i++)
+    for(u16 i=0;i<printf_len;i++)
         printf(" %x",pw->dat[i]);
     #endif
     printf("len=%x\r\n",len);
@@ -548,12 +540,11 @@ int app_ir_callback(void *p)
     return 0;
 }
 
-#if APP_IR_OVER_BLE
-int app_nec_ir_table_callback(void *p)
+
+int app_necir_or_dataupdate(void *p)
 {
     u16 handle,len;
     u16 printf_len;
-    //u16 i;
 
     rf_packet_att_data_t *pw = (rf_packet_att_data_t *)p;
     handle = pw->handle;
@@ -567,29 +558,31 @@ int app_nec_ir_table_callback(void *p)
 
     #if 0
     printf("len=%x\r\n",len);
-    for(i=0;i<printf_len;i++)
+    for(u8 i=0;i<printf_len;i++)
         printf(" %x",pw->dat[i]);
     #endif
 
+#if APP_IR_OVER_BLE
     ir_nec_ir_table_process(pw->dat,len);
+#endif
+
+#if APP_DATA_UPDATE_OVER_BLE
+    app_custom_data_update_process(pw->dat,len);
+#endif
+
     return 0;
 }
-#endif
 
 int app_ota_handle(void * p){
 
     int result=0;
 
-#if APP_IR_OVER_BLE
-    app_nec_ir_table_callback(p);
-#endif
+    app_necir_or_dataupdate(p);
+
     result = app_ota_write(p);
 
     return result;
 }
-
-
-
 
     static const attribute_t my_Attributes[] = {
 #if (MP_TEST_MODE)
@@ -601,7 +594,7 @@ int app_ota_handle(void * p){
         // 0001 - 0007  gap         (1-7)
         {7,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_gapServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
+        {0,ATT_PERMISSIONS_READ,2,sizeof(_custom_data.device_name), (u8*)(&my_devNameUUID), (u8*)(_custom_data.device_name), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID),     (u8*)(&my_appearance), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
@@ -619,7 +612,7 @@ int app_ota_handle(void * p){
 
         {9,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_devServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_PnCharVal),(u8*)(&my_characterUUID), (u8*)(my_PnCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof (my_PnPtrs),(u8*)(&my_PnPUUID), (u8*)(my_PnPtrs), 0},
+        {0,ATT_PERMISSIONS_READ,2,sizeof (_custom_data.pnp_id),(u8*)(&my_PnPUUID), (u8*)(_custom_data.pnp_id), 0},
 
         //firmware revision string  (15-16)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_FWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_FWRevCharVal), 0},
@@ -752,7 +745,7 @@ int app_ota_handle(void * p){
         // 0001 - 0007              (1-7)
         {7,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_gapServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_devNameCharVal),(u8*)(&my_characterUUID), (u8*)(my_devNameCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof(my_devName), (u8*)(&my_devNameUUID), (u8*)(my_devName), 0},
+        {0,ATT_PERMISSIONS_READ,2,sizeof(_custom_data.device_name), (u8*)(&my_devNameUUID), (u8*)(_custom_data.device_name), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_appearanceCharVal),(u8*)(&my_characterUUID), (u8*)(my_appearanceCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_appearance), (u8*)(&my_appearanceUIID),     (u8*)(&my_appearance), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_periConnParamCharVal),(u8*)(&my_characterUUID), (u8*)(my_periConnParamCharVal), 0},
@@ -772,7 +765,7 @@ int app_ota_handle(void * p){
         // PnP ID                   (12-14)
         {9,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_devServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_PnCharVal),(u8*)(&my_characterUUID), (u8*)(my_PnCharVal), 0},
-        {0,ATT_PERMISSIONS_READ,2,sizeof (my_PnPtrs),(u8*)(&my_PnPUUID), (u8*)(my_PnPtrs), 0},
+        {0,ATT_PERMISSIONS_READ,2,sizeof (_custom_data.pnp_id),(u8*)(&my_PnPUUID), (u8*)(_custom_data.pnp_id), 0},
         
         // firmware revision string (15-16)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_FWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_FWRevCharVal), 0},
@@ -862,6 +855,7 @@ int app_ota_handle(void * p){
         ********************************************************************************************/
         // 0039 - 0041
         // primary                  (57)
+#if BLE_AUDIO_ENABLE
         {9,ATT_PERMISSIONS_READ,2,16, (u8*)(&my_primaryServiceUUID), (u8*)(&ATVV_Server_UUID), 0},
 
         // TX                       (58-59)
@@ -877,10 +871,11 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_MicCharCtl),(u8*)(&my_characterUUID),(u8*)(my_MicCharCtl), 0},
         {0,ATT_PERMISSIONS_READ,16,sizeof(atv_char_ctl_data),(u8*)(&ATVV_Char_UUID_CTL),(u8*)(&atv_char_ctl_data), 0},
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(atv_char_ctl_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&atv_char_ctl_ccc), &att_ccc_control},
-
+#endif
 
         /////////////////////////////////// 8. IR //////////////////////////////////////////////////////////
         // 0042 - 004D              (66-77)
+#if APP_IR_OVER_BLE
         {12,ATT_PERMISSIONS_READ,2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_IrUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_Ir_ProgControl_CharVal),(u8*)(&my_characterUUID), (u8*)(my_Ir_ProgControl_CharVal), 0},        //prop
         {0,ATT_PERMISSIONS_RDWR,16,0,(u8*)(&my_Ir_ProgControlUUID), 0, &app_ir_callback},
@@ -893,7 +888,7 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_Ir_Key_Event_CharVal),(u8*)(&my_characterUUID),    (u8*)(my_Ir_Key_Event_CharVal), 0},            //prop
         {0,ATT_PERMISSIONS_RDWR,16,0,(u8*)(&my_Ir_KeyEventUUID), 0, 0},
         {0,ATT_PERMISSIONS_RDWR,2,0,(u8*)(&clientCharacterCfgUUID), 0, &app_ir_callback},
-
+#endif
 
         /////////////////////////////////// 9. TEST MODE ///////////////////////////////////////////////////
         // 004E - 0051              (78-81)

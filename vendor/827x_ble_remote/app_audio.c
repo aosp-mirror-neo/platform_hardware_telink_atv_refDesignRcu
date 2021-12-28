@@ -36,6 +36,7 @@
 #include "stack/ble/ble.h"
 #include "battery_check.h"
 
+
 _attribute_data_retention_    u8        ui_mic_enable = 0;
 _attribute_data_retention_    u8        key_on_request_press = 0;
 _attribute_data_retention_    u8        key_ptt_press = 0;

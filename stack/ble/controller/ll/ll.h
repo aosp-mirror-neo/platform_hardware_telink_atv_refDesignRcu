@@ -265,6 +265,47 @@ bool         blc_ll_isBrxBusy (void);
 void  blc_ll_set_CustomedAdvScanAccessCode(u32 accss_code);
 
 
+/**
+ * @brief      this function is used to get local supported feature by HCI.
+ * @param[in]  features - support feature buffer.
+ * @return     status, 0x00:  succeed
+ *                        other: failed
+ */
+ble_sts_t blc_hci_le_getLocalSupportedFeatures(u8 *features);
+
+
+/**
+ * @brief      this function is used to reset HCI state.
+ * @param       none
+ * @return     status, 0x00:  succeed
+ *                        other: failed
+ */
+ble_sts_t          blc_hci_reset(void);
+
+
+/**
+ * @brief      this function is used to set maximum md number.
+ * @param[in]  num - max number
+ * @return     none
+ */
+void         blc_ll_init_max_md_nums(u8 num);
+
+
+/**
+ * @brief      this function is used to get random MAC address.
+ * @param[in]  none
+ * @return     none
+ */
+u8*     blc_ll_get_macAddrRandom(void);
+
+
+/**
+ * @brief      this function is used to get public MAC address.
+ * @param[in]  none
+ * @return     none
+ */
+u8*     blc_ll_get_macAddrPublic(void);
+
 #if (MCU_CORE_TYPE == MCU_CORE_9518)
 /**
  * @brief      this function is used check if any controller buffer initialized by application incorrect.

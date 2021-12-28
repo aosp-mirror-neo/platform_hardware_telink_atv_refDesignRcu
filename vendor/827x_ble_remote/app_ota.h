@@ -31,7 +31,7 @@
 #define CMD_REPORT_VERSION                    0xfe00
 #define CMD_CONTROL                           0xfe01
 
-#define OTA_PROTECT_VOLTAGE                   2300    //mv
+#define OTA_PROTECT_VOLTAGE                   2400    //mv
 
 #define CLIENT_REPORT_CMD                     0xfe
 

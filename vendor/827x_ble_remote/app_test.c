@@ -25,6 +25,9 @@
  *******************************************************************************************************/
 
 #include "tl_common.h"
+#include "app_test.h"
+
+_attribute_data_retention_ _tCustom_Data _custom_data = { 0x00, };
 
 #if (MP_TEST_MODE)
 
@@ -42,7 +45,6 @@
 #include "rc_ir.h"
 #include "battery_check.h"
 #include "app_flash_write.h"
-#include "app_test.h"
 
 
 #define _ON                          1
@@ -138,19 +140,6 @@ typedef enum
     _KEY_IDX_NONE = 0xFF
 } _tKey_Index;
 
-typedef struct
-{
-    u8 device_type;
-    u8 pnp_id[7];
-    u8 device_name_length;
-    u8 device_name[29];
-    u8 device_ui_layout;
-    u8 wakeup_key_1[2];
-    u8 wakeup_key_2[2];
-    u8 wakeup_packet[35];
-} _tCustom_Data;
-
-
 extern void my_att_init(void);
 extern void ir_dispatch(u8 type, u8 syscode, u8 ircode);
 extern int ir_sending_check(void);
@@ -174,8 +163,6 @@ extern _attribute_data_retention_ u8 bak_batpercent;
 
 static tTest_State _stat = TEST_STAT_USERMODE;
 static _tKey_Index _key = _KEY_IDX_NONE;
-static _tCustom_Data _custom_data = { 0x00, };
-
 
 static void _output_ir_nec(u8 ir_code)
 {
@@ -257,7 +244,7 @@ static _tKey_Index _conv_key_code_to_idx(u8 key_code)
 
     return _KEY_IDX_NONE;
 }
-
+#if BLE_AUDIO_ENABLE
 static void _ctrl_google_voice(bool is_start)
 {
     if (is_start)
@@ -278,6 +265,7 @@ static void _ctrl_google_voice(bool is_start)
         _ctrl_led(_ON, _ON);
     }
 }
+#endif
 
 static void _switch_to_user_mode(void)
 {
@@ -299,8 +287,12 @@ static void _parse_custom_data(void)
     u8 idx = 0;
 
     flash_read_page(_FLASH_CUSTOM_DATA_AREA, sizeof(_tCustom_Data), buf);
-
-    _custom_data.device_type = buf[idx++];
+    if(buf[0] == 0xff)
+    {
+        _custom_data.device_type = REMOTE_G10;
+    }
+    else
+        _custom_data.device_type = buf[idx++];
 
     memcpy(_custom_data.pnp_id, &buf[idx], sizeof(_custom_data.pnp_id));
     idx += sizeof(_custom_data.pnp_id);
@@ -344,6 +336,7 @@ void test_entry_mode(void)
     }
 
     app_factory_reset();
+
 
     _parse_custom_data();
 
@@ -457,13 +450,11 @@ void test_proc_key(void)
                 {
                     u8 vender_id[2] = { 0x00, };
                     u8 product_id[2] = { 0x00, };
-
                     flash_read_page(_FLASH_CUSTOM_DATA_AREA + 2, 2, vender_id);
                     flash_read_page(_FLASH_CUSTOM_DATA_AREA + 4, 2, product_id);
                     _output_ir_nec_custom(vender_id[1], vender_id[0], product_id[1], product_id[0]);
                 }
                 break;
-
             default:
                 _ctrl_led(_ON, _ON);
                 break;
@@ -513,6 +504,7 @@ int test_write_cb(void *p)
 
     switch (cmd)
     {
+#if BLE_AUDIO_ENABLE
     case _RF_CMD_VOICE_START:
         blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
         _ctrl_google_voice(TRUE);
@@ -521,7 +513,7 @@ int test_write_cb(void *p)
     case _RF_CMD_VOICE_STOP:
         _ctrl_google_voice(FALSE);
         break;
-
+#endif
     case _RF_CMD_RSSI_REQ:
         buf[idx++] = _RF_CMD_RSSI_RES;
         buf[idx++] = blc_ll_getLatestAvgRSSI();

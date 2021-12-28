@@ -70,14 +70,17 @@ eccp_curve_t secp256r1[1]={
 unsigned char ecdsa_sign4(eccp_curve_t *curve, unsigned int *e, unsigned int *k, unsigned int *dA, unsigned int *r, unsigned int *s)
 {
     unsigned char ret;
-    unsigned int nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
-    unsigned int pWordLen = GET_WORD_LEN(curve->eccp_p_bitLen);
+    unsigned int nWordLen;
+    unsigned int pWordLen;
     unsigned int tmp1[ECC_MAX_WORD_LEN];
 
     if(0 == curve || 0 == e || 0 == k || 0 == dA || 0 == r || 0 == s)
     {
         return ECDSA_POINTOR_NULL;
     }
+
+    nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
+    pWordLen = GET_WORD_LEN(curve->eccp_p_bitLen);
 
     if(curve->eccp_p_bitLen > ECC_MAX_BIT_LEN)
     {
@@ -167,8 +170,8 @@ unsigned char ecdsa_sign(eccp_curve_t *curve, unsigned char *E, unsigned int EBy
                    unsigned char *signature)
 {
     unsigned int tmpLen;
-    unsigned int nByteLen = GET_BYTE_LEN(curve->eccp_n_bitLen);
-    unsigned int nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
+    unsigned int nByteLen;
+    unsigned int nWordLen;
     unsigned int e[ECC_MAX_WORD_LEN], k[ECC_MAX_WORD_LEN], dA[ECC_MAX_WORD_LEN];
     unsigned int r[ECC_MAX_WORD_LEN], s[ECC_MAX_WORD_LEN];
     unsigned char ret;
@@ -187,6 +190,9 @@ unsigned char ecdsa_sign(eccp_curve_t *curve, unsigned char *E, unsigned int EBy
     {
         return ECDSA_INVALID_INPUT;
     }
+
+    nByteLen = GET_BYTE_LEN(curve->eccp_n_bitLen);
+    nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
 
     //get integer e from hash value E(according to SEC1-V2 2009)
     memset(e, 0, nWordLen<<2);
@@ -284,11 +290,11 @@ u8 B_proc = 0;
 unsigned char ecdsa_verify(eccp_curve_t *curve, unsigned char *E, unsigned int EByteLen, unsigned char *pubKey, unsigned char *signature)
 {
     unsigned int tmpLen;
-    unsigned int nByteLen = GET_BYTE_LEN(curve->eccp_n_bitLen);
-    unsigned int nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
-    unsigned int pByteLen = GET_BYTE_LEN(curve->eccp_p_bitLen);
-    unsigned int pWordLen = GET_WORD_LEN(curve->eccp_p_bitLen);
-    unsigned int maxWordLen = GET_MAX_LEN(nWordLen,pWordLen);
+    unsigned int nByteLen;
+    unsigned int nWordLen;
+    unsigned int pByteLen;
+    unsigned int pWordLen;
+    unsigned int maxWordLen;
     unsigned int e[ECC_MAX_WORD_LEN], r[ECC_MAX_WORD_LEN], s[ECC_MAX_WORD_LEN];
     unsigned int tmp[ECC_MAX_WORD_LEN], x[ECC_MAX_WORD_LEN];
     unsigned char ret;
@@ -307,6 +313,13 @@ unsigned char ecdsa_verify(eccp_curve_t *curve, unsigned char *E, unsigned int E
     {
         return ECDSA_INVALID_INPUT;
     }
+
+    nByteLen = GET_BYTE_LEN(curve->eccp_n_bitLen);
+    nWordLen = GET_WORD_LEN(curve->eccp_n_bitLen);
+    pByteLen = GET_BYTE_LEN(curve->eccp_p_bitLen);
+    pWordLen = GET_WORD_LEN(curve->eccp_p_bitLen);
+
+    maxWordLen = GET_MAX_LEN(nWordLen,pWordLen);
 
     //make sure r in [1, n-1]
     memset(r, 0, (nWordLen<<2)-nByteLen);

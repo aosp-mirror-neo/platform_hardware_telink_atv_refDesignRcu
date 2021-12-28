@@ -72,7 +72,7 @@ enum {
  */
 void audio_amic_init(AudioRate_Typedef Audio_Rate)
 {
-    if((analog_read(pga_audio_enable) && 0x04) == 0x04) // check pga audio enable
+    if((analog_read(pga_audio_enable) & 0x04) == 0x04) // check pga audio enable
     {
         analog_write(pga_audio_enable,analog_read(pga_audio_enable) & 0xFB);
     }

@@ -271,11 +271,11 @@ void rc_ir_irq_prc(void)
     if(reg_pwm_irq_sta & FLD_IRQ_PWM0_IR_DMA_FIFO_DONE){
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //clear irq status
         ir_send_ctrl.is_full_sequence = 0x55;
-#if APP_IR_OVER_BLE
+    #if APP_IR_OVER_BLE
         if(is_programming_key_send() == 0)
-#else
+    #else
         if(1)
-#endif
+    #endif
         {
             if(ir_send_ctrl.repeat_enable){
 
@@ -395,7 +395,7 @@ void rc_ir_init(void)
 void  ir_send_specil (u16 freq, u8 cycle)
 {
     u32 max_tick,cmp_tick;
-    u8 length;
+    u32 length;
 
     max_tick = CLOCK_SYS_CLOCK_HZ/freq;
     cmp_tick = cycle*max_tick/100;

@@ -34,22 +34,9 @@ extern "C" {
 #include  "application/audio/audio_common.h"
 #include  "application/usbstd/usbkeycode.h"
 
-#define IR_DATA_SECT_0_EXT_ADDR               0x65000
-#define IR_DATA_SECT_1_EXT_ADDR               0x66000
-#define IR_DATA_SECT_2_EXT_ADDR               0x67000
-#define IR_DATA_SECT_3_EXT_ADDR               0x68000
-
-#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x69000
-#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x6a000
-#define IR_DATA_SECT_0_ADDR                   0x6c000
-#define IR_DATA_SECT_1_ADDR                   0x6d000
-#define IR_DATA_SECT_2_ADDR                   0x6e000
-#define IR_DATA_SECT_3_ADDR                   0x6f000
 
 
-#define CCC_DATA_AREA                         0x70000
-#define MAC_DATA_SECT_ADDR                    0x71000
-
+#define APP_TEST_SECT_ADDR                    0x73000
 
 #define APP_CUSTOM_ADDR                       0x78000
 #define APP_EN_BLE_ADV                        0x780FD
@@ -58,22 +45,29 @@ extern "C" {
 #define APP_AUTHENTICATION_ADDR               0x78100
 #define APP_ENCRYPTION_ADDR                   0x78200
 #define APP_ECDSA_PUBKEY_ADDR                 0x78300
+
 #define APP_NEC_IR_CODE_TABLE                 0x79000
+#define APP_DATA_UPDATE_OVER_OTA_ADDR         0x7a000
 
-#define IR_DATA_SECT_0_EXT_ADDR_COPY          0x38000
-#define IR_DATA_SECT_1_EXT_ADDR_COPY          0x39000
-#define IR_DATA_SECT_2_EXT_ADDR_COPY          0x3a000
-#define IR_DATA_SECT_3_EXT_ADDR_COPY          0x3b000
+#define APP_DATA_UPDATE_ADDR_OFFSET           APP_DATA_UPDATE_OVER_OTA_ADDR - APP_CUSTOM_ADDR
 
-#define IR_DATA_SECT_0_ADDR_COPY              0x3c000
-#define IR_DATA_SECT_1_ADDR_COPY              0x3d000
-#define IR_DATA_SECT_2_ADDR_COPY              0x3e000
-#define IR_DATA_SECT_3_ADDR_COPY              0x3f000
 
-#define MAC_DATA_SECT_ADDR_COPY               0x7b000
-#define WAKEUP_KEYINDEX_DATA_SECT_ADDR_COPY   0x7c000
-#define IR_KEY_EVENT_NOTIFY_SECT_ADDR_COPY    0x7d000
-#define CCC_DATA_AREA_COPY                    0x7e000
+#define IR_DATA_SECT_0_EXT_ADDR               0x38000
+#define IR_DATA_SECT_1_EXT_ADDR               0x39000
+#define IR_DATA_SECT_2_EXT_ADDR               0x3a000
+#define IR_DATA_SECT_3_EXT_ADDR               0x3b000
+
+#define IR_DATA_SECT_0_ADDR                   0x3c000
+#define IR_DATA_SECT_1_ADDR                   0x3d000
+#define IR_DATA_SECT_2_ADDR                   0x3e000
+#define IR_DATA_SECT_3_ADDR                   0x3f000
+
+
+#define MAC_DATA_SECT_ADDR                    0x7b000
+#define WAKEUP_KEYINDEX_DATA_SECT_ADDR        0x7c000
+#define IR_KEY_EVENT_NOTIFY_SECT_ADDR         0x7d000
+#define CCC_DATA_AREA                         0x7e000
+
 
 #define IR_DATA_SECT_MAX_NUM                  12   //Each sector can be written 3 times ,4*3
 #define IR_DATA_SECT_NUM                      4
@@ -81,17 +75,18 @@ extern "C" {
 
 
 /////////////////// FEATURE SELECT /////////////////////////////////
-#define BLE_REMOTE_PM_ENABLE                  0
-#define PM_DEEPSLEEP_RETENTION_ENABLE         0
+#define BLE_REMOTE_PM_ENABLE                  1
+#define PM_DEEPSLEEP_RETENTION_ENABLE         1
 #define BLE_REMOTE_SECURITY_ENABLE            1
 #define BLE_REMOTE_OTA_ENABLE                 1
 #define REMOTE_IR_ENABLE                      1
 #define BATT_CHECK_ENABLE                     1   //must enable
-#define BLE_AUDIO_ENABLE                      0
+#define BLE_AUDIO_ENABLE                      1
+#define APP_IR_OVER_BLE                       1
+#define APP_DATA_UPDATE_OVER_BLE              1
 #define BLT_APP_LED_ENABLE                    1
 #define BLT_TEST_SOFT_TIMER_ENABLE            1
 #define DEVICE_INFO                           0
-#define APP_IR_OVER_BLE                       0
 
 #define UNUSED_GPIO_PULLDOWN_ENABLE           0
 
@@ -107,7 +102,7 @@ extern "C" {
 #define REMOTE_G20                            2
 
 
-#define MP_TEST_MODE                          0
+#define MP_TEST_MODE                          1
 
 /////////////////// TEST MODE & DUT ////////////////////////////////
 #if (MP_TEST_MODE)
@@ -158,7 +153,6 @@ extern "C" {
     #define BLT_SOFTWARE_TIMER_ENABLE         1
 #endif
 
-
 ////////////////////////// AUDIO CONFIG (RCU board) /////////////////////////////
 #if (BLE_AUDIO_ENABLE)
     #define BLE_DMIC_ENABLE                   0  //0: Amic   1: Dmic
@@ -183,10 +177,6 @@ extern "C" {
      * TL_AUDIO_RCU_MSBC_HID                       //need config 32k retention
      */
     #define TL_AUDIO_MODE                     TL_AUDIO_RCU_ADPCM_GATT_GOOGLE
-
-
-
-
 #endif
 
 //PB3 IRout 100K pulldown when  IR not working,  when IR begin, disable this 100K pulldown
@@ -260,8 +250,6 @@ extern "C" {
 #define CR_INPUT                              0xfe
 #define CR_DASHBOARD                          0xff
 
-
-
 //special key
 #define VOICE                                 0xc0
 #define KEY_MODE_SWITCH                       0xc1
@@ -270,8 +258,6 @@ extern "C" {
 #define VOICE_HTT                             0xc4
 #define VOICE_ON_REQ                          0xc5
 #define AES_TEST                              0xc6
-
-
 
 #define IR_VK_0                               0x0A
 #define IR_VK_1                               0x01
@@ -290,7 +276,6 @@ extern "C" {
 #define IR_RIGHT                              0x18
 #define IR_CENTER                             0x19
 
-
 #define IR_POWER                              0x21
 #define IR_HOME                               0x47
 #define IR_BACK                               0x48
@@ -308,7 +293,6 @@ extern "C" {
 #define IR_INPUT                              0x60
 #define IR_MUTE                               0x25
 #define IR_DASHBOARD                          0x0F
-
 
 #define T_VK_CH_UP                            0xd0
 #define T_VK_CH_DN                            0xd1
@@ -597,83 +581,6 @@ typedef enum
 }ATT_HANDLE;
 
 
-
-#define DEBUG_GPIO_ENABLE                     0
-
-#if(DEBUG_GPIO_ENABLE)
-    //define debug GPIO here according to your hardware
-
-    #define GPIO_CHN0                         GPIO_PB4
-    #define GPIO_CHN1                         GPIO_PB5
-    #define GPIO_CHN2                         GPIO_PB6
-    #define GPIO_CHN3                         //GPIO_PC2  // PC2/PC3 may used for external crystal input
-    #define GPIO_CHN4                         //GPIO_PC3  // PC2/PC3 may used for external crystal input
-    #define GPIO_CHN5                         GPIO_PB0
-    #define GPIO_CHN6                         GPIO_PB1
-
-
-    #define PB4_OUTPUT_ENABLE                 1
-    #define PB5_OUTPUT_ENABLE                 1
-    #define PB6_OUTPUT_ENABLE                 1
-    //#define PC2_OUTPUT_ENABLE               1
-    //#define PC3_OUTPUT_ENABLE               1
-    #define PB0_OUTPUT_ENABLE                 1
-    #define PB1_OUTPUT_ENABLE                 1
-
-
-
-
-    #define DBG_CHN0_LOW                      gpio_write(GPIO_CHN0, 0)
-    #define DBG_CHN0_HIGH                     gpio_write(GPIO_CHN0, 1)
-    #define DBG_CHN0_TOGGLE                   gpio_toggle(GPIO_CHN0)
-    #define DBG_CHN1_LOW                      gpio_write(GPIO_CHN1, 0)
-    #define DBG_CHN1_HIGH                     gpio_write(GPIO_CHN1, 1)
-    #define DBG_CHN1_TOGGLE                   gpio_toggle(GPIO_CHN1)
-    #define DBG_CHN2_LOW                      gpio_write(GPIO_CHN2, 0)
-    #define DBG_CHN2_HIGH                     gpio_write(GPIO_CHN2, 1)
-    #define DBG_CHN2_TOGGLE                   gpio_toggle(GPIO_CHN2)
-    #define DBG_CHN3_LOW                      //gpio_write(GPIO_CHN3, 0)
-    #define DBG_CHN3_HIGH                     //gpio_write(GPIO_CHN3, 1)
-    #define DBG_CHN3_TOGGLE                   //gpio_toggle(GPIO_CHN3)
-    #define DBG_CHN4_LOW                      //gpio_write(GPIO_CHN4, 0)
-    #define DBG_CHN4_HIGH                     //gpio_write(GPIO_CHN4, 1)
-    #define DBG_CHN4_TOGGLE                   //gpio_toggle(GPIO_CHN4)
-    #define DBG_CHN5_LOW                      gpio_write(GPIO_CHN5, 0)
-    #define DBG_CHN5_HIGH                     gpio_write(GPIO_CHN5, 1)
-    #define DBG_CHN5_TOGGLE                   gpio_toggle(GPIO_CHN5)
-    #define DBG_CHN6_LOW                      gpio_write(GPIO_CHN6, 0)
-    #define DBG_CHN6_HIGH                     gpio_write(GPIO_CHN6, 1)
-    #define DBG_CHN6_TOGGLE                   gpio_toggle(GPIO_CHN6)
-#else
-    #define DBG_CHN0_LOW
-    #define DBG_CHN0_HIGH
-    #define DBG_CHN0_TOGGLE
-    #define DBG_CHN1_LOW
-    #define DBG_CHN1_HIGH
-    #define DBG_CHN1_TOGGLE
-    #define DBG_CHN2_LOW
-    #define DBG_CHN2_HIGH
-    #define DBG_CHN2_TOGGLE
-    #define DBG_CHN3_LOW
-    #define DBG_CHN3_HIGH
-    #define DBG_CHN3_TOGGLE
-    #define DBG_CHN4_LOW
-    #define DBG_CHN4_HIGH
-    #define DBG_CHN4_TOGGLE
-    #define DBG_CHN5_LOW
-    #define DBG_CHN5_HIGH
-    #define DBG_CHN5_TOGGLE
-    #define DBG_CHN6_LOW
-    #define DBG_CHN6_HIGH
-    #define DBG_CHN6_TOGGLE
-    #define DBG_CHN7_LOW
-    #define DBG_CHN7_HIGH
-    #define DBG_CHN7_TOGGLE
-#endif  //end of DEBUG_GPIO_ENABLE
-
-
-
-
 #if (MP_TEST_MODE)
 #define BLE_PHYTEST_MODE                      PHYTEST_MODE_THROUGH_2_WIRE_UART
 #else
@@ -682,7 +589,6 @@ typedef enum
 
 
 #define UART_PRINT_ENABLE                     0   //uart_tx as uart print func
-
 #define UART_PRINT_DEBUG_ENABLE               1   //GPIO simulate uart print func
 
 #if (UART_PRINT_DEBUG_ENABLE)

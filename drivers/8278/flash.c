@@ -50,12 +50,15 @@
 unsigned int flash_support_mid[] = {0x1160C8, 0x1360C8, 0x1460C8, 0x11325E, 0x12325E, 0x13325E, 0x14325E, 0x136085, 0x1360EB};
 const unsigned int FLASH_CNT = sizeof(flash_support_mid)/sizeof(*flash_support_mid);
 
-flash_hander_t flash_read_page = flash_read_data;
-flash_hander_t flash_write_page = flash_page_program;
+_attribute_data_retention_ flash_hander_t flash_read_page = flash_read_data;
+_attribute_data_retention_ flash_hander_t flash_write_page = flash_page_program;
 
 _attribute_data_retention_      unsigned int  flash_type = 0;
 _attribute_data_retention_      unsigned int  get_flash_mid = FLASH_ETOX_GD;
 _attribute_data_retention_   _attribute_aligned_(4)    Flash_CapacityDef    flash_capacity;
+
+
+_attribute_data_retention_ app_before_write_or_erase_cb_t app_before_write_or_erase_cb = (void*)0;
 
 /**
  * @brief        This function to determine whether the flash is busy..
@@ -198,6 +201,9 @@ void flash_erase_sector(unsigned long addr)
 {
     wd_clear(); // add by BLE Team
 
+    if(app_before_write_or_erase_cb)
+        app_before_write_or_erase_cb();
+
     flash_mspi_write_ram(FLASH_SECT_ERASE_CMD, addr, 1, 0, 0);
 }
 
@@ -242,6 +248,8 @@ void flash_read_data(unsigned long addr, unsigned long len, unsigned char *buf)
  */
 void flash_page_program(unsigned long addr, unsigned long len, unsigned char *buf)
 {
+   if(app_before_write_or_erase_cb)
+        app_before_write_or_erase_cb();
     unsigned int ns = PAGE_SIZE - (addr&(PAGE_SIZE - 1));
     int nw = 0;
 
@@ -344,7 +352,7 @@ unsigned int flash_read_mid(void)
  */
 void flash_read_uid(unsigned char idcmd, unsigned char *buf)
 {
-    if(idcmd == FLASH_READ_UID_CMD_GD_PUYA_ZB_UT)    //< GD/PUYA/ZB/UT
+    if(idcmd == FLASH_READ_UID_CMD_GD_PUYA_ZB_TH)    //< GD/PUYA/ZB/UT
     {
         flash_mspi_read_ram(idcmd, 0x00, 1, 1, buf, 16);
     }
@@ -382,7 +390,7 @@ int flash_read_mid_uid_with_check(unsigned int *flash_mid, unsigned char *flash_
 
     for(i=0; i<FLASH_CNT; i++){
         if(flash_support_mid[i] == *flash_mid){
-            flash_read_uid(FLASH_READ_UID_CMD_GD_PUYA_ZB_UT, (unsigned char *)flash_uid);
+            flash_read_uid(FLASH_READ_UID_CMD_GD_PUYA_ZB_TH, (unsigned char *)flash_uid);
             break;
         }
     }
@@ -471,10 +479,11 @@ unsigned int flash_get_vendor(unsigned int flash_mid)
     case 0x00006085:
         return FLASH_SONOS_PUYA;
     case 0x000060EB:
-        return FLASH_SONOS_UT;
+        return FLASH_SONOS_TH;
     case 0x000060CD:
-        return FLASH_SONOS_UT;
+        return FLASH_SONOS_TH;
     default:
         return 0;
     }
 }
+

@@ -154,12 +154,12 @@ void sub_u32(unsigned int *a, unsigned int *b, unsigned int *c, unsigned int wor
  *                 2. a may be 0, then aWordLen is 0, to make sure aWordLen-1 is available, so data
  *                   type of aWordLen is int32_t, not uint32_t
  */
-unsigned int div2n_u32(unsigned int a[], signed int aWordLen, unsigned int n)
+unsigned int div2n_u32(unsigned int a[], unsigned int aWordLen, unsigned int n)
 {
     signed int i;
     unsigned int j;
 
-    if(!aWordLen)
+    if(aWordLen == 0)
         return 0;
 
     if(n <= 32)

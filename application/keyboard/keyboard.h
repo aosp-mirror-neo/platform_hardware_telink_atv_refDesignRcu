@@ -79,9 +79,6 @@ extern unsigned int deepback_key_tick;
 #endif
 
 
-
-
-
 int kb_is_data_same(kb_data_t *a, kb_data_t *b);
 
 static inline int kb_is_key_valid(kb_data_t *p){
@@ -91,14 +88,15 @@ static inline void kb_set_key_invalid(kb_data_t *p){
     p->cnt = p->ctrl_key = 0;
 }
 
-
 extern unsigned int kb_key_pressed(unsigned char * gpio);
 extern unsigned int kb_scan_key_value (int numlock_status, int read_key,unsigned char * gpio);
 extern void kb_wake_config(void);
 extern void kb_p_map_init(void);
-extern unsigned int    scan_pin_need;
-
+extern unsigned int scan_pin_need;
 extern u8 kb_powerdet(void);
+extern u8 kb_detpowerkey(void);
+extern u8 kb_detbackkey(void);
+
 static inline unsigned int kb_scan_key (int numlock_status, int read_key) {
     unsigned char gpio[8];
 

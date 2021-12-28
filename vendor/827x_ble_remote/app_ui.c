@@ -53,34 +53,39 @@
 #define IR_KEY                     3
 #define VOICE_KEY                  4
 
+u8 ir_hw_initialed = 0;  //note: can not be retention variable
 _attribute_data_retention_ u8  key_type;
 _attribute_data_retention_ int key_not_released;
-
 _attribute_data_retention_ u8  ota_is_working = 0;
 _attribute_data_retention_ u8  app_mtu_size = 23;
 
 _attribute_data_retention_ int ir_not_released=0;
 _attribute_data_retention_ u8  user_key_mode;
-u8      ir_hw_initialed = 0;   //note: can not be retention variable
-_attribute_data_retention_ u8 repairing_flag = 0;
-_attribute_data_retention_ u8 is_pairing_mode=0;
-_attribute_data_retention_ u8 is_reconn_mode=0;
-_attribute_data_retention_ u8 ota_flag = 0;  //0:pause 1:continue
+_attribute_data_retention_ u8  repairing_flag = 0;
+_attribute_data_retention_ u8  is_pairing_mode=0;
+_attribute_data_retention_ u8  is_reconn_mode=0;
+_attribute_data_retention_ u8  ota_flag = 0;  //0:pause 1:continue
+_attribute_data_retention_ u8  testmode_key_seq[5]={0};
+_attribute_data_retention_ u8  testmode_key_seq_count=0;
 
-extern u8 comb_key_keyid[9];
-extern    u32     latest_user_event_tick;
-extern u8 lowbat;
-extern u8 device_in_connection_state;
-extern u8 flag_schedule_ota;
-extern u8 device_timeout_state;
-extern u8 wakeup_src;
-extern u8 power_down_flag;
-extern u8 wakeup_key_keyid;
-extern u8 wakeup_key_send_flag;
-extern u8 wakeup_packet_format;
+
+extern u8  comb_key_keyid[9];
+extern u32 latest_user_event_tick;
+extern u8  lowbat;
+extern u8  device_in_connection_state;
+extern u8  flag_schedule_ota;
+extern u8  device_timeout_state;
+extern u8  wakeup_src;
+extern u8  power_down_flag;
+extern u8  wakeup_key_keyid;
+extern u8  wakeup_key_send_flag;
+extern u8  wakeup_packet_format;
 extern u32 wakeup_tick;
 extern u32 advertise_begin_tick;
-extern u8 en_powerkey_cache;
+extern u8  en_powerkey_cache;
+extern u8  detpowerkey;
+extern unsigned char Kb_Map_Testmode_Seq_Correspend_Index_G10[];
+extern unsigned char Kb_Map_Testmode_Seq_Correspend_Index_G20[];
 
 extern int ir_fallback_send(u8 key_down);
 extern void device_led_off(u8 led);
@@ -221,7 +226,7 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 
         if(keyindex == VOICE)
         {
-         if(device_type == REMOTE_G10)
+         if(app_custom_get_device_type() == REMOTE_G10)
              keyindex = 9;
          else
              keyindex = 18;
@@ -249,7 +254,7 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
         else
             data[3] = nec_ir_cmd2_table[keyindex];
 
-        printf("\r\nir_dispatch_ext ir_cm1_value=%x,ir_cm2_value=%x,\r\n",data[2],data[3]);
+        //printf("\r\nir_dispatch_ext ir_cm1_value=%x,ir_cm2_value=%x,\r\n",data[2],data[3]);
         ir_nec_send_ext(data);
 
     }
@@ -264,15 +269,14 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 #if (BLE_REMOTE_OTA_ENABLE)
 #include "app_ota.h"
 extern u8  mac_public[6];
-extern u32 ota_program_offset;
-extern int ota_program_bootAddr;
 u8 app_enter_ota_mode(u8 *data)
 {
     printf("start data:");
     array_printf(data,4);
-    //v2p0 must be fixed to 0x40000
-    ota_program_offset = 0x40000;
-    ota_program_bootAddr = 0x40000;
+    extern u32 ota_program_offset;
+    extern int ota_program_bootAddr;
+    printf("ota_program_offset=%x\r\n",ota_program_offset);
+    printf("ota_program_offset=%x\r\n",ota_program_bootAddr);
 
     u8 check_data[4];
     bls_ota_get_random(check_data);
@@ -472,16 +476,21 @@ void app_schedule_ota_enter_deep(void)
             printf("sch ota timer ++,data=%x\r\n",data);
         }
         else
+        {
             printf("sch ota timer maintain\r\n");
+        }
         if(data >= 7)
         {
             printf("idle to sleep\r\n");
             analog_write(DEEP_ANA_REG2, 0);
             cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0); 
+            return;
         }
         analog_write(DEEP_ANA_REG2, data);
         if(data<7)
-        printf("sch ota data =%x,time =%x\r\n",data,sch_ota_timer[data]);
+        {
+            printf("sch ota data =%x,time =%x\r\n",data,sch_ota_timer[data]);
+        }
         if(data == 1)
             cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,sch_ota_timer[data]*SCHE_OTA_1MIN);
         else
@@ -607,15 +616,15 @@ _attribute_data_retention_     u16 SpecialKey = 0;
 
 int app_special_key_delay_timer(void)
 {
-    printf("app_special_key_delay_timer\r\n");
+    //("app_special_key_delay_timer\r\n");
     bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&SpecialKey, 2);
     return -1;
 }
 
 int app_ir_bugreport_key_delay_timer(void)
 {
-    printf("app_ir_bugreport_key_delay_timer\r\n");
-    printf("\r\nSpecialKey keyindex=%x\r\n",(u8)SpecialKey);
+    //printf("app_ir_bugreport_key_delay_timer\r\n");
+    //printf("\r\nSpecialKey keyindex=%x\r\n",(u8)SpecialKey);
     key_type = IR_KEY;
     if(!ir_not_released){
         ir_dispatch_ext(TYPE_IR_SEND, (u8)SpecialKey);
@@ -645,7 +654,7 @@ u8 app_repairing(void)
 {
     if(repairing_flag == 0x55)
     {
-         printf("app_repairing\r\n");
+         //printf("app_repairing\r\n");
          app_adv_indirect();
          repairing_flag = 0;
 #if BLE_AUDIO_ENABLE
@@ -837,7 +846,7 @@ u8 app_is_navi_key(u8 data0,u8 data1)
     if(data0 == data1) return 0;
     for(u8 i=0;i<4;i++)
     {
-        if(device_type == REMOTE_G10)
+        if(app_custom_get_device_type() == REMOTE_G10)
         {
             if(data0 == navi_key_index_g10[i])
                 flag[0] = i;
@@ -931,7 +940,7 @@ _attribute_data_retention_     u8 factory_reset_timer_count = 0;
 int app_factory_reset_timer(void)
 {
     u8 bond_number;
-    printf("app_factory_reset_timer\r\n");
+    //printf("app_factory_reset_timer\r\n");
     if(device_in_connection_state)
     {
 #if BLE_AUDIO_ENABLE
@@ -979,6 +988,14 @@ int app_factory_reset_timer(void)
     ir_flash_factory();
 #endif
     flash_erase_sector(MAC_DATA_SECT_ADDR);
+    u8 data=0;
+    flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
+    if(data != 0xff)
+        flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
+    flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
+    if(data != 0xff)
+        flash_erase_sector(APP_NEC_IR_CODE_TABLE);
+
     bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     printf("bond_number=%x\r\n",bond_number);
     if(bond_number)
@@ -1009,7 +1026,7 @@ void app_mic_led(u8 en)
         {
             if(factory_reset_flag == 0)
             {
-                device_led_setup(led_cfg[en ? 1 : 2]);
+                device_led_setup(led_cfg[LED_AUDIO_OFF]);
             }
         }
     }
@@ -1017,13 +1034,13 @@ void app_mic_led(u8 en)
     {
         if(en)
         {
-            device_led_setup(led_cfg[en ? 1 : 2]);
+            device_led_setup(led_cfg[LED_AUDIO_ON]);
         }
         else
         {
             if(factory_reset_flag == 0)
             {
-                device_led_setup(led_cfg[en ? 1 : 2]);
+                device_led_setup(led_cfg[LED_AUDIO_OFF]);
             }
         }
     }
@@ -1084,12 +1101,12 @@ void app_accessibility_short_key_to_single_key(void)
 {
     if(Accessibility_Shortcut_Mode != APP_ACCESSIBILITY_SHORTCUT_NONE)
     {
-        printf("app_accessibility_short_key_to_single_key\r\n");
+        //printf("app_accessibility_short_key_to_single_key\r\n");
         Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY;
     }
     if((is_pairing_mode == 0))
     {
-        printf("app_accessibility_short_key_to_single_key_close led\r\n");
+        //printf("app_accessibility_short_key_to_single_key_close led\r\n");
         device_led_off(APP_LED_GREEN);
     }
 }
@@ -1111,6 +1128,81 @@ int app_poweron_timeout(void)
      return -1;
 }
 
+int app_usermode_to_testmode_timeout(void)
+{
+     printf("app_usermode_to_testmode_timeout\r\n");
+     detpowerkey = 0;
+
+     return -1;
+}
+
+void app_testmode_seq_record(u8 keyid)
+{
+    if(detpowerkey)
+    {
+        printf("app_testmode_seq_record\r\n");
+        if(app_custom_get_device_type() == REMOTE_G10)
+        {
+             if(testmode_key_seq[0] == Kb_Map_Testmode_Seq_Correspend_Index_G10[0])
+             {
+                 if(testmode_key_seq_count<=4)
+                 {
+                     testmode_key_seq[testmode_key_seq_count] = keyid;
+                     testmode_key_seq_count++;
+                 }
+             }
+             else
+             {
+                 if(keyid == Kb_Map_Testmode_Seq_Correspend_Index_G10[0])
+                 {
+                     testmode_key_seq[0] = Kb_Map_Testmode_Seq_Correspend_Index_G10[0];
+                     testmode_key_seq_count++;
+                 }
+             }
+        }
+        else
+        {
+             if(testmode_key_seq[0] == Kb_Map_Testmode_Seq_Correspend_Index_G20[0])
+             {
+                 if(testmode_key_seq_count<=4)
+                 {
+                     testmode_key_seq[testmode_key_seq_count] = keyid;
+                     testmode_key_seq_count++;
+                 }
+             }
+             else
+             {
+                 if(keyid == Kb_Map_Testmode_Seq_Correspend_Index_G20[0])
+                 {
+                     testmode_key_seq[0] = Kb_Map_Testmode_Seq_Correspend_Index_G20[0];
+                     testmode_key_seq_count++;
+                 }
+             }
+        }
+        if(testmode_key_seq_count == 5)
+        {
+            printf("testmode_key_seq[0] =%d, %d, %d, %d, %d\r\n",testmode_key_seq[0],testmode_key_seq[1],testmode_key_seq[2],testmode_key_seq[3],testmode_key_seq[4]);
+            if(app_custom_get_device_type() == REMOTE_G10)
+            {
+                if(memcmp(testmode_key_seq,Kb_Map_Testmode_Seq_Correspend_Index_G10,5) == 0)
+                   {
+                       //printf("user mode to test mode g10\r\n");
+                    flash_erase_sector(APP_TEST_SECT_ADDR);
+                    start_reboot();
+                   }
+            }
+            else
+            {
+                if(memcmp(testmode_key_seq,Kb_Map_Testmode_Seq_Correspend_Index_G20,5) == 0)
+                   {
+                       //printf("user mode to test mode g20\r\n");
+                    flash_erase_sector(APP_TEST_SECT_ADDR);
+                    start_reboot();
+                   }
+            }
+        }
+    }
+}
 
 extern void advertise_tick_retime(void);
 void key_change_proc(void)
@@ -1190,9 +1282,9 @@ void key_change_proc(void)
             {
                 if(app_is_navi_key(key0,key1) == 0)
                 {
-                    printf(" stop double key in ir mode\r\n");
+                    //printf(" stop double key in ir mode\r\n");
                     blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
-                    printf("ir_send_ctrl.is_sending =%x\r\n",ir_send_ctrl.is_sending);
+                    //printf("ir_send_ctrl.is_sending =%x\r\n",ir_send_ctrl.is_sending);
                     if(ir_send_ctrl.is_sending)
                     {
                         key_type = IR_KEY;
@@ -1201,7 +1293,7 @@ void key_change_proc(void)
                 }
                 else
                 {
-                    printf("double key is navi in ir mode\r\n");
+                    //printf("double key is navi in ir mode\r\n");
                     if(ir_send_ctrl.is_sending == IR_SENDING_NONE)
                     {
                         key_type = IR_KEY;
@@ -1214,7 +1306,7 @@ void key_change_proc(void)
             {
                 if(app_is_navi_key(key0,key1) == 0)
                 {
-                    printf(" stop double key in rf mode\r\n");
+                    //printf(" stop double key in rf mode\r\n");
                     if(key_type == CONSUMER_KEY)
                     {
                         consumer_key[0] = 0;
@@ -1229,7 +1321,7 @@ void key_change_proc(void)
                 }
                 else
                 {
-                    printf("double key is navi in rf mode,key0=%x,key1=%x\r\n",key0,key1);
+                    //printf("double key is navi in rf mode,key0=%x,key1=%x\r\n",key0,key1);
                     u16 comb_key[2];
                     comb_key[0] = vk_consumer_map[p_kb_map_ble[key0]-CR_MEDIA_KEY_INDEX];
                     comb_key[1] = vk_consumer_map[p_kb_map_ble[key1]-CR_MEDIA_KEY_INDEX];
@@ -1244,6 +1336,8 @@ void key_change_proc(void)
           advertise_tick_retime();
 
           printf("key_id=%x\r\n",key0);
+
+          app_testmode_seq_record(key0);
 
 #if (STUCK_KEY_PROCESS_ENABLE)
           stuckkey_keypresstimer = clock_time() | 1;
@@ -1364,7 +1458,7 @@ void key_change_proc(void)
 
              key_type = IR_KEY;
              if(!ir_not_released){
-                  printf("ir_dispatch send\r\n");
+                 printf("ir_dispatch send\r\n");
                  ir_dispatch_ext(TYPE_IR_SEND, key0);
                  ir_not_released = 1;
              }
@@ -1375,7 +1469,7 @@ void key_change_proc(void)
     {
         printf("key release\r\n");
         advertise_tick_retime();
-#if BLE_AUDIO_ENABLE
+#if    BLE_AUDIO_ENABLE
         if((audio_start_reason == REASON_HTT) && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
             printf("key release_audio_start_reason:0x%x\n",audio_start_reason);
             google_voice_ctl |= FLAG_AUDIO_CLOSE;
@@ -1429,15 +1523,13 @@ void key_change_proc(void)
 #endif
         Accessibility_Shortcut_Flag = 0;
     }
-
-
 }
 
 void app_factory_reset(void)
 {
     u8 audio_open=0;
 
-    printf("Factory Reset Mode ongoning\r\n");
+    //printf("Factory Reset Mode ongoning\r\n");
     if(lowbat == 0x55)
     {
         return;
@@ -1466,7 +1558,7 @@ void app_factory_reset(void)
     bls_ll_setAdvEnable(0);
     if(device_in_connection_state)
     {
-        printf("Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
+        //printf("Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
 #if BLE_AUDIO_ENABLE
         if(ui_mic_enable)
         {
@@ -1521,7 +1613,6 @@ void proc_keyboard (u8 e, u8 *p, int n)
     }
 #endif
 
-
     if (det_key){
 #if (MP_TEST_MODE)
         if (test_get_mode() == MODE_TEST) test_proc_key();
@@ -1538,7 +1629,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
 
     if((keyScanLongPressTick == 0) && (Accessibility_Shortcut_Mode != APP_ACCESSIBILITY_SHORTCUT_NONE))
     {
-        printf("stop led\r\n");
+        //printf("stop led\r\n");
         device_led_off(APP_LED_GREEN);
         Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
     }
@@ -1547,7 +1638,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
     {
         keyScanLongPressTick = 0;
         advertise_tick_retime();
-        printf("Accessibility_Shortcut timeout and Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
+        //printf("Accessibility_Shortcut timeout and Accessibility_Shortcut_Mode=%x\r\n",Accessibility_Shortcut_Mode);
         if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_SINGLEKEY) return;
         if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_PAIRING)
         {
@@ -1566,6 +1657,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
             if(device_in_connection_state == 0)
             {
                 app_stop_wakeup_loop();
+                ll_resolvingList_reset();
 #if APP_IR_OVER_BLE
                 ir_table_init();
                 ir_flash_set_flag(0);
@@ -1596,7 +1688,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
         }
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_BUGREPORT)
         {
-            printf("APP_ACCESSIBILITY_SHORTCUT_BUGREPORT ongoning\r\n");
+            //printf("APP_ACCESSIBILITY_SHORTCUT_BUGREPORT ongoning\r\n");
             device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state == 0)
             {
@@ -1615,7 +1707,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
         }
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
         {
-            printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
+            //printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
             //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state)
             {
@@ -1674,6 +1766,10 @@ void app_ui_init_normal(void)
     {
         blt_soft_timer_add(app_poweron_timeout, 1000000);
     }
+    if(detpowerkey == 1)
+    {
+        blt_soft_timer_add(app_usermode_to_testmode_timeout, 20000000);
+    }
 #endif
 
 }
@@ -1718,7 +1814,7 @@ int att_ccc_control(void* p){
     u8 save_to_flash = 1;
 
     switch(handle){
-#if BLE_AUDIO_ENABLE
+#if  BLE_AUDIO_ENABLE
 
         case AUDIO_GOOGLE_RX_CCC_H:
         {

@@ -66,12 +66,9 @@ _attribute_ram_code_ void irq_handler(void)
 
 _attribute_ram_code_ int main (void)    //must run in ramcode
 {
-
-    DBG_CHN0_LOW;   //debug
-
     blc_pm_select_internal_32k_crystal();
 
-    bls_ota_set_fwSize_and_fwBootAddr(92,0x20000);
+    bls_ota_set_fwSize_and_fwBootAddr(180,0x40000);
 
 #if(MCU_CORE_TYPE == MCU_CORE_8258)
     cpu_wakeup_init();
@@ -113,7 +110,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     if(!deepRetWakeUp){//read flash size
         //app_custom_test();
-        app_custom_flash_data_copy();
         app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
@@ -147,7 +143,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         user_init_normal ();
     }
     irq_enable();
-   
+
 #if (MP_TEST_MODE)
     if (test_get_mode() == MODE_TEST) test_entry_mode();
 #endif

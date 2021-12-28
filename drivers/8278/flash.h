@@ -30,6 +30,7 @@
 
 #define PAGE_SIZE        256
 #define PAGE_SIZE_OTP    256
+#define FLASH_LOCK_EN    0
 
 /**
  * @brief     flash command definition
@@ -44,7 +45,7 @@ enum{
     FLASH_SECT_ERASE_CMD                =    0x20,
     FLASH_ERASE_SECURITY_REGISTERS_CMD    =    0x44,
 
-    FLASH_READ_UID_CMD_GD_PUYA_ZB_UT    =    0x4B,    //Flash Type = GD/PUYA/ZB/UT
+    FLASH_READ_UID_CMD_GD_PUYA_ZB_TH    =    0x4B,    //Flash Type = GD/PUYA/ZB/UT
     FLASH_READ_UID_CMD_XTX                =    0x5A,    //Flash Type = XTX
 
     FLASH_GET_JEDEC_ID                    =    0x9F,
@@ -82,12 +83,17 @@ typedef enum{
  * @brief     flash vendor and technology definition
  */
 typedef enum{
-    FLASH_ETOX_ZB          = 0x0100325E,    // 325E
+    FLASH_ETOX_ZB       = 0x0100325E,    // 325E
     FLASH_ETOX_GD       = 0x010060C8,    // 60C8/4051
-    FLASH_SONOS_PUYA      = 0x02006085,    // 6085
-    FLASH_SONOS_UT      = 0x020060EB,    // 60EB/60CD
+    FLASH_SONOS_PUYA    = 0x02006085,    // 6085
+    FLASH_SONOS_TH      = 0x020060EB,    // 60EB
+    FLASH_SST_TH        = 0x040060CD,    // 60CD        bit[26]:SST:  Byte Program Time != Page Programming Time
 }flash_vendor_e;
 
+typedef enum{
+    FLASH_ETOX_ARCH      = 0x01000000,
+    FLASH_SONOS_ARCH     = 0x02000000,
+}flash_architecture_e;
 /**
  * @brief    flash capacity definition
  *            Call flash_read_mid function to get the size of flash capacity.
@@ -121,8 +127,11 @@ typedef enum {
 } Flash_VoltageDef;
 
 typedef void (*flash_hander_t)(unsigned long, unsigned long, unsigned char*);
+typedef void (*app_before_write_or_erase_cb_t) (void);
+
 extern flash_hander_t flash_read_page;
 extern flash_hander_t flash_write_page;
+extern app_before_write_or_erase_cb_t app_before_write_or_erase_cb;
 
 /*******************************************************************************************************************
  *                                                Primary interface

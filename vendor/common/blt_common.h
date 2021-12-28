@@ -96,8 +96,6 @@ static inline void blc_app_setExternalCrystalCapEnable(u8  en)
 
 }
 
-
-
 static inline void blc_app_loadCustomizedParameters(void)
 {
      if(!blt_miscParam.ext_cap_en)

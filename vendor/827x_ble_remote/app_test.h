@@ -28,6 +28,20 @@
 #define APP_TEST_H_
 
 
+typedef struct
+{
+    u8 device_type;
+    u8 pnp_id[7];
+    u8 device_name_length;
+    u8 device_name[29];
+    u8 device_ui_layout;
+    u8 wakeup_key_1[2];
+    u8 wakeup_key_2[2];
+    u8 wakeup_packet[35];
+} _tCustom_Data;
+
+extern _tCustom_Data _custom_data;
+
 #if (MP_TEST_MODE)
 
 
@@ -40,15 +54,12 @@ typedef enum
     TEST_STAT_USERMODE,
 } tTest_State;
 
-
 void test_entry_mode(void);
 tTest_State test_get_state(void);
 u8 test_get_mode(void);
 void test_set_mode(u8 mode);
 void test_proc_key(void);
 int test_write_cb(void *p);
-
-
 #endif /// MP_TEST_MODE
 
 

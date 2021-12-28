@@ -132,8 +132,8 @@ void kb_p_map_init(void)
 {
     u8 len = app_custom_get_drive_len();
     printf("len=%x\r\n",len);
-    kb_p_map[0] = p_kb_map_normal;//p_kb_map_normal;
-    if(device_type == REMOTE_G10)
+    kb_p_map[0] = p_kb_map_normal;
+    if(app_custom_get_device_type() == REMOTE_G10)
     {
         memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
         memcpy(comb_key_keyid,Kb_CombKey_KeyId_G10,9);
@@ -297,6 +297,7 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
         if(scan_pin_need & BIT(j)){
             int key = !gpio_read_cache (scan_pins[j], gpio);
             if(KB_LINE_HIGH_VALID != key) {
+                /*
                 if(len == KB_DRIVE_PIN_G10)
                 {
                     if ((KB_HAS_FN_KEY && a[j][drv_ind]) == VK_FN) {
@@ -309,7 +310,7 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
                     kb_is_fn_pressed = 1;
                     }
                 }
-                
+                */
                 matrix |= (1 << j);
             }
         }
@@ -487,7 +488,7 @@ void kb_wake_config(void)
 
 }
 
-u8 kb_powerdet(void)
+u8 kb_detbackkey(void)
 {
     unsigned char gpio[8],i;
     u32 ret = 0;
@@ -513,7 +514,31 @@ u8 kb_powerdet(void)
     return 1;
 }
 
+u8 kb_detpowerkey(void)
+{
+    unsigned char gpio[8],i;
+    u32 ret = 0;
 
+    for(i=0;i<2;i++)
+    {
+        gpio_write(drive_pins[0], KB_LINE_HIGH_VALID);
+        gpio_set_output_en(drive_pins[0], 1);
+        sleep_us (600);
+        gpio_read_all (gpio);
+
+        foreach_arr(j,scan_pins){
+            if(KB_LINE_HIGH_VALID != !gpio_read_cache (scan_pins[j], gpio)){
+                ret = (1 << j);
+            }
+        }
+        gpio_write(drive_pins[0], 0);
+        gpio_set_output_en(drive_pins[0], 0);
+        if(ret != 1)
+            return 0;
+    }
+
+    return 1;
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //

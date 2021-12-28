@@ -25,7 +25,7 @@
  *****************************************************************************/
 #include "flash_type.h"
 
-
+#if FLASH_LOCK_EN
 /**
  * @brief         This function reads the status of flash.
  * @return         the value of status.
@@ -102,4 +102,4 @@ void flash_unlock_mid11325e(void)
 {
     flash_write_status_mid11325e(FLASH_LOCK_NONE_MID11325E, FLASH_WRITE_STATUS_BP_MID11325E);
 }
-
+#endif

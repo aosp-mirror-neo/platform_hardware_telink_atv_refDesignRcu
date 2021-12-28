@@ -90,7 +90,7 @@ typedef struct {
     mac_adr_t bond_device[PAIR_SLAVE_MAX_NUM];
 } bond_slave_t;
 
-
+typedef int  (*smp_finish_callback_t)(void);
 
 
 
@@ -122,7 +122,12 @@ void     tbl_bond_slave_unpair_proc(u8 adr_type, u8 *addr);
 void    blm_smp_encChangeEvt(u8 status, u16 connhandle, u8 enc_enable);
 
 
-
+/**
+ * @brief      This function is used to register call back of system finish
+ * @param[in]  cb - Callback function triggered when SMP is completed.
+ * @return     none.
+ */
+void     blm_smp_registerSmpFinishCb (smp_finish_callback_t cb);
 
 
 

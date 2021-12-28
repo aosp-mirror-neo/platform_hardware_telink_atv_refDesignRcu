@@ -24,12 +24,12 @@
  *
  *****************************************************************************/
 
-#include     "tl_common.h"
-#include     "drivers.h"
-#include    "audio_config.h"
-#include    "adpcm.h"
-#include     "gl_audio.h"
-#include     "tl_audio.h"
+#include  "tl_common.h"
+#include  "drivers.h"
+#include  "audio_config.h"
+#include  "adpcm.h"
+#include  "gl_audio.h"
+#include  "tl_audio.h"
 
 #if (TL_AUDIO_MODE == TL_AUDIO_RCU_ADPCM_GATT_GOOGLE)
 
@@ -232,6 +232,25 @@ void google_voice_dpad_select(){
     }
 }
 
+void google_init_audio_parameter(void)
+{
+    u8 sendBuff[20]  = {0};
+
+    stream_id++;    //increase stream_id
+    if(stream_id > 0x80) stream_id = 1;    //stream_id range 0x01~0x80
+    google_voice_codec_used = CODEC_USED_16K;
+    //init audio parameter
+    sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_START;
+    sendBuff[1] = audio_start_reason;
+    sendBuff[2] = U16_LO(google_voice_codec_used);
+    sendBuff[3] = stream_id;
+
+    bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 4);
+
+    google_mic_enable();
+
+}
+
 /**
  * @brief       this function is used to start the voice.
  * @param[in]   start_reason:audio start reason
@@ -242,38 +261,23 @@ u8 app_audio_key_start(u8 start_reason){
     printf("app_audio_key_start\n");
     if(!atv_char_rx_ccc) return 1;                        //ATVV_CHAR_AUDIO ccc is disabled
     if(google_voice_ver != 10) return 2;                //google voice version error
-    //if(start_reason > used_assistant_model) return 3;    //Unavailable model
-    //if(!enable_rsp_gaps_rsp)    return 3;
-
-    u8 sendBuff[20]  = {0};
 
     switch(start_reason){
         case REASON_PTT:
         {
             printf("audio_start_reason = REASON_PTT\n");
             audio_start_reason = REASON_PTT;
+            google_init_audio_parameter();
+            break;
         }
         case REASON_HTT:
         {
-            if(start_reason == REASON_HTT){
+            if(start_reason == REASON_HTT)
+            {
                 audio_start_reason = REASON_HTT;
                 printf("audio_start_reason = REASON_HTT\n");
             }
-            stream_id++;    //increase stream_id
-            if(stream_id > 0x80) stream_id = 1;    //stream_id range 0x01~0x80
-            google_voice_codec_used = CODEC_USED_16K;
-//            google_voice_codec_used = CODEC_USED_8K;
-
-            //init audio parameter
-            sendBuff[0] = ATV_MIC_CHAR_CTL_AUDIO_START;
-            sendBuff[1] = audio_start_reason;
-            sendBuff[2] = U16_LO(google_voice_codec_used);
-            sendBuff[3] = stream_id;
-
-            bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 4);
-
-            google_mic_enable();
-
+            google_init_audio_parameter();
             break;
         }
         case REASON_MICOPEN:
@@ -654,7 +658,6 @@ void google_cmd_v0p4_proc(){
         ret = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, &sendData, 1);
 
         if(ret == BLE_SUCCESS){
-            google_voice_ctl &= ~FLAG_AUDIO_CLOSE;
             google_voice_ctl = 0;
             ui_enable_mic(0);
         }
@@ -694,7 +697,6 @@ void google_cmd_v0p4_proc(){
 
         ret  = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 3);
         if(ret== BLE_SUCCESS){
-            google_voice_ctl &= ~ATV_MIC_CHAR_CTL_MIC_OPEN_ERROR;
             google_voice_ctl = 0;
             ui_enable_mic(0);
         }
@@ -749,7 +751,6 @@ void google_cmd_v1p0_proc(){
         if(ret == BLE_SUCCESS){
             g_delay_send_audio_stop = 0;
             printf("ATV_MIC_CHAR_CTL_AUDIO_STOP:0x%x\n",audio_stop_reason);
-            google_voice_ctl &= ~FLAG_AUDIO_CLOSE;
             google_voice_ctl = 0;
             ui_enable_mic(0);
 
@@ -796,7 +797,6 @@ void google_cmd_v1p0_proc(){
 
         ret  = bls_att_pushNotifyData(AUDIO_GOOGLE_CTL_DP_H, sendBuff, 3);
         if(ret == BLE_SUCCESS){
-            google_voice_ctl &= ~ATV_MIC_CHAR_CTL_MIC_OPEN_ERROR;
             google_voice_ctl = 0;
             ui_enable_mic(0);
         }
@@ -821,6 +821,7 @@ void google_get_rsp(void){
         sendBuff[5] = 0x00;                                 //audio frame size (2)
         sendBuff[6] = read_audio_frame_size();              //audio frame size (2)
         //sendBuff[7] = (read_audio_frame_size() == 20)?0:1;  //extra configuration (1)
+        extern u8  app_mtu_size;
         sendBuff[7] = ((read_audio_frame_size()+3) > app_mtu_size)?1:0;       //extra configuration (1)
         sendBuff[8] = 0x00;                                 //reserved(1)
 

@@ -205,7 +205,6 @@ static int print(char **out, const char *format, va_list args) {
     }
     if (out)
         **out = '\0';
-    va_end( args );
     return pc;
 }
 
@@ -225,13 +224,17 @@ int u_printf(const char *format, ...) {
     #if (UART_PRINT_ENABLE)
     app_set_printf_uart_flag(0);
     #endif
+    va_end( args );
     return status;
 }
 
 int u_sprintf(char *out, const char *format, ...) {
+    int status;
     va_list args;
     va_start( args, format );
-    return print(&out, format, args);
+    status =  print(&out, format, args);
+    va_end( args );
+    return status;
 }
 
 void u_array_printf(unsigned char*data, unsigned int len) {

@@ -39,11 +39,14 @@ int  battery_get_detect_enable (void);
 
 u16 get_battery_voltage(void);
 
+u16 app_get_bat_vol(void);
+
 #if(VBAT_LEAKAGE_PROTECT_EN)
 _attribute_ram_code_ int app_battery_power_check(u16 threshold_deep_vol_mv, u16 threshold_suspend_vol_mv);
 #else
 int app_battery_power_check(u16 alram_vol_mv);
 #endif
+
 
 
 #endif /* APP_BATTDET_H_ */

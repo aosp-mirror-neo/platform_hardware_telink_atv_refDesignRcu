@@ -26,7 +26,6 @@
 #ifndef BLE_COMMON_H
 #define BLE_COMMON_H
 
-#include "ble_config.h"
 #include "tl_common.h"
 
 
