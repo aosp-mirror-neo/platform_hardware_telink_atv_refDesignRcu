@@ -71,5 +71,6 @@ extern void ir_nec_ir_table_process(u8 *data,u16 len);
 extern void ir_nec_ir_table_erase_loop(void);
 extern void ir_flash_erase_loop(void);
 extern void app_custom_set_new_ir_table(void);
+extern void ir_suppress_reinit(void);
 #endif
 #endif

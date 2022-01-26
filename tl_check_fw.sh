@@ -7,5 +7,4 @@ echo $2
 tc32-elf-objcopy -v -O binary $2.elf $1.bin
 ../check_fw  $1.bin
 ../FW_SIG_ENC 3 $1.bin FW_ENC_KEY
-
 echo "**************** end of post build ******************"

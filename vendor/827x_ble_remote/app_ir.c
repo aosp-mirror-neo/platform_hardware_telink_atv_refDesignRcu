@@ -942,7 +942,14 @@ u8 ir_key_is_suppress(u8 key_idx)
     else
         return false;
 }
-
+void ir_suppress_reinit(void)
+{
+    u8 i;
+    for (i = 0; i < MAX_KEY_COUNT; i++)
+    {
+        ir_app_parm.ir_suppress[i] = 0;
+    }
+}
 /**
  * @brief       ir_type_read
  * @param[in]   none
@@ -1383,7 +1390,7 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
     u8 index,data;
   //  u8 testdata[6],i;
   //  u32 addr;
-    //u8 k;
+    u8 k;
 
     switch (handle)
     {
@@ -1513,20 +1520,33 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
         }
         case ATV_IR_SUPPRESS_IDX:
         {
-            if(len == 2)
+            if(len)
             {
-                ir_app_parm.ir_programming.current_programming_key_id = buf[0];
-                ir_app_parm.ir_programming.current_programming_key_id <<= 8;
-                ir_app_parm.ir_programming.current_programming_key_id |= buf[1];
-                index = ir_get_suppress_index_from_keyid_idx(ir_app_parm.ir_programming.current_programming_key_id);
-                if(ir_app_parm.ir_suppress[index])
+                printf("switch to ble\r\n");
+                if(len%2 == 0)
+            {
+                    for(k=0;k<len/2;k++)
+                    {
+                        u16 id = (buf[2*k]<<8) | buf[2*k+1];
+                        index = ir_get_button_idx_from_key_id(id);
+                        printf("index=%x\r\n",index);
+                        if(ir_app_parm.ir_suppress[index] == 0)
                 {
-                    ir_app_parm.ir_suppress[index] = 0;
+                            ir_app_parm.ir_suppress[index] = 1;
                 }
+                    }
+            }
+        }
                 else
-                    ir_app_parm.ir_suppress[index] = 1;
-                ir_app_parm.ir_programming.current_programming_key_id = INVALID_KEY_ID;
-
+            {
+                printf("switch to ir\r\n");
+                for(k=0;k<MAX_KEY_COUNT;k++)
+                {
+                    if(ir_app_parm.ir_suppress[k])
+                    {
+                        ir_app_parm.ir_suppress[k] = 0;
+                    }
+                }
             }
             break;
         }

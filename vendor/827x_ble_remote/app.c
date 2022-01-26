@@ -255,6 +255,7 @@ void app_uart_tx(void)
 
 void app_adv_interval_downgrade_direct(void)
 {
+    u8 status=0;
     smp_param_save_t  bondInfo;
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     //direct adv
@@ -263,11 +264,23 @@ void app_adv_interval_downgrade_direct(void)
        printf("app_adv_internal_downgrade_direct\r\n");
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
 
-       u8 status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+       if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+       {
+         status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                         bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                         MY_APP_ADV_CHANNEL,
                                         ADV_FP_NONE);
+       }
+       else
+       {
+           app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+           status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
+              ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+              bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
+                                                 MY_APP_ADV_CHANNEL,
+                                                 ADV_FP_NONE);
+       }
        if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
     }
 }
@@ -317,6 +330,7 @@ void app_adv_indirect(void)
 
 void app_adv_direct(void)
 {
+    u8 status=0;
     printf("app_adv_direct\r\n");
     is_reconn_mode = 0x55;
     smp_param_save_t  bondInfo;
@@ -327,11 +341,30 @@ void app_adv_direct(void)
        app_set_adv_interval_downgrade_direct();
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
 
-       u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+       if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+       {
+           printf("host not support rpa\r\n");
+           status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                         bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                         MY_APP_ADV_CHANNEL,
                                         ADV_FP_NONE);
+       }
+       else
+       {
+           printf("host support rpa\r\n");
+           ll_resolvingList_reset();
+           status = ll_resolvingList_add(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, bondInfo.local_irk);
+           printf("LL resolving list add status: 0x%x\n", status);
+           status = ll_resolvingList_setAddrResolutionEnable(1);
+           printf("LL add resolution enable status: 0x%x\n", status);
+           app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+           status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
+                                                   MY_APP_ADV_CHANNEL,
+                                                   ADV_FP_NONE);
+       }
        if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
        bls_ll_setAdvEnable(1);  //adv enable
     }
@@ -558,7 +591,7 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
         google_voice_ctl = 0;
 #endif
     }
-
+    ir_suppress_reinit();
     device_in_connection_state = 0;
     mtuExchange_check_tick = 0;
     flag_dle = 0;
@@ -1135,6 +1168,7 @@ void user_init_normal(void)
         app_own_address_type = OWN_ADDRESS_RANDOM;
         blc_ll_setRandomAddr(mac_random_static);
     #endif
+    blc_ll_resolvListInit();
 
     ////// Controller Initialization  //////////
     blc_ll_initBasicMCU();                      //mandatory
@@ -1237,30 +1271,40 @@ void user_init_normal(void)
     {
         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
         smp_param_save_t  bondInfo;
-        if(bond_number)   //at least 1 bonding device exist
+        if(bond_number)   //set direct adv
         {
             bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
             ll_resolvingList_reset();
             ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
-        }
-
-        if(bond_number)   //set direct adv
-        {
             app_set_adv_interval_downgrade_direct();
             //printf("\r\npeer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
             //printf("\r\npeer_id_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_id_addr[0],bondInfo.peer_id_addr[1],bondInfo.peer_id_addr[2],bondInfo.peer_id_addr[3],bondInfo.peer_id_addr[4],bondInfo.peer_id_addr[5]);
+            enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
             if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
             {
                 printf("ana read = ota succ\r\n");
                 service_change = 0x55;
             }
-            enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
-            //set direct adv
-            u8 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+            u8 status=0;
+            if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+            {
+                printf("host not support rpa\r\n");
+                status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                                             ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                             bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                             MY_APP_ADV_CHANNEL,
                                             ADV_FP_NONE);
+            }
+            else
+            {
+                printf("host support rpa\r\n");
+                app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+                status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                        bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
+                                                           MY_APP_ADV_CHANNEL,
+                                                           ADV_FP_NONE);
+            }
             if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
             //it is recommended that direct adv only last for several seconds, then switch to indirect adv
             //bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);

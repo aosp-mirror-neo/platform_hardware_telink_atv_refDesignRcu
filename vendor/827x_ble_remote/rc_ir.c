@@ -315,7 +315,6 @@ void rc_ir_irq_prc(void)
                     printf("nec ir irq release\r\n");
                     reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
                     ir_send_ctrl.is_sending = IR_SENDING_NONE;
- 
                 }
             }
             else{
