@@ -39,6 +39,7 @@ extern "C" {
 #define APP_TEST_SECT_ADDR                    0x73000
 
 #define APP_CUSTOM_ADDR                       0x78000
+#define APP_EN_SLAVE_RPA                      0x780FC
 #define APP_EN_BLE_ADV                        0x780FD
 #define APP_EN_GOOGLE_WAKEUPPACK              0x780FE
 #define APP_EN_CACHEKEY                       0x780FF
@@ -205,7 +206,7 @@ extern "C" {
 
 #define CR_VOL_UP                             0x80
 #define CR_VOL_DN                             0x81
-
+#define CR_PERIOD                             0x37
 
 #define CR_MEDIA_KEY_INDEX                    CR_NOTIFICATION
 
@@ -306,6 +307,7 @@ extern "C" {
 #define IR_BLUE                               0x4c
 
 //device lyaout
+#define IR_PERIOD                             0X2a
 #define IR_NOTIFICATION                       0x10
 #define IR_LIVETV                             0x61
 #define IR_TELETEXT                           0x75

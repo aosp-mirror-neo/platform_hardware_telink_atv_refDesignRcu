@@ -62,10 +62,12 @@ typedef enum
 #define LAYOUT_MASK_BIT1               0X02
 #define LAYOUT_MASK_BIT2               0X04
 #define LAYOUT_MASK_BIT5               0X20
+#define LAYOUT_MASK_BIT6               0X40
 
 _attribute_data_retention_  u8 en_powerkey_cache=1;
 _attribute_data_retention_  u8 en_google_wakeuppack=1;
 _attribute_data_retention_  u8 en_ble_adv=1;
+_attribute_data_retention_  u8 en_slave_rpa=1;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
@@ -121,7 +123,9 @@ const unsigned char Kb_CombKey_KeyId_G20[9] = {0xd,0x13,0x2a,0x2b,0x18,0x19,0x0f
 const unsigned char Kb_Wakeup_Key_Map_Correspend_Index_G10[] =  {VOICE,10,0,3,8,11,14,17};             //voice,home,power,input,youtobe,netflix,disney,hbomax
 const unsigned char Kb_Wakeup_Key_Map_Correspend_Index_G20[] =  {VOICE,19,0,6,14,20,26,32,28,5,11,34}; //voice,home,power,input,youtobe,netflix,disney,hbomax,blue,green,red,yellow
 const unsigned char Kb_Map_devicelayout_Correspend_Index_G10[] =  {12,13,6};                           //notification,livetv,,userprofile/allapps
-const unsigned char Kb_Map_devicelayout_Correspend_Index_G20[] =  {24,25,15,12,11,5,34,28};            //notification,livetv,teletext,userprofile/allapps,fast rewind,record,play/pause,fast forward
+const unsigned char Kb_Map_devicelayout_Correspend_Index_G20[] =  {24,25,15,12,11,5,34,28,3};          //notification,livetv,teletext,userprofile/allapps,fast rewind,record,play/pause,fast forward,info/period
+const unsigned char navi_key_index_g10[4] = {1,4,15,18}; //left,right,up,down keyid in g10
+const unsigned char navi_key_index_g20[4] = {1,7,30,36}; //left,right,up,down keyid in g20
 
 const unsigned char Kb_Map_Testmode_Seq_Correspend_Index_G10[] =  {16,2,22,19,5};                      //vol up,vol dn,mute,chn up,chn dn
 const unsigned char Kb_Map_Testmode_Seq_Correspend_Index_G20[] =  {31,2,43,37,8};                      //vol up,vol dn,mute,chn up,chn dn
@@ -189,6 +193,12 @@ const unsigned char Kb_Map_Ir_G20[] =  {\
                         IR_LEFT,       IR_CHN_UP,       VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE,\
                         IR_CENTER,     IR_MUTE,         VK_NONE,       VK_NONE,     VK_NONE,   VK_NONE};
 
+/**
+ * @brief       Device layout configuration
+ * @param[in]   ui_layout: from flash 0x78000
+ * @return      none
+ * See document "Reference RCU Flash Storage Format" (Table 3.1) for details.
+ */
 void app_custom_ui_layout(u8 ui_layout)
 {
     if((ui_layout == 0xff) || (ui_layout == 0))
@@ -257,9 +267,19 @@ void app_custom_ui_layout(u8 ui_layout)
             nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[6]] = IR_PLAYPAUSE;
             nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[7]] = IR_FASTFORWARD;
         }
+        if((ui_layout&LAYOUT_MASK_BIT6))
+        {
+            key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[8]] = CR_PERIOD;
+            nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[8]] = IR_PERIOD;
+        }
     }
 }
 
+/**
+ * @brief       load nec ir table
+ * @param[in]   none
+ * @return      none
+ */
 void app_custom_set_new_ir_table(void)
 {
     u8 dat[192];
@@ -308,6 +328,11 @@ void app_custom_set_new_ir_table(void)
     }
 }
 
+/**
+ * @brief       app_custom_param_init
+ * @param[in]   device_layout: from flash 0x78000
+ * @return      none
+ */
 void app_custom_param_init(u8 device_layout)
 {
     if(_custom_data.device_type == REMOTE_G10)
@@ -331,6 +356,12 @@ void app_custom_param_init(u8 device_layout)
     kb_p_map_init();
 }
 
+/**
+ * @brief       load wakeup key by mask
+ * @param[in]   wakeup_mask1,wakeup_mask2
+ * @return      none
+ * See document "Reference RCU Flash Storage Format" (Table 3.2) for details.
+ */
 void app_custom_wakeup_key_load(u8* wakeup_mask1, u8* wakeup_mask2)
 {
     u8 j=0,i;
@@ -382,6 +413,11 @@ void app_custom_wakeup_key_load(u8* wakeup_mask1, u8* wakeup_mask2)
     }
 }
 
+/**
+ * @brief       update manufacturer data by id
+ * @param[in]   id (See document "Reference RCU Flash Storage Format" (Table 3.1) for details)
+ * @return      none
+ */
 void app_custom_data_update_by_id(u8 id, u8* data, u8 length)
 {
     switch(id)
@@ -441,6 +477,10 @@ void app_custom_data_update_by_id(u8 id, u8* data, u8 length)
             memcpy(_custom_data.wakeup_packet,data,length);
             break;
 
+        case 31: //enable or disable slave rpa function
+            en_slave_rpa = data[0];
+            break;
+
         case 32: //enable/disable ble adv
             en_ble_adv = data[0];
             break;
@@ -455,6 +495,12 @@ void app_custom_data_update_by_id(u8 id, u8* data, u8 length)
     }
 }
 
+/**
+ * @brief       update manufacturer data
+ * @param[in]   none
+ * @return      none
+ * See document "Reference RCU Flash Storage Format" (Chapter 6) for details.
+ */
 void app_custom_data_update(void)
 {
     u8 buff[256];
@@ -550,6 +596,12 @@ void app_custom_data_update(void)
     printf("duo_flash_addr_pos =%x,duo_flash_page_pos =%x",app_custom_data_update_over_ota_flash_addr_pos,app_custom_data_update_over_ota_flash_page_pos);
 }
 
+/**
+ * @brief       app_custom_init
+ * @param[in]   none
+ * @return      none
+ * See document "Reference RCU Flash Storage Format" and "Reference RCU Wake up Service"for details.
+ */
 void app_custom_init(void)
 {
     u8 buffer[80];
@@ -610,6 +662,7 @@ void app_custom_init(void)
     flash_read_page(APP_EN_CACHEKEY, 1, &en_powerkey_cache);
     flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, &en_google_wakeuppack);
     flash_read_page(APP_EN_BLE_ADV, 1, &en_ble_adv);
+    flash_read_page(APP_EN_SLAVE_RPA, 1, &en_slave_rpa);
 
     app_custom_data_update();
     my_FWRevtrs[3] = (_custom_data.device_type) + 0x30;
@@ -618,11 +671,21 @@ void app_custom_init(void)
     app_custom_param_init(_custom_data.device_ui_layout);
 }
 
+/**
+ * @brief       Get device type
+ * @param[in]   none
+ * @return      1:G10 2:g20
+ */
 u8 app_custom_get_device_type(void)
 {
     return _custom_data.device_type;
 }
 
+/**
+ * @brief       Determine whether the button is a wakeup key
+ * @param[in]   keyid
+ * @return      1:yes 0:no
+ */
 u8 app_custom_is_wakeup_key(u8 keyid)
 {
     u8 i;
@@ -638,6 +701,11 @@ u8 app_custom_is_wakeup_key(u8 keyid)
     return 0;
 }
 
+/**
+ * @brief       Determine whether enable wakeup key function
+ * @param[in]   keyid
+ * @return      1:yes 0:no
+ */
 u8 app_custom_is_enable_wakeup_key(void)
 {
     u16 wakeupkey1_mask = (u16)(((u16) _custom_data.wakeup_key_1[0]<<8) | ((u16) _custom_data.wakeup_key_1[1]));
@@ -648,6 +716,11 @@ u8 app_custom_is_enable_wakeup_key(void)
         return 0;
 }
 
+/**
+ * @brief       Get KEYID
+ * @param[in]   keyid
+ * @return      1 or 2
+ */
 u8  app_custom_wakeupkey_packet_index(u8 keyid)
 {
     u8 i;
@@ -661,6 +734,11 @@ u8  app_custom_wakeupkey_packet_index(u8 keyid)
     }
     return 0;
 }
+/**
+ * @brief       Get drive len
+ * @param[in]   none
+ * @return      len
+ */
 u8 app_custom_get_drive_len(void)
 {
     u8 len;
@@ -676,6 +754,11 @@ u8 app_custom_get_drive_len(void)
 #if APP_DATA_UPDATE_OVER_BLE
 _attribute_data_retention_ app_custom_data_update_sts app_custom_data_update_state = APP_CUSTOM_DATA_UPDATE_END;
 
+/**
+ * @brief       parse data update commands and packets
+ * @param[in]   data and len
+ * @return      none
+ */
 void app_custom_data_update_process(u8 *data,u16 len)
 {
     u8 datasend[3];
@@ -723,21 +806,6 @@ void app_custom_data_update_process(u8 *data,u16 len)
             extern unsigned short crc16 (unsigned char *pD, int len);
             if(crc == crc16(data,18))
             {
-                //printf("recv data index=%x\r\n",data[0]);
-                /*
-                if(app_custom_data_update_over_ota_flash_addr_pos+16>256)
-                {
-                    app_custom_data_update_over_ota_flash_page_pos += 1;
-                    app_custom_data_update_over_ota_flash_addr_pos = 0;
-                }
-
-                if(app_custom_data_update_over_ota_flash_page_pos>=16)
-                {
-                    printf("flash full\r\n");
-                    result = 1;
-                }
-                else
-                */
                 {
                     flash_addr = APP_DATA_UPDATE_OVER_OTA_ADDR +  pos*16 + app_custom_data_update_over_ota_flash_addr_pos + \
                                  app_custom_data_update_over_ota_flash_page_pos*256;
@@ -767,6 +835,11 @@ void app_custom_data_update_process(u8 *data,u16 len)
     }
 }
 
+/**
+ * @brief       Erase data update area
+ * @param[in]   none
+ * @return      -1:already erase  0:not erase
+ */
 int app_custom_data_update_sector_erase_timeoutcb(void)
 {
     extern u8 is_mic_enable(void);
@@ -783,6 +856,11 @@ int app_custom_data_update_sector_erase_timeoutcb(void)
     return 0;
 }
 
+/**
+ * @brief       loop interface for erase data update area
+ * @param[in]   none
+ * @return      none
+ */
 void app_custom_data_update_sector_erase_loop(void)
 {
     u8 datasend[3];

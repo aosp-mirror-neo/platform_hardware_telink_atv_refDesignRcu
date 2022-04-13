@@ -97,41 +97,41 @@ extern int bls_smp_param_deleteByIndex(u8 index);
 extern void app_stop_wakeup_loop(void);
 
 static const u16 vk_consumer_map[] = {
-    G00GLE_MKEY_NOTIFICATION,
-    G00GLE_MKEY_LIVETV,
-    G00GLE_MKEY_TELETEXT,
-    G00GLE_MKEY_USERPROFILE,
-    G00GLE_MKEY_ALLAPPS,
-    G00GLE_MKEY_FASTREWIND,
-    G00GLE_MKEY_RECORD,
-    G00GLE_MKEY_PLAYPAUSE,
-    G00GLE_MKEY_FASTFORWARD,
-    G00GLE_MKEY_INFO,
-    G00GLE_MKEY_SUBTITLE,
-    G00GLE_MKEY_RED,
-    G00GLE_MKEY_GREEN,
-    G00GLE_MKEY_YELLOW,
-    G00GLE_MKEY_BLUE,
-    G00GLE_MKEY_YOUTUBE,
-    G00GLE_MKEY_NETFLIX,
-    G00GLE_MKEY_DISNEY,
-    G00GLE_MKEY_HBOMAX,
-    G00GLE_MKEY_UP,
-    G00GLE_MKEY_DN,
-    G00GLE_MKEY_LEFT,
-    G00GLE_MKEY_RIGHT,
-    G00GLE_MKEY_CENTER,
-    G00GLE_MKEY_HOME,
-    G00GLE_MKEY_BACK,
-    G00GLE_MKEY_POWER,
-    G00GLE_MKEY_VOL_MUTE,
-    G00GLE_MKEY_CHN_UP,
-    G00GLE_MKEY_CHN_DN,
-    G00GLE_MKEY_GUIDE,
-    G00GLE_MKEY_BOOKMARK,
-    G00GLE_MKEY_ASSIST,
-    G00GLE_MKEY_INPUT,
-    G00GLE_MKEY_DASHBOARD,
+    GOOGLE_MKEY_NOTIFICATION,
+    GOOGLE_MKEY_LIVETV,
+    GOOGLE_MKEY_TELETEXT,
+    GOOGLE_MKEY_USERPROFILE,
+    GOOGLE_MKEY_ALLAPPS,
+    GOOGLE_MKEY_FASTREWIND,
+    GOOGLE_MKEY_RECORD,
+    GOOGLE_MKEY_PLAYPAUSE,
+    GOOGLE_MKEY_FASTFORWARD,
+    GOOGLE_MKEY_INFO,
+    GOOGLE_MKEY_SUBTITLE,
+    GOOGLE_MKEY_RED,
+    GOOGLE_MKEY_GREEN,
+    GOOGLE_MKEY_YELLOW,
+    GOOGLE_MKEY_BLUE,
+    GOOGLE_MKEY_YOUTUBE,
+    GOOGLE_MKEY_NETFLIX,
+    GOOGLE_MKEY_DISNEY,
+    GOOGLE_MKEY_HBOMAX,
+    GOOGLE_MKEY_UP,
+    GOOGLE_MKEY_DN,
+    GOOGLE_MKEY_LEFT,
+    GOOGLE_MKEY_RIGHT,
+    GOOGLE_MKEY_CENTER,
+    GOOGLE_MKEY_HOME,
+    GOOGLE_MKEY_BACK,
+    GOOGLE_MKEY_POWER,
+    GOOGLE_MKEY_VOL_MUTE,
+    GOOGLE_MKEY_CHN_UP,
+    GOOGLE_MKEY_CHN_DN,
+    GOOGLE_MKEY_GUIDE,
+    GOOGLE_MKEY_BOOKMARK,
+    GOOGLE_MKEY_ASSIST,
+    GOOGLE_MKEY_INPUT,
+    GOOGLE_MKEY_DASHBOARD,
 };
 
 
@@ -835,8 +835,6 @@ void app_key_send_store(void)
     }
     app_key_store_count --;
 }
-const u8 navi_key_index_g10[4] = {1,4,15,18}; //left,right,up,down keyid in g10
-const u8 navi_key_index_g20[4] = {1,7,30,36}; //left,right,up,down keyid in g20
 
 
 u8 app_is_navi_key(u8 data0,u8 data1)
@@ -1412,7 +1410,7 @@ void key_change_proc(void)
                     consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
                     consumer_key[1] = 0;
                     printf("consume key=%x \r\n",consumer_key[0]);
-                    if((key0 == comb_key_keyid[0]) || (key0 == comb_key_keyid[1])) //back or home key
+                    if(key0 == comb_key_keyid[0]) //back
                     {
                          SpecialKey = consumer_key[0];
                          blt_soft_timer_add(app_special_key_delay_timer, 80000);
@@ -1420,7 +1418,7 @@ void key_change_proc(void)
                     }
                     bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
 #if BLE_AUDIO_ENABLE
-                    if(consumer_key[0] == G00GLE_MKEY_CENTER)
+                    if(consumer_key[0] == GOOGLE_MKEY_CENTER)
                     {
                         google_voice_dpad_select();
                     }
@@ -1700,8 +1698,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = G00GLE_MKEY_BACK;
-                consumer_key[1] = G00GLE_MKEY_CENTER;
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_CENTER;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
@@ -1711,8 +1709,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
             //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state)
             {
-                consumer_key[0] = G00GLE_MKEY_BACK;
-                consumer_key[1] = G00GLE_MKEY_DN;
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_DN;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }

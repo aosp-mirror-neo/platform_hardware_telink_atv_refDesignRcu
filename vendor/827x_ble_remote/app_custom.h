@@ -38,6 +38,9 @@ extern u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 en_google_wakeuppack;
 extern u8 en_ble_adv;
+extern u8 en_slave_rpa;
+extern const unsigned char navi_key_index_g10[4];
+extern const unsigned char navi_key_index_g20[4];
 
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);

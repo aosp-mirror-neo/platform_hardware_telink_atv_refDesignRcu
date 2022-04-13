@@ -138,7 +138,7 @@ _attribute_data_retention_  u8  app_slave_terminate=0;
 _attribute_data_retention_  u8  app_is_set_mtusize=0;
 _attribute_data_retention_  u8  prepareWrite_b[300];
 _attribute_data_retention_  u8  wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
-_attribute_data_retention_  u8  power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is power down
+_attribute_data_retention_  u8  power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is deep
 _attribute_data_retention_  u8  wakeup_key_send_flag=0;     //1: sending wake up packet 2:schedule ota flag
 _attribute_data_retention_  u8  wakeup_key_keyid=0;         //Save the wake-up key keyid
 _attribute_data_retention_  u8  wakeup_key_keycount=0;
@@ -257,6 +257,8 @@ void app_adv_interval_downgrade_direct(void)
 {
     u8 status=0;
     smp_param_save_t  bondInfo;
+    u8 rpa_flag=0;
+
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     //direct adv
     if(bond_number)   //at least 1 bonding device exist
@@ -265,6 +267,17 @@ void app_adv_interval_downgrade_direct(void)
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
 
        if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+       {
+           rpa_flag = 0;
+       }
+       else
+       {
+           if(en_slave_rpa == 0)
+               rpa_flag = 0;
+           else
+               rpa_flag = 1;
+       }
+       if(rpa_flag == 0)
        {
          status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
@@ -331,6 +344,8 @@ void app_adv_indirect(void)
 void app_adv_direct(void)
 {
     u8 status=0;
+    u8 rpa_flag=0;
+
     printf("app_adv_direct\r\n");
     is_reconn_mode = 0x55;
     smp_param_save_t  bondInfo;
@@ -342,6 +357,17 @@ void app_adv_direct(void)
        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
 
        if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+       {
+           rpa_flag = 0;
+       }
+       else
+       {
+           if(en_slave_rpa == 0)
+               rpa_flag = 0;
+           else
+               rpa_flag = 1;
+       }
+       if(rpa_flag == 0)
        {
            printf("host not support rpa\r\n");
            status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
@@ -1271,11 +1297,12 @@ void user_init_normal(void)
     {
         u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
         smp_param_save_t  bondInfo;
-        if(bond_number)   //set direct adv
+        if(bond_number)   //at least 1 bonding device exist
         {
             bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
             ll_resolvingList_reset();
             ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
+            ll_whiteList_reset();
             app_set_adv_interval_downgrade_direct();
             //printf("\r\npeer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
             //printf("\r\npeer_id_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_id_addr[0],bondInfo.peer_id_addr[1],bondInfo.peer_id_addr[2],bondInfo.peer_id_addr[3],bondInfo.peer_id_addr[4],bondInfo.peer_id_addr[5]);
@@ -1285,10 +1312,22 @@ void user_init_normal(void)
                 printf("ana read = ota succ\r\n");
                 service_change = 0x55;
             }
-            u8 status=0;
+            u8 status=0,rpa_flag=0;
             if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
             {
+               rpa_flag = 0;
+            }
+            else
+            {
+               if(en_slave_rpa == 0)
+                   rpa_flag = 0;
+               else
+                   rpa_flag = 1;
+            }
+            if(rpa_flag == 0)
+            {
                 printf("host not support rpa\r\n");
+                ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
                 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                                             ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                                             bondInfo.peer_addr_type,  bondInfo.peer_addr,
@@ -1299,6 +1338,7 @@ void user_init_normal(void)
             {
                 printf("host support rpa\r\n");
                 app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+                //ll_resolvingList_setResolvablePrivateAddrTimer(60);
                 status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                         bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
@@ -1492,6 +1532,18 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
 {
    // u8 tbl_scanRsp[30];
     u8 tbl_advData[40];
+    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
+    smp_param_save_t bondInfo;
+
+    if(bond_number)
+    {
+        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);
+        if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+        {
+            ll_whiteList_reset();
+            ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
+        }
+    }
 
     printf("app_start_send_wakeup\r\n");
     bls_ll_setAdvEnable(0);
@@ -1504,7 +1556,7 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
         ADV_TYPE_CONNECTABLE_UNDIRECTED, app_own_address_type,
         0,    NULL,
         MY_APP_ADV_CHANNEL,
-        ADV_FP_NONE);
+        ADV_FP_ALLOW_SCAN_WL_ALLOW_CONN_WL);
     bls_ll_setAdvEnable(1);
 
 }
