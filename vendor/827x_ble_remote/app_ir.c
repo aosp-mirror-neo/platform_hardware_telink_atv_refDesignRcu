@@ -902,6 +902,7 @@ int ir_key_event_notify_erase_timeoutcb(void)
         flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
         printf("erase_succ\r\n");
         bls_ll_restoreConnBrxEvent();
+        write_ir_key_event_notify(ir_app_parm.ir_programming.key_notification_flag);
         return -1;
     }
 
@@ -1562,8 +1563,6 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
                     if(is_ir_key_event_notify_flash_info_full() == 1)
                     {
                         ir_key_event_notify_erase();
-                        //flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
-                        //write_ir_key_event_notify(buf[0]);
                     }
                     else
                         write_ir_key_event_notify(buf[0]);

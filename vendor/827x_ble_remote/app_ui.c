@@ -68,7 +68,7 @@ _attribute_data_retention_ u8  ota_flag = 0;  //0:pause 1:continue
 _attribute_data_retention_ u8  testmode_key_seq[5]={0};
 _attribute_data_retention_ u8  testmode_key_seq_count=0;
 
-
+extern u8 wakeup_key_keycount;
 extern u8  comb_key_keyid[9];
 extern u32 latest_user_event_tick;
 extern u8  lowbat;
@@ -611,39 +611,7 @@ _attribute_data_retention_     u32 keyScanLongPressTick = 0;
 _attribute_data_retention_     u32 LongPressTick = 0;
 _attribute_data_retention_     APP_Accessibility_Shortcut_Mode  Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
 _attribute_data_retention_     u8 Accessibility_Shortcut_Flag = 0;
-_attribute_data_retention_     u16 SpecialKey = 0;
 
-
-int app_special_key_delay_timer(void)
-{
-    //("app_special_key_delay_timer\r\n");
-    bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&SpecialKey, 2);
-    return -1;
-}
-
-int app_ir_bugreport_key_delay_timer(void)
-{
-    //printf("app_ir_bugreport_key_delay_timer\r\n");
-    //printf("\r\nSpecialKey keyindex=%x\r\n",(u8)SpecialKey);
-    key_type = IR_KEY;
-    if(!ir_not_released){
-        ir_dispatch_ext(TYPE_IR_SEND, (u8)SpecialKey);
-        ir_not_released = 1;
-    }
-
-    if(key_not_released == 0)
-    {
-        if(ir_not_released)ir_not_released = 0;
-        if( ir_send_ctrl.is_sending)
-        {
-            ir_send_release();
-        }
-        return -1;
-    }
-    if(key_not_released == 1)
-        return -1;
-    return -1;
-}
 
 #if (STUCK_KEY_PROCESS_ENABLE)
      extern u32 stuckkey_keypresstimer;
@@ -901,7 +869,6 @@ void app_release_hid_key(void)
 }
 void comb_key_stop_ir(void)
 {
-    blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
     if(device_in_connection_state == 0)
     {
         printf("comb_key_stop_ir_1\r\n");
@@ -1227,7 +1194,6 @@ void key_change_proc(void)
         {
             printf("pair start\r\n");
             comb_key_stop_ir();
-            blt_soft_timer_delete(app_special_key_delay_timer);
             //in voice mode need disable enter pairing mode
             if(ui_mic_enable)
             {
@@ -1263,25 +1229,21 @@ void key_change_proc(void)
             LongPressTick = 1000000;
             Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
         }
+        else if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[7])) || ((key0 == comb_key_keyid[7]) && (key1 == comb_key_keyid[0]))) //  back+down
+        {
+            printf("back+dwon\r\n");
+            comb_key_stop_ir();
+            keyScanLongPressTick = clock_time() | 1; //none zero
+            LongPressTick = 2000000;
+            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+        }
         else
         {
-            if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[7])) || ((key0 == comb_key_keyid[7]) && (key1 == comb_key_keyid[0]))) //  back+down
-            {
-                printf("back+dwon\r\n");
-                if(device_in_connection_state)
-                {
-                    keyScanLongPressTick = clock_time() | 1; //none zero
-                    LongPressTick = 1000000;
-                    Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
-                    return;
-                }
-            }
             if(device_in_connection_state == 0)
             {
                 if(app_is_navi_key(key0,key1) == 0)
                 {
                     //printf(" stop double key in ir mode\r\n");
-                    blt_soft_timer_delete(app_ir_bugreport_key_delay_timer);
                     //printf("ir_send_ctrl.is_sending =%x\r\n",ir_send_ctrl.is_sending);
                     if(ir_send_ctrl.is_sending)
                     {
@@ -1350,8 +1312,12 @@ void key_change_proc(void)
                   {
                      if(wakeup_key_send_flag == 0)
                      {
-                         extern u8 wakeup_key_keycount;
                          wakeup_key_keycount++;
+                         if(is_wakeup_keyindex_flash_info_full())
+                         {
+                             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
+                         }
+
                          write_wakeup_keyindex_info(wakeup_key_keycount);
                          wakeup_key_send_flag = 1;
                          wakeup_key_keyid = key0;
@@ -1410,12 +1376,6 @@ void key_change_proc(void)
                     consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
                     consumer_key[1] = 0;
                     printf("consume key=%x \r\n",consumer_key[0]);
-                    if(key0 == comb_key_keyid[0]) //back
-                    {
-                         SpecialKey = consumer_key[0];
-                         blt_soft_timer_add(app_special_key_delay_timer, 80000);
-                         return;
-                    }
                     bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
 #if BLE_AUDIO_ENABLE
                     if(consumer_key[0] == GOOGLE_MKEY_CENTER)
@@ -1446,12 +1406,6 @@ void key_change_proc(void)
                  app_enter_deep_timeset();
                  u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
                   printf("bond_number_1=%x\r\n",bond_number);
-             }
-             if((key0 == comb_key_keyid[0]) || (key0 == comb_key_keyid[2]))    //center or back
-             {
-                 SpecialKey = key0;
-                 blt_soft_timer_add(app_ir_bugreport_key_delay_timer, 80000);
-                 return;
              }
 
              key_type = IR_KEY;
@@ -1705,9 +1659,17 @@ void proc_keyboard (u8 e, u8 *p, int n)
         }
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
         {
-            //printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
+            printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
             //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
-            if(device_in_connection_state)
+            if(device_in_connection_state == 0)
+            {
+                key_type = IR_KEY;
+                if(!ir_not_released){
+                    ir_dispatch(TYPE_IR_SEND, 0x88, 0xd0);
+                    ir_not_released = 1;
+                }
+            }
+            else
             {
                 consumer_key[0] = GOOGLE_MKEY_BACK;
                 consumer_key[1] = GOOGLE_MKEY_DN;

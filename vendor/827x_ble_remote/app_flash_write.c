@@ -370,14 +370,14 @@ void write_wakeup_keyindex_info(u8 index){
     u8 dat[4] ={0xA5,0xff,0xff,0xff};
 
     dat[2] = index;
-    u8 ret = flash_write_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
+    u8 ret = flash_write_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,1,4,3,dat);
     printf("write_wakeup_keyindex_info:0x%x\r\n",ret);
 }
 
 u8 read_wakeup_keyindex_info(u8 *index){
 
     u8 dat[4] ={0};
-    u8 ret = flash_read_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4,3,dat);
+    u8 ret = flash_read_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,1,4,3,dat);
     if(!ret){
         *index = dat[2];
     }
@@ -387,7 +387,7 @@ u8 read_wakeup_keyindex_info(u8 *index){
 
 u8 is_wakeup_keyindex_flash_info_full(void)
 {
-    if(flash_pos_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,2,4) == 0x03)
+    if(flash_pos_info(WAKEUP_KEYINDEX_DATA_SECT_ADDR,1,4) == 0x03)
     {
         return 1;
     }
@@ -401,7 +401,6 @@ void init_wakeup_keyindex(void)
         if(is_wakeup_keyindex_flash_info_full())
         {
             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
-            flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR+0x1000);
             write_wakeup_keyindex_info(wakeup_key_keycount);
         }
         printf("wakeup_key_keycount=%x\r\n",wakeup_key_keycount);
