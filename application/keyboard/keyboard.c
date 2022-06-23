@@ -31,8 +31,8 @@
 #include "../../vendor/827x_ble_remote/app_custom.h"
 
 #define KB_DRIVE_PIN_MAX_NUM   KB_DRIVE_PIN_G20
-#define KB_DRIVE_PIN_G10       3   
-#define KB_DRIVE_PIN_G20       6   
+#define KB_DRIVE_PIN_G10       3
+#define KB_DRIVE_PIN_G20       6
 #define KB_SCAN_PIN            8
 
 
@@ -222,7 +222,7 @@ static inline void kb_remap_key_row(int drv_ind, u32 m, int key_max, kb_data_t *
         memcpy(a,kb_k_mp,8*3);
     else
         memcpy(b,kb_k_mp,8*6);
-    
+
     foreach_arr(i, scan_pins){
         if(m & 0x01){
             if(len == KB_DRIVE_PIN_G10)
@@ -280,7 +280,7 @@ u32 kb_scan_row(int drv_ind, unsigned char * gpio){
         memcpy(a,kb_k_mp,8*3);
     else
         memcpy(b,kb_k_mp,8*6);
-    
+
     unsigned char sr = irq_disable();
 #if    (KB_KEY_FLASH_PIN_MULTI_USE)
     MSPI_AS_GPIO;

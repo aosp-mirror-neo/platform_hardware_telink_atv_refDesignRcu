@@ -432,8 +432,8 @@ void ir_flash_check(u32 addr)
         ir_table[button_index].button_idx = button_index;
         if(code_size>256)
         {
-            printf("addr=%x\r\n",addr-0x7000+i*256);
-            flash_read_page(addr-0x7000+i*256, code_size-251, &buf[256]);
+            printf("addr=%x\r\n",addr-IR_SECTOR_ADD_OFFSET+i*256);
+            flash_read_page(addr-IR_SECTOR_ADD_OFFSET+i*256, code_size-251, &buf[256]);
         }
         memcpy(ir_table[button_index].code, &buf[5], code_size);
 
@@ -604,7 +604,7 @@ void ir_flash_save(u8 button)
 
             bls_ll_disableConnBrxEvent();
             //device_led_on(1);
-            flash_write_page(flash_addr-0x7000+ir_app_parm.ir_save.ir_save_pos-256,write_len_per,(((u8*)(&ir_table[button]))+ir_app_parm.ir_save.ir_save_pos));
+            flash_write_page(flash_addr-IR_SECTOR_ADD_OFFSET+ir_app_parm.ir_save.ir_save_pos-256,write_len_per,(((u8*)(&ir_table[button]))+ir_app_parm.ir_save.ir_save_pos));
             //device_led_off(1);
             bls_ll_restoreConnBrxEvent();
             ir_flash_save_flag_for_ext_sector();
@@ -735,7 +735,7 @@ int ir_flash_erase_timeoutcb(void)
     //printf("ir_flash_erase_timeoutcb\r\n");
     //u32 time;
     u8 data;
-    u32 pos_addr_ext=0,pos_addr=0;
+    u32 pos_addr=0;
 
     if(is_mic_enable() == 1)
         return 0;
@@ -746,12 +746,10 @@ int ir_flash_erase_timeoutcb(void)
     if(ir_flash_need_erase_sector == 0)
     {
         pos_addr = 0;
-        pos_addr_ext = 0;
     }
     else if(ir_flash_need_erase_sector == 2)
     {
         pos_addr = 0x2000;
-        pos_addr_ext = 0x7000;
     }
     else
     {
@@ -838,11 +836,11 @@ int ir_flash_erase_timeoutcb(void)
            else
            {
                printf("step_3\r\n");
-               flash_read_page(IR_DATA_SECT_1_EXT_ADDR - pos_addr_ext,1,&data);
+               flash_read_page(IR_DATA_SECT_1_EXT_ADDR + pos_addr,1,&data);
                if(data == APP_IR_DATA_HEAD)
                {
                    printf("step_3_3\r\n");
-                   flash_erase_sector(IR_DATA_SECT_1_EXT_ADDR - pos_addr_ext);
+                   flash_erase_sector(IR_DATA_SECT_1_EXT_ADDR + pos_addr);
                    ir_flash_erase_sector_step = 0;
                    printf("erase_succ\r\n");
                }
@@ -1555,7 +1553,7 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
         {
             if (len == 2)
             {
-                //printf("ccc buf[0]=%x\r\n",buf[0]);
+                printf("ccc buf[0]=%x\r\n",buf[0]);
                 if(buf[0] != ir_app_parm.ir_programming.key_notification_flag)
                 {
                     ir_app_parm.ir_programming.key_notification_flag = buf[0];

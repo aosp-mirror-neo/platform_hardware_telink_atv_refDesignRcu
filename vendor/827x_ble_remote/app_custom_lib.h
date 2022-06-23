@@ -38,4 +38,11 @@ typedef struct{
 extern void app_send_wakeup_packet(u8 keyid);
 extern u32 app_custom_wakeup_tick(void);
 
+//void app_woble_refresh_tick(void);
+void app_woble_buffer_init(void);
+void app_woboe_set_para(u8 key_id,u8 seq_no);
+void app_woble_schedule_ota(u8 seq_no);
+void app_woble_clear_para(void);
+void app_woble_init_settings(u8 *buf,u8 adv_type);
+u8 app_woble_send_task(void);
 #endif

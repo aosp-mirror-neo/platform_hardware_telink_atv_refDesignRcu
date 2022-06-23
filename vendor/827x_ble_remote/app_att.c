@@ -33,6 +33,8 @@
 #include "app_ir.h"
 #include "app_custom.h"
 #include "app_test.h"
+#include "./app_find_me/app_fms.h"
+#include "../../version.h"
 
 typedef struct
 {
@@ -103,7 +105,9 @@ static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 
 
  _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','1'};
- _attribute_data_retention_ u8 my_SWRevtrs []     = {'V','1','.','0','2'};
+// _attribute_data_retention_ u8 my_SWRevtrs []     = {'V','1','.','0','2'};
+ static const u8  my_SWRevtrs []     = {'V', 0x30+((FW_VERSION>>8)&0x0f), '.', 0x30+((FW_VERSION>>4)&0x0f), 0x30+(FW_VERSION&0x0f)};
+
  static const u8 my_HWRevtrs []     = {'V','1','.','0'};
  static const u8 my_ManuNametrs []  = {'T','e','l','i','n','k'};
 
@@ -511,6 +515,28 @@ u8      ir_data[1] = {0};
 
 #endif
 
+#if FIND_ME_ENABLE
+
+static const u8 FMS_Server_UUID[16]    = {GOOGLE_FMS_SERVfICE_UUID};
+static const u8 FMS_Char_UUID_CTL[16]  = {GOOGLE_FMS_CTL_CHAR_UUID};
+static const u8 FMS_Char_UUID_DATA[16] = {GOOGLE_FMS_DATA_CHAR_UUID};
+
+_attribute_data_retention_ u16 my_fms_data_ccc = 0;
+
+static const u8 my_fms_CharCtlVal[19] = {
+    CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP,
+    U16_LO(FMS_GOOGLE_CTL_DP_H), U16_HI(FMS_GOOGLE_CTL_DP_H),
+    GOOGLE_FMS_CTL_CHAR_UUID
+};
+
+static const u8 my_fms_CharDataVal[19] = {
+    CHAR_PROP_READ | CHAR_PROP_WRITE_WITHOUT_RSP | CHAR_PROP_NOTIFY,
+    U16_LO(FMS_GOOGLE_DATA_DP_H), U16_HI(FMS_GOOGLE_DATA_DP_H),
+    GOOGLE_FMS_DATA_CHAR_UUID
+};
+
+#endif
+
 extern void app_set_mtusize(void);
 extern void ir_fallback_process(u16 handle, u8* buf, u16 len);
 int app_ir_callback(void *p)
@@ -621,7 +647,7 @@ int app_ota_handle(void * p){
         //software revision string  (17-18)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_SWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_SWRevCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_SWRevtrs),(u8*)(&my_SWRevUUID), (u8*)(my_SWRevtrs), 0},
-        
+
         //hardware revision string  (19-20)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_HWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_HWRevCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_HWRevtrs),(u8*)(&my_HWRevUUID), (u8*)(my_HWRevtrs), 0},
@@ -664,7 +690,7 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportKEYoutCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidReportKEYoutCharVal), 0},                //prop
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(reportKeyOut),(u8*)(&hidReportUUID),     (u8*)(reportKeyOut), 0},    //value
         {0,ATT_PERMISSIONS_READ,2,sizeof(reportRefKeyOut),(u8*)(&reportRefUUID),     (u8*)(reportRefKeyOut), 0},    //value
- 
+
         // 0023 - 0025 . report map: 3                                  (41-43)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportMapCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidReportMapCharVal), 0},                //prop
         {0,ATT_PERMISSIONS_READ,2,sizeof(reportMap),(u8*)(&hidReportMapUUID),     (u8*)(reportMap), 0},    //value
@@ -733,6 +759,18 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(ir_data),(u8*)(&clientCharacterCfgUUID), (u8*)(ir_data), &app_ir_callback},
 #endif
 
+#if FIND_ME_ENABLE
+        {6,ATT_PERMISSIONS_READ,2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&FMS_Server_UUID), 0},
+
+        {0,ATT_PERMISSIONS_READ,2,sizeof(my_fms_CharCtlVal),(u8*)(&my_characterUUID), (u8*)(my_fms_CharCtlVal), 0},
+        {0,ATT_PERMISSIONS_RDWR,16,2,(u8*)(&FMS_Char_UUID_CTL),(u8 *) g_p_app_fms_ctrl_val, &app_fms_att_ctl_cb},
+
+        {0,ATT_PERMISSIONS_READ,2,sizeof(my_fms_CharDataVal),(u8*)(&my_characterUUID),(u8*)(my_fms_CharDataVal), 0},
+        {0,ATT_PERMISSIONS_RDWR,16,2,(u8*)(&FMS_Char_UUID_DATA),(u8 *)g_p_app_fms_data_val, &app_fms_att_data_cb},
+        {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_fms_data_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_fms_data_ccc), &att_ccc_control},
+
+#endif
+
     };
 
 #if (MP_TEST_MODE)
@@ -766,7 +804,7 @@ int app_ota_handle(void * p){
         {9,ATT_PERMISSIONS_READ,2,2,(u8*)(&my_primaryServiceUUID),     (u8*)(&my_devServiceUUID), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_PnCharVal),(u8*)(&my_characterUUID), (u8*)(my_PnCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (_custom_data.pnp_id),(u8*)(&my_PnPUUID), (u8*)(_custom_data.pnp_id), 0},
-        
+
         // firmware revision string (15-16)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_FWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_FWRevCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_FWRevtrs),(u8*)(&my_FWRevUUID), (u8*)(my_FWRevtrs), 0},
@@ -778,7 +816,7 @@ int app_ota_handle(void * p){
         // hardware revision string (19-20)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_HWRevCharVal),(u8*)(&my_characterUUID), (u8*)(my_HWRevCharVal), 0},
         {0,ATT_PERMISSIONS_READ,2,sizeof (my_HWRevtrs),(u8*)(&my_HWRevUUID), (u8*)(my_HWRevtrs), 0},
-        
+
 
         /////////////////////////////////// 4. HID Service /////////////////////////////////////////////////
         // 0015 - 002F
@@ -817,7 +855,7 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportKEYoutCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidReportKEYoutCharVal), 0},                //prop
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(reportKeyOut),(u8*)(&hidReportUUID),     (u8*)(reportKeyOut), 0},    //value
         {0,ATT_PERMISSIONS_RDWR,2,sizeof(reportRefKeyOut),(u8*)(&reportRefUUID),     (u8*)(reportRefKeyOut), 0},    //value
- 
+
         // report map: 3            (41-43)
         {0,ATT_PERMISSIONS_READ,2,sizeof(my_hidReportMapCharVal),(u8*)(&my_characterUUID), (u8*)(my_hidReportMapCharVal), 0},                //prop
         {0,ATT_PERMISSIONS_READ,2,sizeof(reportMap),(u8*)(&hidReportMapUUID),     (u8*)(reportMap), 0},    //value
@@ -909,7 +947,7 @@ void my_att_init (void)
 #endif
     bls_att_setAttributeTable ((u8 *)my_Attributes);
 }
-#include "../../version.h"
+
 void init_device_info (void)
 {
     //u8 my_FWRevtrs []     = {'V','1','.','1','.','1'};
@@ -918,7 +956,7 @@ void init_device_info (void)
     //my_FWRevtrs[3] = ((FW_VERSION>>24)&0x0f) + 48;
     //my_FWRevtrs[5] = ((FW_VERSION>>20)&0x0f) + 48;
 
-    my_SWRevtrs[1] = ((FW_VERSION>>8)&0x0f) + 48;
-    my_SWRevtrs[3] = ((FW_VERSION>>4)&0x0f) + 48;
-    my_SWRevtrs[4] = (FW_VERSION&0x0f) + 48;
+//    my_SWRevtrs[1] = ((FW_VERSION>>8)&0x0f) + 48;
+//    my_SWRevtrs[3] = ((FW_VERSION>>4)&0x0f) + 48;
+//    my_SWRevtrs[4] = (FW_VERSION&0x0f) + 48;
 }

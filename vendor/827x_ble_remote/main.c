@@ -38,6 +38,9 @@
 #include "app_test.h"
 #endif
 #include "app_custom.h"
+#include "app_custom_lib.h"
+#include "app_ui.h"
+#include "./app_find_me/app_fms.h"
 
 
 extern void user_init_normal();
@@ -108,8 +111,13 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
     }
 #endif
 
+    /* Check and save wake up source */
+    app_ui_check_wakeup_src(deepRetWakeUp);
+
     if(!deepRetWakeUp){//read flash size
         //app_custom_test();
+        app_woble_buffer_init();
+        app_fms_buffer_init();
         app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
@@ -130,11 +138,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         user_init_deepRetn ();
     }
     else{
-        extern u8 wakeup_src;  //1:wakeup for pad  2:wake up for timer
-        extern u8 app_wakeup_src(void);
-
-        wakeup_src = app_wakeup_src();
-        printf("wakeup_src=%x\r\n",wakeup_src);
         #if FIRMWARES_SIGNATURE_ENABLE
             blt_firmware_signature_check();
         #endif

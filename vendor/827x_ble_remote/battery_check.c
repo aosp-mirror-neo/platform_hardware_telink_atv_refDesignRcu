@@ -257,7 +257,7 @@ void battery_percent(void)
     {
         if(bak_batpercent - my_batVal[0] >= 2)
         {
-            
+
              bak_batpercent = my_batVal[0];
              if(device_in_connection_state)
              {

@@ -408,7 +408,7 @@ void init_wakeup_keyindex(void)
     else
     {
         printf("no_wakeup_keyindex\r\n");
-    }    
+    }
 }
 
 void write_ir_key_event_notify(u8 index){

@@ -37,8 +37,33 @@ typedef struct{
     unsigned char data[UART_DATA_LEN];
 }uart_data_t;
 
-MYFIFO_INIT(hci_rx_fifo, 20, 2);
-MYFIFO_INIT(hci_tx_fifo, 20, 2);
+//MYFIFO_INIT(hci_rx_fifo, 20, 2);
+//MYFIFO_INIT(hci_tx_fifo, 20, 2);
+
+#define HCI_RX_FIFO_SIZE             (20)
+#define HCI_RX_FIFO_NUM              (2)
+
+#define HCI_TX_FIFO_SIZE             (20)
+#define HCI_TX_FIFO_NUM              (2)
+
+extern u8 blt_buff_prepare_write[];
+#define hci_rtxfifo_b					(blt_buff_prepare_write + 4)								// 0x100
+
+
+my_fifo_t hci_rx_fifo = {
+                                                    HCI_RX_FIFO_SIZE,
+                                                    HCI_RX_FIFO_NUM,
+                                                    0,
+                                                    0,
+                                                    hci_rtxfifo_b,};
+
+my_fifo_t hci_tx_fifo = {
+                                                    HCI_TX_FIFO_SIZE,
+                                                    HCI_TX_FIFO_NUM,
+                                                    0,
+                                                    0,
+                                                    hci_rtxfifo_b + (HCI_RX_FIFO_SIZE*HCI_RX_FIFO_NUM),};
+
 
 extern void blc_phy_preamble_length_set(unsigned char len);
 
@@ -155,7 +180,8 @@ void app_phytest_init(void)
         uart_reset();
     #endif
 
-    uart_recbuff_init((unsigned char*)hci_rx_fifo_b, hci_rx_fifo.size);
+//    uart_recbuff_init((unsigned char*)hci_rx_fifo_b, hci_rx_fifo.size);
+    uart_recbuff_init((unsigned char*)hci_rtxfifo_b, hci_rx_fifo.size);
 
 
     #if (CLOCK_SYS_CLOCK_HZ == 16000000)

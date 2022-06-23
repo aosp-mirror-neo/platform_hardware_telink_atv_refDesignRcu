@@ -29,6 +29,23 @@
 
 #include "app_config.h"
 
+typedef enum {
+
+    APP_WAKEUP_SRC_NONE = 0,		// invalid value
+    APP_WAKEUP_SRC_POWER_ON,		// Triggered by inserting battery
+    APP_WAKEUP_SRC_DEEP_PAD,		// Under normal circumstances, after entering deep, it is triggered by the pad
+    APP_WAKEUP_SRC_DEEP_TIMER,		// Under normal circumstances, after entering deep, it is triggered by the timer
+
+    //    APP_WAKEUP_SRC_DEEP_RETENTION,	// Generally, after entering deep retention, it is triggered by timer, and it may also be triggered by key press
+
+    APP_WAKEUP_SRC_NOT_USE,
+
+}APP_UI_WAKEUP_SRC_T;
+
+void app_ui_check_wakeup_src(u8 deepRetWakeUp);
+APP_UI_WAKEUP_SRC_T app_ui_get_wakeup_src(void);
+
+
 void app_ui_init_normal(void);
 void app_ui_init_deepRetn(void);
 
@@ -42,8 +59,8 @@ void proc_keyboard (u8 e, u8 *p, int n);
     //void app_debug_ota_result(int result);
     void app_ota_ver_check(void);
     void app_ota_signature();
-    void app_enter_ota_mode(void *data);
-    void app_ota_result(int result);
+    u8 app_enter_ota_mode(u8 *data);
+    void app_ota_result(u8 result);
     void app_schedule_ota(u8 *data);
 
     //void app_ota_decryption(u8 *data);
@@ -71,5 +88,9 @@ extern void app_schedule_ota_wakeup_host(void);
 extern void app_schedule_ota_send_notify_to_continue_ota(void);
 extern void app_ota_timeout(void);
 extern int app_cachekey_send_timer(void);
-extern u8 app_is_key_released(void);
+extern int app_is_key_released(void);
+
+
+void app_keyboard_release_action_by_flag(void);
+
 #endif /* APP_UI_H_ */

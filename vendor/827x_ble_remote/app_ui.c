@@ -39,12 +39,17 @@
 #include "app_audio.h"
 #include "app_flash_write.h"
 #include "app_ir.h"
+#include "app_ui.h"
 
 #if (MP_TEST_MODE)
 #include "app_test.h"
 #endif
 
 #include "app_custom.h"
+#include "app_custom_lib.h"
+#include "./app_find_me/app_fms.h"
+
+
 
 //////////////////// key type ///////////////////////
 #define IDLE_KEY                   0
@@ -76,11 +81,9 @@ extern u8  device_in_connection_state;
 extern u8  flag_schedule_ota;
 extern u8  device_timeout_state;
 extern u8  wakeup_src;
-extern u8  power_down_flag;
 extern u8  wakeup_key_keyid;
-extern u8  wakeup_key_send_flag;
-extern u8  wakeup_packet_format;
-extern u32 wakeup_tick;
+//extern u8  wakeup_key_send_flag;
+//extern u8  wakeup_packet_format;
 extern u32 advertise_begin_tick;
 extern u8  en_powerkey_cache;
 extern u8  detpowerkey;
@@ -164,8 +167,8 @@ static const u16 vk_consumer_map[] = {
             {APP_LED_GREEN,   1,   250,      250 ,   0,      0,  },    //2Hz
             {APP_LED_GREEN,   1,   500,      500 ,   0,      0,  },    //1Hz
             {APP_LED_RED,     1,   100,      100 ,   5,      0,  },    //5Hz for 5 seconds
-            {APP_LED_RED,     1,   50,       50,     4,      0,  },    
-            {APP_LED_RED,     1,   100,      0,      0,      1,  },    
+            {APP_LED_RED,     1,   50,       50,     4,      0,  },
+            {APP_LED_RED,     1,   100,      0,      0,      1,  },
             {APP_LED_RED,     1,   0,        1000,   3,      1,  },
             {APP_LED_RED,     1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
 
@@ -426,7 +429,7 @@ void app_ota_status(u8 status)
         ota_flag = 0;
         printf("app_ota_pause stat=%x\r\n",stat);
     }
-    
+
     if((status == 1) && (ota_flag == 0))
     {
         ble_sts_t stat;
@@ -448,68 +451,65 @@ void app_ota_slave_terminate(void)
     }
 }
 
-#define SCHE_OTA_1MIN    32000*60
-#define SCHE_OTA_1HOUR   32000*60*60
+
 void app_schedule_ota_enter_deep(void)
 {
-    u8 sch_ota_timer[7]= {0,90,2,3,5,8,13};
-    u8 data = analog_read(DEEP_ANA_REG2);
-    if(data == 0)
-    {
-        if((flag_schedule_ota == 0x55) && (device_timeout_state == 0x55))
-        {
-            printf("sch ota first\r\n");
-            analog_write(DEEP_ANA_REG2, 1);
-            cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,count_schedule_ota*SCHE_OTA_1MIN);
-        }
-        else
-        {
-            printf("idle to sleep\r\n");
-            cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);
+    u16 my_sch_ota_time[7]= {0,90,120,180,300,480,780};
+    u8 my_index = analog_read(DEEP_ANA_REG2);
+    u16 my_entry_deep_time = 0;
+
+    /* restart schedule ota*/
+    if((0x55 == flag_schedule_ota) && (0x55 == device_timeout_state)){
+        printf("[NOTICE] Restart schedule OTA !!! \n");
+        my_entry_deep_time = count_schedule_ota;
+        my_index = 1;
+    }else if(my_index){
+        printf("[NOTICE] Current schedule OTA index: %d !!! \n", my_index);
+        my_entry_deep_time = (my_index<7)?my_sch_ota_time[my_index]:0;
+        if(APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()){
+            my_index++;
+            /* Cannot be set to >=7 here. After waking up, it is necessary to judge
+             * whether it is due to schedule OTA according to whether my_index is 0 or not. */
+            if(my_index > 7){
+                my_index=0;
+                my_entry_deep_time = 0;
+                analog_write(DEEP_ANA_REG2, my_index);
+                printf("[NOTICE] Clear schedule ota Task !!! \n");
+            }
         }
     }
-    else
-    {
-        if(wakeup_src == 2)
-        {
-            data++;
-            printf("sch ota timer ++,data=%x\r\n",data);
-        }
-        else
-        {
-            printf("sch ota timer maintain\r\n");
-        }
-        if(data >= 7)
-        {
-            printf("idle to sleep\r\n");
-            analog_write(DEEP_ANA_REG2, 0);
-            cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0); 
-            return;
-        }
-        analog_write(DEEP_ANA_REG2, data);
-        if(data<7)
-        {
-            printf("sch ota data =%x,time =%x\r\n",data,sch_ota_timer[data]);
-        }
-        if(data == 1)
-            cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,sch_ota_timer[data]*SCHE_OTA_1MIN);
-        else
-            cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,sch_ota_timer[data]*SCHE_OTA_1HOUR);
+
+    if(my_entry_deep_time){
+        printf("Entry schedule OTA index: %d time: %d min \n", my_index-1,my_entry_deep_time );
+
+        analog_write(DEEP_ANA_REG2, my_index);
+        cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,my_entry_deep_time*CLOCK_32K_CLOCK_1MIN);
+//       cpu_long_sleep_wakeup_32k_rc(DEEPSLEEP_MODE,PM_WAKEUP_TIMER|PM_WAKEUP_PAD,my_entry_deep_time*CLOCK_32K_CLOCK_1S/2);  // for testing
+    }else{
+
+//       if(s_p_app_fms_flag_adv[0]) return;
+
+        /* If the schedule OTA is not working, the value of my_entry_deep_time should be 0 */
+        printf("[NOTICE] Check periodic wakeup for FMS !!! \n");
+        app_fms_periodic_wake_up();
+
+        printf("[NOTICE] Idle to sleep \n");
+        cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);
     }
 }
 
 void app_schedule_ota_send_notify_to_continue_ota(void)
-{ 
+{
     u8 dat[2] = {0};
     u8 report_data[4] = {CLIENT_REPORT_CMD,0x04,0x73,0x6f};
     u8 data = analog_read(DEEP_ANA_REG2);
 
     dat[0] = 0x73;
     dat[1] = 0x6f;
-    if((wakeup_src == 2) && (data))//wake up for timer
+    if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (data))//wake up for timer
     {
         printf("app_schedule_ota_send_notify_to_continue_ota\r\n");
-        bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2); 
+        bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2);
         bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 4);
         analog_write(DEEP_ANA_REG2, 0);
     }
@@ -520,13 +520,14 @@ void app_schedule_ota_wakeup_host(void)
     u8 data = analog_read(DEEP_ANA_REG2);
     u8 flag=0;
 
-    if((wakeup_src == 2) && (data) && (power_down_flag == 2))
+    if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (data) )
     {
         flag = app_custom_is_enable_wakeup_key();
         if(flag)
         {
             printf("app_schedule_ota_wakeup_host\r\n");
-            wakeup_key_send_flag = 2;
+//            wakeup_key_send_flag = 2;
+            app_woble_schedule_ota(wakeup_key_keycount);
         }
     }
 }
@@ -643,7 +644,7 @@ u8 app_keycache(u8 keyindex)
     u8 i;
 
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-    if(bond_number == 0) return 0;   
+    if(bond_number == 0) return 0;
     if(en_powerkey_cache == 0)
     {
         if(keyindex == 0) return 0;
@@ -685,7 +686,7 @@ u8 app_keycache(u8 keyindex)
         }
         return 1;
     }
-    else 
+    else
     {
         return 0;
     }
@@ -1053,7 +1054,7 @@ void app_keypress_led(u8         ir_key)
 }
 
 void app_connect_led(void)
-{  
+{
     device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
 }
 
@@ -1225,17 +1226,39 @@ void key_change_proc(void)
             printf("bug report start\r\n");
             comb_key_stop_ir();
             device_led_setup(led_cfg[LED_AUDIO_ON]);
-            keyScanLongPressTick = clock_time() | 1; //none zero
-            LongPressTick = 1000000;
-            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
+
+            if(device_in_connection_state){
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_CENTER;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                app_keyboard_release_action_by_flag();
+            }else{
+                keyScanLongPressTick = clock_time() | 1; //none zero
+                LongPressTick = 1000000;
+                Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
+            }
+
+
+            if(device_in_connection_state){
+                app_keyboard_release_action_by_flag();
+            }
         }
         else if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[7])) || ((key0 == comb_key_keyid[7]) && (key1 == comb_key_keyid[0]))) //  back+down
         {
+            // TODO
             printf("back+dwon\r\n");
             comb_key_stop_ir();
-            keyScanLongPressTick = clock_time() | 1; //none zero
-            LongPressTick = 2000000;
-            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+
+            if(device_in_connection_state){
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_DN;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                app_keyboard_release_action_by_flag();
+            }else{
+                keyScanLongPressTick = clock_time() | 1; //none zero
+                LongPressTick = 2000000;
+                Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+            }
         }
         else
         {
@@ -1247,7 +1270,7 @@ void key_change_proc(void)
                     //printf("ir_send_ctrl.is_sending =%x\r\n",ir_send_ctrl.is_sending);
                     if(ir_send_ctrl.is_sending)
                     {
-                        key_type = IR_KEY;
+//                        key_type = IR_KEY;
                         ir_send_release();
                     }
                 }
@@ -1256,7 +1279,8 @@ void key_change_proc(void)
                     //printf("double key is navi in ir mode\r\n");
                     if(ir_send_ctrl.is_sending == IR_SENDING_NONE)
                     {
-                        key_type = IR_KEY;
+//                        key_type = IR_KEY;
+                        BIT_SET(key_type, IR_KEY);
                         ir_dispatch_ext(TYPE_IR_SEND, key0);
                         if(ir_not_released == 0) ir_not_released = 1;
                     }
@@ -1267,14 +1291,19 @@ void key_change_proc(void)
                 if(app_is_navi_key(key0,key1) == 0)
                 {
                     //printf(" stop double key in rf mode\r\n");
-                    if(key_type == CONSUMER_KEY)
+//                    if(key_type == CONSUMER_KEY)
+                    if(BIT_IS_SET(key_type, CONSUMER_KEY))
                     {
+                        BIT_CLR(key_type, CONSUMER_KEY);
                         consumer_key[0] = 0;
                         consumer_key[1] = 0;
                         bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
                     }
-                    else if(key_type == KEYBOARD_KEY)
+//                    else if(key_type == KEYBOARD_KEY)
+                    else if(BIT_IS_SET(key_type, KEYBOARD_KEY))
                     {
+                        BIT_CLR(key_type, CONSUMER_KEY);
+
                         key_buf[2] = 0;
                         bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
                     }
@@ -1292,6 +1321,10 @@ void key_change_proc(void)
     }
     else if(kb_event.cnt == 1)
     {
+
+    #if FIND_ME_ENABLE
+        app_imc_stop_alert();
+    #endif
           //retime
           advertise_tick_retime();
 
@@ -1310,20 +1343,20 @@ void key_change_proc(void)
               {
                   if(app_custom_is_wakeup_key(key0) == 1)
                   {
-                     if(wakeup_key_send_flag == 0)
-                     {
-                         wakeup_key_keycount++;
-                         if(is_wakeup_keyindex_flash_info_full())
-                         {
-                             flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
-                         }
+                      wakeup_key_keycount++;
+                      if(is_wakeup_keyindex_flash_info_full())
+                      {
+                          flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
+                      }
 
-                         write_wakeup_keyindex_info(wakeup_key_keycount);
-                         wakeup_key_send_flag = 1;
-                         wakeup_key_keyid = key0;
-                         advertise_begin_tick = 0;
-                         wakeup_packet_format = 0x55;
-                     }
+                      write_wakeup_keyindex_info(wakeup_key_keycount);
+
+                      app_woboe_set_para(key0,wakeup_key_keycount);
+
+                      advertise_begin_tick = 0;
+
+                  }else{
+                      app_woble_clear_para();
                   }
               }
           }
@@ -1335,7 +1368,8 @@ void key_change_proc(void)
             {
                 if(google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA) return;
                 printf("CONSUMER_KEY\n");
-                key_type = VOICE_KEY;
+//                key_type = VOICE_KEY;
+                BIT_SET(key_type, VOICE_KEY);
                 google_voice_start();
                 return;
             }
@@ -1343,7 +1377,8 @@ void key_change_proc(void)
 
           active_mic_open();
 #endif
-          key_type = IR_KEY;
+//          key_type = IR_KEY;
+          BIT_SET(key_type, IR_KEY);
 #if (APP_IR_OVER_BLE)
           if(ir_key_is_suppress(key0) == 0)
           {
@@ -1372,7 +1407,8 @@ void key_change_proc(void)
 
                 if(key_value >= CR_MEDIA_KEY_INDEX )
                 {
-                    key_type = CONSUMER_KEY;
+//                    key_type = CONSUMER_KEY;
+                    BIT_SET(key_type, CONSUMER_KEY);
                     consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
                     consumer_key[1] = 0;
                     printf("consume key=%x \r\n",consumer_key[0]);
@@ -1387,8 +1423,9 @@ void key_change_proc(void)
                 else
                 {
                     //printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
- 
-                    key_type = KEYBOARD_KEY;
+
+//                    key_type = KEYBOARD_KEY;
+                    BIT_SET(key_type, KEYBOARD_KEY);
                     key_buf[2] = key_value;
                     bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
                 }
@@ -1408,7 +1445,8 @@ void key_change_proc(void)
                   printf("bond_number_1=%x\r\n",bond_number);
              }
 
-             key_type = IR_KEY;
+//             key_type = IR_KEY;
+             BIT_SET(key_type, IR_KEY);
              if(!ir_not_released){
                  printf("ir_dispatch send\r\n");
                  ir_dispatch_ext(TYPE_IR_SEND, key0);
@@ -1430,7 +1468,7 @@ void key_change_proc(void)
             ui_enable_mic(0);
             g_delay_send_audio_stop = clock_time();
         }
-#endif
+#endif  /* BLE_AUDIO_ENABLE */
         key_not_released = 0;
         keyScanLongPressTick = 0;
         LongPressTick = 0;
@@ -1444,23 +1482,15 @@ void key_change_proc(void)
            ir_fallback_send(0);
         }
         programming_key_set(0);
-#endif
-        printf("key_type=%x\r\n",key_type);
-        if(key_type == CONSUMER_KEY)
-        {
-            consumer_key[0] = 0;
-            consumer_key[1] = 0;
-            bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-        }
-        else if(key_type == KEYBOARD_KEY)
-        {
-            key_buf[2] = 0;
-            bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
-        }
+#endif  /* APP_IR_OVER_BLE */
+
+        app_keyboard_release_action_by_flag();
 
 #if (REMOTE_IR_ENABLE)
-        else if(key_type == IR_KEY)
+
+        if(BIT_IS_SET(key_type, IR_KEY))
         {
+            BIT_CLR(key_type, IR_KEY);
             if(ir_not_released){
                 ir_not_released = 0;
                 if(ir_send_ctrl.is_sending)
@@ -1469,11 +1499,12 @@ void key_change_proc(void)
                 }
 #if (APP_IR_OVER_BLE)
                 ir_repeat_delay_release_time();
-#endif
+#endif  /* APP_IR_OVER_BLE */
             }
         }
-#endif
+#endif  /* REMOTE_IR_ENABLE */
         Accessibility_Shortcut_Flag = 0;
+        key_type = 0;
     }
 }
 
@@ -1537,7 +1568,7 @@ _attribute_data_retention_    static u32 keyScanTick = 0;
 
 void proc_keyboard (u8 e, u8 *p, int n)
 {
-    u16 consumer_key[2];
+//    u16 consumer_key[2];
     //when key press gpio wakeup suspend, proc keyscan at least GPIO_WAKEUP_KEYPROC_CNT times
     //regardless of 8000 us interval
     if(e == BLT_EV_FLAG_GPIO_EARLY_WAKEUP){
@@ -1608,7 +1639,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
 #endif
             if(device_in_connection_state == 0)
             {
-                app_stop_wakeup_loop();
+//                app_stop_wakeup_loop();
+                app_woble_clear_para();
                 ll_resolvingList_reset();
 #if APP_IR_OVER_BLE
                 ir_table_init();
@@ -1644,7 +1676,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
             device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state == 0)
             {
-                key_type = IR_KEY;
+//                key_type = IR_KEY;
+                BIT_SET(key_type, IR_KEY);
                 if(!ir_not_released){
                     ir_dispatch(TYPE_IR_SEND, 0x88, 0x96);
                     ir_not_released = 1;
@@ -1652,9 +1685,9 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = GOOGLE_MKEY_BACK;
-                consumer_key[1] = GOOGLE_MKEY_CENTER;
-                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                consumer_key[0] = GOOGLE_MKEY_BACK;
+//                consumer_key[1] = GOOGLE_MKEY_CENTER;
+//                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
@@ -1663,7 +1696,8 @@ void proc_keyboard (u8 e, u8 *p, int n)
             //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state == 0)
             {
-                key_type = IR_KEY;
+//                key_type = IR_KEY;
+                BIT_SET(key_type, IR_KEY);
                 if(!ir_not_released){
                     ir_dispatch(TYPE_IR_SEND, 0x88, 0xd0);
                     ir_not_released = 1;
@@ -1671,9 +1705,9 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = GOOGLE_MKEY_BACK;
-                consumer_key[1] = GOOGLE_MKEY_DN;
-                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                consumer_key[0] = GOOGLE_MKEY_BACK;
+//                consumer_key[1] = GOOGLE_MKEY_DN;
+//                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
         Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
@@ -1702,12 +1736,13 @@ void app_ui_init_normal(void)
 #if (BLT_APP_LED_ENABLE)
     device_led_init();  //LED initialization
     device_led_off(APP_LED_RED);
-    if((analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG) == 0)
+
+    // TODO
+    if(APP_WAKEUP_SRC_POWER_ON == app_ui_get_wakeup_src())
     {
         device_led_setup(led_cfg[LED_POWER_ON]);  //only poweron
     }
 #endif
-    analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | POWER_ON_FLG);
 
 #if (REMOTE_IR_ENABLE)
     user_key_mode = analog_read(USED_DEEP_ANA_REG) & IR_MODE_DEEP_FLG ? KEY_MODE_IR : KEY_MODE_BLE;
@@ -1717,12 +1752,11 @@ void app_ui_init_normal(void)
 #if (BLT_TEST_SOFT_TIMER_ENABLE)
     blt_soft_timer_init();
 
-    if(
-            (power_down_flag == 1)
 #if (MP_TEST_MODE)
-            && (test_get_mode() != MODE_TEST)
+    if((APP_WAKEUP_SRC_POWER_ON == app_ui_get_wakeup_src()) && (test_get_mode() != MODE_TEST))
+#else
+    if((APP_WAKEUP_SRC_POWER_ON == app_ui_get_wakeup_src()))
 #endif
-      )
     {
         blt_soft_timer_add(app_poweron_timeout, 1000000);
     }
@@ -1739,7 +1773,7 @@ void app_ui_init_normal(void)
 void app_ui_init_deepRetn(void)
 {
     kb_wake_config();
-    
+
     #if (BLE_AUDIO_ENABLE)
         #if (BLE_DMIC_ENABLE)
             dmic_gpio_reset();
@@ -1846,9 +1880,66 @@ int att_ccc_control(void* p){
     return 0;
 }
 
-u8 app_is_key_released(void)
+int app_is_key_released(void)
 {
     return key_not_released;
 }
+
+
+
+
+void app_keyboard_release_action_by_flag(void){
+
+    printf("%s \n", __FUNCTION__);
+    /* If CONSUMER_KEY set, send consumer release packet */
+    if(BIT_IS_SET(key_type, CONSUMER_KEY)){
+        BIT_CLR(key_type,CONSUMER_KEY);
+        u16 consumer_key[2]={0};
+        bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+    }
+
+    /* If KEYBOARD_KEY set, send keyboard release packet */
+    if(BIT_IS_SET(key_type, KEYBOARD_KEY)){
+        BIT_CLR(key_type,KEYBOARD_KEY);
+
+        u8 key_buf[8] = {0};
+        bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+    }
+
+    /* Add IR release code later */
+}
+
+
+/* Wake up source related functions */
+_attribute_data_retention_ static u8 s_app_ui_wakeup_src = APP_WAKEUP_SRC_NONE;
+static void app_ui_set_wakeup_src(APP_UI_WAKEUP_SRC_T wakeup_src){
+
+    if(wakeup_src >= APP_WAKEUP_SRC_NOT_USE) return;
+    s_app_ui_wakeup_src = wakeup_src;
+
+    printf("wakeup source: {%s} !!!! \n",
+                (APP_WAKEUP_SRC_POWER_ON==s_app_ui_wakeup_src)?"POWER_ON":
+                ((APP_WAKEUP_SRC_DEEP_PAD==s_app_ui_wakeup_src)?"DEEP_PAD":"DEEP_TIMER"));
+}
+
+APP_UI_WAKEUP_SRC_T app_ui_get_wakeup_src(void){
+
+    return s_app_ui_wakeup_src;
+}
+
+void app_ui_check_wakeup_src(u8 deepRetWakeUp){
+    if((analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG) == 0){
+        app_ui_set_wakeup_src(APP_WAKEUP_SRC_POWER_ON);
+    }else if(!deepRetWakeUp){
+        if(analog_read(0X44) & WAKEUP_STATUS_PAD)
+            app_ui_set_wakeup_src(APP_WAKEUP_SRC_DEEP_PAD);
+        else
+            app_ui_set_wakeup_src(APP_WAKEUP_SRC_DEEP_TIMER);
+    }
+
+    /* Keep the POWER_ON_FLG bit as 1. This bit will be cleared when power on */
+    analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | POWER_ON_FLG);
+}
+
 
 

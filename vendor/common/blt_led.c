@@ -70,7 +70,7 @@ void device_led_off(u8 led)
     gpio_write(gAppDeviceLedCtrl[led].gpio, !gAppDeviceLedCtrl[led].onLevel);
 }
 
-void device_led_init(void){  
+void device_led_init(void){
     device_led_config(APP_LED_GREEN, 1,  GPIO_LED);
     device_led_config(APP_LED_RED, 1, GPIO_LED2);
 }
@@ -118,7 +118,7 @@ void led_proc(void)
 
     for(i=0; i<APP_DEVICE_LED_COUNT; i++){
         if(!gAppDeviceLedCtrl[i].isEnable) continue;
-        if(gAppDeviceLedCtrl[i].isOn 
+        if(gAppDeviceLedCtrl[i].isOn
             && clock_time_exceed(gAppDeviceLedCtrl[i].timer, gAppDeviceLedCtrl[i].onTimer*1000)) {
             gAppDeviceLedCtrl[i].timer = clock_time() | 1;
             if(gAppDeviceLedCtrl[i].offTimer != 0){

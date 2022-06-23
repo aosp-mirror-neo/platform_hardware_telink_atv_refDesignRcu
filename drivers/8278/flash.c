@@ -58,7 +58,7 @@ _attribute_data_retention_      unsigned int  get_flash_mid = FLASH_ETOX_GD;
 _attribute_data_retention_   _attribute_aligned_(4)    Flash_CapacityDef    flash_capacity;
 
 
-_attribute_data_retention_ app_before_write_or_erase_cb_t app_before_write_or_erase_cb = (void*)0;
+_attribute_data_retention_ app_before_write_or_erase_cb_t app_before_write_or_erase_cb = (void *)0;
 
 /**
  * @brief        This function to determine whether the flash is busy..

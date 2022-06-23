@@ -19,6 +19,7 @@ SUBDIRS := \
 vendor/common \
 vendor/827x_ble_remote \
 vendor/827x_ble_remote/pke_common \
+vendor/827x_ble_remote/app_find_me \
 drivers/8278 \
 drivers/8278/flash \
 . \

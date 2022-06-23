@@ -47,6 +47,7 @@
 #include "app_flash_write.h"
 #include "app_custom_lib.h"
 #include "app_test.h"
+#include "./app_find_me/app_fms.h"
 
 
 #if (__PROJECT_8258_BLE_REMOTE__ || __PROJECT_8278_BLE_REMOTE__)
@@ -137,17 +138,17 @@ _attribute_data_retention_  u16 count_schedule_ota=0;
 _attribute_data_retention_  u8  app_slave_terminate=0;
 _attribute_data_retention_  u8  app_is_set_mtusize=0;
 _attribute_data_retention_  u8  prepareWrite_b[300];
-_attribute_data_retention_  u8  wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
-_attribute_data_retention_  u8  power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is deep
-_attribute_data_retention_  u8  wakeup_key_send_flag=0;     //1: sending wake up packet 2:schedule ota flag
-_attribute_data_retention_  u8  wakeup_key_keyid=0;         //Save the wake-up key keyid
+//_attribute_data_retention_  u8  wakeup_src=1;               //1:wakeup for pad  2:wake up for timer
+//_attribute_data_retention_  u8  power_down_flag=1;          //1: the rcu previous state is power down 2: the rcu previous state is deep
+//_attribute_data_retention_  u8  wakeup_key_send_flag=0;     //1: sending wake up packet 2:schedule ota flag
+//_attribute_data_retention_  u8  wakeup_key_keyid = 0xff;         //Save the wake-up key keyid
 _attribute_data_retention_  u8  wakeup_key_keycount=0;
-_attribute_data_retention_  u32 wakeup_packet_format=0x55;
-_attribute_data_retention_  u32 wakeup_tick=0;
+//_attribute_data_retention_  u32 wakeup_packet_format=0x55;
+//_attribute_data_retention_  u32 wakeup_tick=0;
 _attribute_data_retention_  u8  detpowerkey=0;              //0:not det powerkey  1:det powerkey
 
 
-u8  mac_public[6];
+_attribute_data_retention_ u8 mac_public[6];
 
 extern u8 is_pairing_mode;
 extern u8 is_reconn_mode;
@@ -196,6 +197,7 @@ const u8    tbl_advData_g10_part2[] = {
 
 void app_set_advdata_rspdata(void)
 {
+    printf("%s \n ", __FUNCTION__);
     u8 tbl_scanRsp[30];
     u8 tbl_advData[40];
     u8 len=0;
@@ -215,19 +217,11 @@ void app_set_advdata_rspdata(void)
     bls_ll_setAdvData( (u8 *)tbl_advData, len);
     bls_ll_setScanRspData( (u8 *)tbl_scanRsp, _custom_data.device_name_length+2);
 
+    printf("adv data: ");
+    array_printf(tbl_advData,len);
 
-    printf("adv data=\r\n");
-    for(u8 i=0;i<len;i++)
-    {
-       printf(" %x ",tbl_advData[i]);
-    }
-
-    printf("\r\nscan data=\r\n");
-    for(u8 i=0;i<_custom_data.device_name_length+2;i++)
-    {
-       printf(" %x ",tbl_scanRsp[i]);
-    }
-
+    printf("scan data: ");
+    array_printf(tbl_scanRsp, _custom_data.device_name_length+2);
 }
 
 void direct_adv(u8 e, u8 *p, int n)
@@ -272,6 +266,7 @@ void app_adv_interval_downgrade_direct(void)
        }
        else
        {
+           printf("en_slave_rpa: %d \n ", en_slave_rpa);
            if(en_slave_rpa == 0)
                rpa_flag = 0;
            else
@@ -280,10 +275,10 @@ void app_adv_interval_downgrade_direct(void)
        if(rpa_flag == 0)
        {
          status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
-                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                                        bondInfo.peer_addr_type,  bondInfo.peer_addr,
-                                        MY_APP_ADV_CHANNEL,
-                                        ADV_FP_NONE);
+                                  ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                  bondInfo.peer_addr_type,  bondInfo.peer_addr,
+                                  MY_APP_ADV_CHANNEL,
+                                  ADV_FP_NONE);
        }
        else
        {
@@ -371,10 +366,10 @@ void app_adv_direct(void)
        {
            printf("host not support rpa\r\n");
            status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                                        bondInfo.peer_addr_type,  bondInfo.peer_addr,
-                                        MY_APP_ADV_CHANNEL,
-                                        ADV_FP_NONE);
+                                    ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                    bondInfo.peer_addr_type,  bondInfo.peer_addr,
+                                    MY_APP_ADV_CHANNEL,
+                                    ADV_FP_NONE);
        }
        else
        {
@@ -385,6 +380,7 @@ void app_adv_direct(void)
            status = ll_resolvingList_setAddrResolutionEnable(1);
            printf("LL add resolution enable status: 0x%x\n", status);
            app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+
            status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
                 ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
                 bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
@@ -429,7 +425,7 @@ void app_service_change(void)
 void mtu_exchange_loop(void)
 {
     if(mtuExchange_check_tick && clock_time_exceed(mtuExchange_check_tick, mtuExchange_check_timer ))
-    { 
+    {
         mtuExchange_check_tick = 0;
         app_schedule_ota_send_notify_to_continue_ota();
         if((flag_dle&0x10) == 0)
@@ -621,6 +617,11 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
     device_in_connection_state = 0;
     mtuExchange_check_tick = 0;
     flag_dle = 0;
+#if (FIND_ME_ENABLE)
+    if(app_buzzer_is_buzy()){
+        app_buzzer_stop();
+    }
+#endif
 
 #if (BLE_REMOTE_PM_ENABLE)
      //user has push terminate pkt to ble TX buffer before deepsleep
@@ -787,8 +788,8 @@ int app_host_event_callback (u32 h, u8 *para, int n)
             device_in_connection_state = 1;
             is_pairing_mode = 0;
             is_reconn_mode = 0;
-            wakeup_key_send_flag = 0;
-            wakeup_tick = 0;
+//            wakeup_key_send_flag = 0;
+            app_woble_clear_para();
             mtuExchange_check_tick = clock_time() | 1;
             #if BLE_AUDIO_ENABLE
             notify_get_rsp_tick = clock_time()|1;
@@ -834,6 +835,7 @@ void task_connect (u8 e, u8 *p, int n)
     latest_user_event_tick = clock_time();
     blt_soft_timer_add(app_terminate_timeout, 2000000);
 //    bls_ota_set_random(p+12);
+    app_fms_delete_adv_task();
 }
 
 void task_conn_update_req (u8 e, u8 *p, int n)
@@ -923,6 +925,14 @@ void blt_pm_proc(void)
         return;
     }
 
+#if FIND_ME_ENABLE
+    if(app_buzzer_is_buzy())
+    {
+        bls_pm_setSuspendMask (SUSPEND_DISABLE);
+        return;
+    }
+#endif
+
 #if APP_IR_OVER_BLE
     if(ir_flash_busy())
     {
@@ -955,7 +965,7 @@ void blt_pm_proc(void)
             bls_pm_setSuspendMask(SUSPEND_DISABLE);  //phy test can not enter suspend
         }
     #endif
-    
+
 #if (MP_TEST_MODE)
     else if (test_get_mode() == MODE_TEST)
     {
@@ -968,7 +978,7 @@ void blt_pm_proc(void)
 #endif
     else
     {
-       
+
         #if (PM_DEEPSLEEP_RETENTION_ENABLE)
             bls_pm_setSuspendMask (SUSPEND_ADV | DEEPSLEEP_RETENTION_ADV | SUSPEND_CONN | DEEPSLEEP_RETENTION_CONN);
         #else
@@ -993,7 +1003,7 @@ void blt_pm_proc(void)
                 bls_pm_setManualLatency(0);
             #endif
         }
-      
+
 
     #if 1 //deepsleep
         if(sendTerminate_before_enterDeep == 1){ //sending Terminate and wait for ack before enter deepsleep
@@ -1046,7 +1056,7 @@ void blt_pm_proc(void)
                  printf("adv timeout\r\n");
                  app_schedule_ota_enter_deep();
             }
-            if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg )
+            if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg  && (0 == s_p_app_fms_flag_adv[0]))
             {
                  if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
                         time = ADV_IDLE_ENTER_DEEP_TIME;
@@ -1117,15 +1127,6 @@ _attribute_ram_code_ void user_init_battery_power_check(void)
         #endif
 
     #endif
-}
-
-u8 app_wakeup_src(void)
-{
-    u8 flag = analog_read(0X44);
-    if(flag & 0x08)
-        return 1;  //wakeup for pad
-    else
-        return 2;  //wakeup for not pad
 }
 
 void app_delay_set(void)
@@ -1237,15 +1238,8 @@ void user_init_normal(void)
     app_set_advdata_rspdata();
     detpowerkey = 0;
 
-    if(analog_read(USED_DEEP_ANA_REG) & POWER_ON_FLG)
-    {
-        printf("power on deep\r\n");
-        power_down_flag = 2;
-    }
-    else
-    {
-        power_down_flag = 1;
-        printf("power on for power down\r\n");
+    if(APP_WAKEUP_SRC_POWER_ON == app_ui_get_wakeup_src()){
+//        printf("power on for power down\r\n");
         if(kb_detbackkey())
         {
             printf("press and hold back key\r\n");
@@ -1254,7 +1248,7 @@ void user_init_normal(void)
                 if(i<4)
                     flash_erase_sector(IR_DATA_SECT_0_ADDR+i*0x1000);
                 else
-                    flash_erase_sector(IR_DATA_SECT_0_ADDR-0x7000+(i-4)*0x1000);
+                    flash_erase_sector(IR_DATA_SECT_0_ADDR-0x4000+(i-4)*0x1000);
             }
             u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
             if(bond_number)
@@ -1299,59 +1293,70 @@ void user_init_normal(void)
         smp_param_save_t  bondInfo;
         if(bond_number)   //at least 1 bonding device exist
         {
-            bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
-            ll_resolvingList_reset();
-            ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
-            ll_whiteList_reset();
-            app_set_adv_interval_downgrade_direct();
-            //printf("\r\npeer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
-            //printf("\r\npeer_id_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_id_addr[0],bondInfo.peer_id_addr[1],bondInfo.peer_id_addr[2],bondInfo.peer_id_addr[3],bondInfo.peer_id_addr[4],bondInfo.peer_id_addr[5]);
-            enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
-            if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
-            {
-                printf("ana read = ota succ\r\n");
-                service_change = 0x55;
-            }
-            u8 status=0,rpa_flag=0;
-            if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
-            {
-               rpa_flag = 0;
-            }
-            else
-            {
-               if(en_slave_rpa == 0)
+        	u8 my_sch_ota_index = analog_read(DEEP_ANA_REG2);
+        	if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index)){
+        		/* This wake-up is for the periodic wake-up of the FMS
+        		 * When the wake-up source is Timer, currently there are only scheduled OTA and periodic wake-up
+        		 * If it is scheduled OTA, my_sch_ota_index is not 0.*/
+        		app_fms_try_connect();
+
+        	}else{
+                bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+                ll_resolvingList_reset();
+                ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
+                ll_whiteList_reset();
+                app_set_adv_interval_downgrade_direct();
+                //printf("\r\npeer_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_addr[0],bondInfo.peer_addr[1],bondInfo.peer_addr[2],bondInfo.peer_addr[3],bondInfo.peer_addr[4],bondInfo.peer_addr[5]);
+                //printf("\r\npeer_id_addr=%x %x %x %x %x %x\r\n",bondInfo.peer_id_addr[0],bondInfo.peer_id_addr[1],bondInfo.peer_id_addr[2],bondInfo.peer_id_addr[3],bondInfo.peer_id_addr[4],bondInfo.peer_id_addr[5]);
+
+                enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
+                if((analog_read(USED_DEEP_ANA_REG) & OTA_FLG) == OTA_FLG)
+                {
+                    printf("ana read = ota succ\r\n");
+                    service_change = 0x55;
+                }
+                u8 status=0,rpa_flag=0;
+                if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+                {
                    rpa_flag = 0;
-               else
-                   rpa_flag = 1;
-            }
-            if(rpa_flag == 0)
-            {
-                printf("host not support rpa\r\n");
-                ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
-                status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                                            ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                                            bondInfo.peer_addr_type,  bondInfo.peer_addr,
-                                            MY_APP_ADV_CHANNEL,
-                                            ADV_FP_NONE);
-            }
-            else
-            {
-                printf("host support rpa\r\n");
-                app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
-                //ll_resolvingList_setResolvablePrivateAddrTimer(60);
-                status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                        bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
-                                                           MY_APP_ADV_CHANNEL,
-                                                           ADV_FP_NONE);
-            }
-            if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
-            //it is recommended that direct adv only last for several seconds, then switch to indirect adv
-            //bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
-            //bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &direct_adv);
-            is_reconn_mode = 0x55;
-            bls_ll_setAdvEnable(1);  //adv enable
-            printf("direct adv\r\n");
+                }
+                else
+                {
+                   if(en_slave_rpa == 0)
+                       rpa_flag = 0;
+                   else
+                       rpa_flag = 1;
+                }
+                if(rpa_flag == 0)
+                {
+                    printf("host not support rpa\r\n");
+                    ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
+                    status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                                                ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                                bondInfo.peer_addr_type,  bondInfo.peer_addr,
+                                                MY_APP_ADV_CHANNEL,
+                                                ADV_FP_NONE);
+                }
+                else
+                {
+                    printf("host support rpa\r\n");
+                    app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+                    //ll_resolvingList_setResolvablePrivateAddrTimer(60);
+                    status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
+                    		ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                    		bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
+                                                               MY_APP_ADV_CHANNEL,
+                                                               ADV_FP_NONE);
+                }
+
+                if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
+                //it is recommended that direct adv only last for several seconds, then switch to indirect adv
+                //bls_ll_setAdvDuration(MY_DIRECT_ADV_TMIE, 1);
+                //bls_app_registerEventCallback (BLT_EV_FLAG_ADV_DURATION_TIMEOUT, &direct_adv);
+                is_reconn_mode = 0x55;
+                bls_ll_setAdvEnable(1);  //adv enable
+                printf("direct adv\r\n");
+        	}
         }
         else   //set indirect adv
         {
@@ -1364,6 +1369,10 @@ void user_init_normal(void)
                                              ADV_FP_NONE);
             if(status != BLE_SUCCESS) {      while(1); }  //debug: adv setting err
             printf("inderict adv\r\n");
+
+            // TODO TEST
+            //app_adv_indirect();
+
         }
     }
 
@@ -1394,7 +1403,7 @@ void user_init_normal(void)
                           GAP_EVT_MASK_SMP_PARING_SUCCESS           |  \
                           GAP_EVT_MASK_SMP_PARING_FAIL                |  \
                           GAP_EVT_MASK_SMP_CONN_ENCRYPTION_DONE     |  \
-                          GAP_EVT_MASK_ATT_EXCHANGE_MTU 
+                          GAP_EVT_MASK_ATT_EXCHANGE_MTU
                           );
 
     //ble event call back
@@ -1469,6 +1478,12 @@ void user_init_normal(void)
     extern void init_device_info (void);
     init_device_info();
     app_before_write_or_erase_register(app_before_write_or_erase);
+
+
+
+    // TODO test WOBLE code
+//    app_woboe_set_para(0,wakeup_key_keycount);
+    app_fms_init();
 }
 
 
@@ -1532,12 +1547,13 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
 {
    // u8 tbl_scanRsp[30];
     u8 tbl_advData[40];
-    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
-    smp_param_save_t bondInfo;
 
-    if(bond_number)
+
+    u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+    smp_param_save_t  bondInfo;
+    if(bond_number)   //at least 1 bonding device exist
     {
-        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);
+        bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
         if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
         {
             ll_whiteList_reset();
@@ -1549,7 +1565,7 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
     bls_ll_setAdvEnable(0);
     memcpy(tbl_advData,advdata.data,advdata.rf_len);
     for(u8 i=0;i<25;i++)
-        printf(" %x",tbl_advData[i]);
+        printf(" %02 x",tbl_advData[i]);
     bls_ll_setAdvData( (u8 *)tbl_advData, advdata.rf_len);
 
     bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_30MS,
@@ -1563,50 +1579,17 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
 
 void app_send_wakeup_loop(void)
 {
-    u32 wakeup_tick_timer=0;
-    if(wakeup_key_send_flag == 0) return;
-    if(wakeup_key_send_flag == 2)
-    {
-        wakeup_key_send_flag = 1;
-        advertise_begin_tick = 0;
-        wakeup_packet_format = 0x55;
-        wakeup_key_keyid = 0xff;
-    }
-    if(wakeup_tick == 0)
-    {
-        app_send_wakeup_packet(wakeup_key_keyid);
-        wakeup_tick = clock_time() | 1;
-    }
-    wakeup_tick_timer = app_custom_wakeup_tick();
-    if(clock_time_exceed(wakeup_tick, wakeup_tick_timer) && wakeup_tick)
-    {
-        if(wakeup_packet_format == 0x55)
-        {
-            printf("app_send_wakeup_loop one part\r\n");
-            wakeup_tick = 0;
-            wakeup_packet_format = 0xaa;
-        }
-        else
-        {
-            wakeup_tick = 0;
-            bls_ll_setAdvEnable(0);
-            advertise_begin_tick = clock_time() | 1;
-            printf("app_send_wakeup_loop second part\r\n");
-            wakeup_key_send_flag = 0;
-            app_send_wakeup_resume();
-            device_led_off(APP_LED_GREEN);
-        }
+    /* Return 3 to indicate that ADV needs to be resume */
+    if(3 == app_woble_send_task()){
+        bls_ll_setAdvEnable(0);
+        advertise_begin_tick = clock_time() | 1;
+        printf("app_send_wakeup_loop second part\r\n");
+//        wakeup_key_send_flag = 0;
+        app_send_wakeup_resume();
+        device_led_off(APP_LED_GREEN);
     }
 }
 
-void app_stop_wakeup_loop(void)
-{
-     if(wakeup_key_send_flag == 0) return;
-     printf("app_stop_wakeup_loop\r\n");
-     wakeup_tick = 0;
-     bls_ll_setAdvEnable(0);
-     wakeup_key_send_flag = 0;
-}
 
 void main_loop (void)
 {
@@ -1632,6 +1615,11 @@ void main_loop (void)
     #endif
 
     app_ota_proc();
+
+#if FIND_ME_ENABLE
+//    app_custom_find_me_buzzer_on();
+    app_buzzer_task();
+#endif
 
     #if (BATT_CHECK_ENABLE)
         if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){

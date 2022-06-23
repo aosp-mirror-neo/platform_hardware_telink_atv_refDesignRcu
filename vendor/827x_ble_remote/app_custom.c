@@ -27,9 +27,10 @@
 #include "drivers.h"
 #include "app_config.h"
 #include "app_custom.h"
+#include "app_custom_lib.h"
 #include "stack/ble/ble.h"
 #include "app_test.h"
-
+#include "./app_find_me/app_fms.h"
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
@@ -67,7 +68,7 @@ typedef enum
 _attribute_data_retention_  u8 en_powerkey_cache=1;
 _attribute_data_retention_  u8 en_google_wakeuppack=1;
 _attribute_data_retention_  u8 en_ble_adv=1;
-_attribute_data_retention_  u8 en_slave_rpa=1;
+_attribute_data_retention_  u8 en_slave_rpa=0;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
@@ -403,13 +404,10 @@ void app_custom_wakeup_key_load(u8* wakeup_mask1, u8* wakeup_mask2)
             mask2 = mask2>>1;
         }
 
-        printf("\r\nwakeup key1 =\r\n");
-        for(i=0;i<wakeupkey_num;i++)
-            printf(" %x",wakeup_key1[i]);
-        printf("\r\nwakeup key2 =\r\n");
-        for(i=0;i<wakeupkey_num;i++)
-            printf(" %x",wakeup_key2[i]);
-
+        printf("\n wakeup key1:");
+        array_printf(wakeup_key1, wakeupkey_num);
+        printf("\n wakeup key2:");
+        array_printf(wakeup_key2, wakeupkey_num);
     }
 }
 
@@ -627,6 +625,11 @@ void app_custom_init(void)
         _custom_data.device_ui_layout= 0;
         app_custom_data_update();
         app_custom_wakeup_key_load(_custom_data.wakeup_key_1,_custom_data.wakeup_key_2);
+
+        u8 my_woble_adv_type = ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
+        flash_read_page(APP_WOBLE_ADV_TYPE_ADDR, 1, &my_woble_adv_type);
+        app_woble_init_settings(_custom_data.wakeup_packet, my_woble_adv_type);
+
         my_FWRevtrs[3] = (_custom_data.device_type) + 0x30;
         my_FWRevtrs[4] = (_custom_data.device_ui_layout) + 0x30;
         app_custom_param_init(_custom_data.device_ui_layout);
@@ -659,15 +662,38 @@ void app_custom_init(void)
     if(_custom_data.device_name_length>16)
         _custom_data.device_name_length = 16;
 
+    u8 read_data = 0xff;
     flash_read_page(APP_EN_CACHEKEY, 1, &en_powerkey_cache);
     flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, &en_google_wakeuppack);
     flash_read_page(APP_EN_BLE_ADV, 1, &en_ble_adv);
-    flash_read_page(APP_EN_SLAVE_RPA, 1, &en_slave_rpa);
+
+    flash_read_page(APP_EN_SLAVE_RPA, 1, &read_data);
+    en_slave_rpa = (0 == read_data)?1:0;
+
+    u8 my_en_periodic_wakeup = 0;
+    flash_read_page(APP_EN_PERIODIC_WAKE_UP, 1, &my_en_periodic_wakeup);
+    g_p_app_fms_ctrl->en_periodic_wakeup = (1==my_en_periodic_wakeup)?1:0;
+
+    if(1 == g_p_app_fms_ctrl->en_periodic_wakeup){
+         u16 read_data = 0;
+         flash_read_page(APP_PERIODIC_WAKE_UP_TIMER, 2, (u8 *)&read_data);
+         if((read_data>=5) && (read_data<=1440)){
+              g_p_app_fms_ctrl->periodic_wakeup_interval = read_data;
+		 }else{
+             /* If the interval data in the flash is wrong, use 30 */
+             g_p_app_fms_ctrl->periodic_wakeup_interval = 30;
+         }
+    }
 
     app_custom_data_update();
     my_FWRevtrs[3] = (_custom_data.device_type) + 0x30;
     my_FWRevtrs[4] = (_custom_data.device_ui_layout) + 0x30;
     app_custom_wakeup_key_load(_custom_data.wakeup_key_1,_custom_data.wakeup_key_2);
+
+    u8 my_woble_adv_type = ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
+    flash_read_page(APP_WOBLE_ADV_TYPE_ADDR, 1, &my_woble_adv_type);
+    app_woble_init_settings(_custom_data.wakeup_packet, my_woble_adv_type);
+
     app_custom_param_init(_custom_data.device_ui_layout);
 }
 
@@ -710,6 +736,11 @@ u8 app_custom_is_enable_wakeup_key(void)
 {
     u16 wakeupkey1_mask = (u16)(((u16) _custom_data.wakeup_key_1[0]<<8) | ((u16) _custom_data.wakeup_key_1[1]));
     u16 wakeupkey2_mask = (u16)(((u16) _custom_data.wakeup_key_2[0]<<8) | ((u16) _custom_data.wakeup_key_2[1]));
+
+    if((0 == wakeupkey1_mask) && (0 == wakeupkey2_mask)){
+        return 0;
+    }
+
     if((wakeupkey1_mask != 0xffff) && (wakeupkey2_mask != 0xffff) && ((wakeupkey1_mask & wakeupkey2_mask) == 0))
         return 1;
     else
