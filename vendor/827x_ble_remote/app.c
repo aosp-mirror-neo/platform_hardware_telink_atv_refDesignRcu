@@ -1261,9 +1261,10 @@ void user_init_normal(void)
             flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
             if(data != 0xff)
                 flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
-            flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
-            if(data != 0xff)
-                flash_erase_sector(APP_NEC_IR_CODE_TABLE);
+            /* Preserve NEC IR data during Factory rest in v2.10 */
+//            flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
+//            if(data != 0xff)
+//                flash_erase_sector(APP_NEC_IR_CODE_TABLE);
 
             start_reboot();
         }
