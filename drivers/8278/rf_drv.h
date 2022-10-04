@@ -98,7 +98,7 @@ typedef enum {
      RF_POWER_P10p83dBm = 58, //  10.83 dbm
      RF_POWER_P10p62dBm = 56, //  10.62 dbm
      RF_POWER_P10p30dBm = 53, //  10.30 dbm
-     RF_POWER_P10p05dBm = 51, // 10.05 dbm
+     RF_POWER_P10p05dBm = 51, //  10.05 dbm
      RF_POWER_P9p79dBm  = 49, //   9.79 dbm
      RF_POWER_P9p54dBm  = 47, //   9.54 dbm
      RF_POWER_P9p23dBm  = 45, //   9.23 dbm

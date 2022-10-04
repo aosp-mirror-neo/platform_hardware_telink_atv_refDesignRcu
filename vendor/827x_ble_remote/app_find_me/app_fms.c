@@ -133,7 +133,7 @@ void app_fms_notify_data_type(APP_FMS_NOTIFY_DATA_TYPE_T data_type, APP_FMS_ERRO
 
 
 void app_fms_init(void){
-    if(g_p_app_fms_ctrl->en_periodic_wakeup){
+    if(g_p_app_fms_ctrl->en_fms){
         app_fms_set_mode(APP_FMS_MODE_ALERT, app_imc_alert_cb);
     }else{
         app_fms_set_mode(APP_FMS_MODE_ALL_DISABLE, NULL);
@@ -156,8 +156,8 @@ int app_fms_att_ctl_cb(void * p){
 
             break;
         case APP_FMS_MODE_ALERT:
-            printf(" APP_FMS_MODE_ALERT en_periodic_wakeup: 0x%x \n", g_p_app_fms_ctrl->en_periodic_wakeup);
-            if(g_p_app_fms_ctrl->en_periodic_wakeup){
+            printf(" APP_FMS_MODE_ALERT en_fms: 0x%x \n", g_p_app_fms_ctrl->en_fms);
+            if(g_p_app_fms_ctrl->en_fms){
                 app_fms_set_mode(APP_FMS_MODE_ALERT, app_imc_alert_cb);
             }else{
                 app_fms_notify_data_type(APP_FMS_NOTIFY_DATA_TYPE_ERROR_CODE, APP_FMS_ERROR_CODE_ALERT_MODE_NOT_SUPPORTED);
@@ -189,7 +189,7 @@ int app_fms_att_data_cb(void * p){
 
 
 
-void app_fms_adv_settings(u8 interval_min, u8 interval_max){
+void app_fms_adv_settings(u16 interval_min, u16 interval_max){
 
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
     bls_ll_setAdvEnable(0);  // ADV disable
@@ -216,7 +216,7 @@ void app_fms_adv_settings(u8 interval_min, u8 interval_max){
             status = ll_resolvingList_setAddrResolutionEnable(1);
 
             extern u8 en_slave_rpa;
-            if(en_slave_rpa) {
+            if(0 == en_slave_rpa) {
                 app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
             }else{
                 app_own_address_type = OWN_ADDRESS_PUBLIC;
@@ -255,7 +255,7 @@ int app_fms_adv_timer(void){
         u8 my_table_cnt = sizeof(app_fms_adv_timer_table)/sizeof(app_fms_adv_timer_table_t);
         if(s_p_app_fms_adv_table_index[0] >= my_table_cnt ){
             bls_ll_setAdvEnable(0);
-            printf(" End fms direct adv \n");
+            printf("End fms direct adv \n");
             s_p_app_fms_flag_adv[0] = 0;
             return -1;
         }
@@ -300,7 +300,7 @@ void app_fms_periodic_wake_up(void){
     if(!g_p_app_fms_ctrl->en_periodic_wakeup) return;
 
     /* periodic wakeup interval out of range */
-    if(g_p_app_fms_ctrl->periodic_wakeup_interval <5 || g_p_app_fms_ctrl->periodic_wakeup_interval > 1440) return;
+    if(0 == g_p_app_fms_ctrl->periodic_wakeup_interval  || g_p_app_fms_ctrl->periodic_wakeup_interval > 1440) return;
 
     u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
 

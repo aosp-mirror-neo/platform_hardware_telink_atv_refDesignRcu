@@ -31,12 +31,14 @@
 
 typedef enum {
 
-    APP_WAKEUP_SRC_NONE = 0,		// invalid value
-    APP_WAKEUP_SRC_POWER_ON,		// Triggered by inserting battery
-    APP_WAKEUP_SRC_DEEP_PAD,		// Under normal circumstances, after entering deep, it is triggered by the pad
-    APP_WAKEUP_SRC_DEEP_TIMER,		// Under normal circumstances, after entering deep, it is triggered by the timer
+    APP_WAKEUP_SRC_NONE = 0,        // invalid value
+    APP_WAKEUP_SRC_POWER_ON,        // Triggered by inserting battery
+    APP_WAKEUP_SRC_DEEP_PAD,        // Under normal circumstances, after entering deep, it is triggered by the pad
+    APP_WAKEUP_SRC_DEEP_TIMER,      // Under normal circumstances, after entering deep, it is triggered by the timer
 
-    //    APP_WAKEUP_SRC_DEEP_RETENTION,	// Generally, after entering deep retention, it is triggered by timer, and it may also be triggered by key press
+    APP_WAKEUP_SRC_SOFT_RESET,
+
+    //    APP_WAKEUP_SRC_DEEP_RETENTION,    // Generally, after entering deep retention, it is triggered by timer, and it may also be triggered by key press
 
     APP_WAKEUP_SRC_NOT_USE,
 

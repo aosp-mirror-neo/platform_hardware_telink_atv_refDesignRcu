@@ -1517,6 +1517,7 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
             }
             break;
         }
+
         case ATV_IR_SUPPRESS_IDX:
         {
             if(len)
@@ -1536,7 +1537,7 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
                     }
             }
         }
-                else
+            else
             {
                 printf("switch to ir\r\n");
                 for(k=0;k<MAX_KEY_COUNT;k++)
@@ -1549,6 +1550,8 @@ void ir_fallback_process(u16 handle, u8* buf, u16 len)
             }
             break;
         }
+
+
         case ATV_IR_KEY_EVENT_CCCD_IDX:
         {
             if (len == 2)
@@ -1710,4 +1713,3 @@ void ir_nec_ir_table_erase_loop(void)
 }
 
 #endif
-

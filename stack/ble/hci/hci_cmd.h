@@ -60,16 +60,16 @@ typedef enum{
     ADV_INTERVAL_40MS        =                   64,
     ADV_INTERVAL_45MS        =                   72,
     ADV_INTERVAL_50MS        =                   80,
-    ADV_INTERVAL_55MS         =                   88,
+    ADV_INTERVAL_55MS        =                   88,
     ADV_INTERVAL_60MS        =                   96,
     ADV_INTERVAL_70MS        =                   112,
     ADV_INTERVAL_80MS        =                   128,
-    ADV_INTERVAL_90MS         =                     144,
+    ADV_INTERVAL_90MS        =                   144,
     ADV_INTERVAL_100MS       =                   160,
     ADV_INTERVAL_150MS       =                   240,
-    ADV_INTERVAL_105MS          =                   168,
+    ADV_INTERVAL_105MS       =                   168,
     ADV_INTERVAL_200MS       =                   320,
-    ADV_INTERVAL_205MS         =                   328,
+    ADV_INTERVAL_205MS       =                   328,
     ADV_INTERVAL_250MS       =                   400,
     ADV_INTERVAL_300MS       =                   480,
     ADV_INTERVAL_305MS       =                   488,
@@ -80,14 +80,14 @@ typedef enum{
     ADV_INTERVAL_500MS       =                   800,
     ADV_INTERVAL_505MS       =                   808,
     ADV_INTERVAL_600MS       =                   960,
-    ADV_INTERVAL_700MS       =                  1120,
-    ADV_INTERVAL_800MS       =                  1280,
-    ADV_INTERVAL_900MS       =                  1440,
-    ADV_INTERVAL_1S          =                    1600,
-    ADV_INTERVAL_1S5         =                     2400,
-    ADV_INTERVAL_2S          =                    3200,
-    ADV_INTERVAL_1_28_S      =                  2048,
-    ADV_INTERVAL_10_24S      =                 16384,
+    ADV_INTERVAL_700MS       =                   1120,
+    ADV_INTERVAL_800MS       =                   1280,
+    ADV_INTERVAL_900MS       =                   1440,
+    ADV_INTERVAL_1S          =                   1600,
+    ADV_INTERVAL_1S5         =                   2400,
+    ADV_INTERVAL_2S          =                   3200,
+    ADV_INTERVAL_1_28_S      =                   2048,
+    ADV_INTERVAL_10_24S      =                   16384,
 }adv_inter_t;
 
 /* Periodic_adv_Interval, Time = N * 1.25 ms,
@@ -115,7 +115,7 @@ typedef enum{
     PERADV_INTERVAL_31P25MS            =            25,
     PERADV_INTERVAL_32P5MS             =            26,
     PERADV_INTERVAL_33P75MS            =            27,
-    PERADV_INTERVAL_35MS                  =            28,
+    PERADV_INTERVAL_35MS               =            28,
     PERADV_INTERVAL_36P25MS            =            29,
     PERADV_INTERVAL_37P5MS             =            30,
     PERADV_INTERVAL_38P75MS            =            31,
@@ -173,7 +173,7 @@ typedef enum{
     BLT_ENABLE_ADV_37    =        BIT(0),
     BLT_ENABLE_ADV_38    =        BIT(1),
     BLT_ENABLE_ADV_39    =        BIT(2),
-    BLT_ENABLE_ADV_ALL    =        (BLT_ENABLE_ADV_37 | BLT_ENABLE_ADV_38 | BLT_ENABLE_ADV_39),
+    BLT_ENABLE_ADV_ALL   =        (BLT_ENABLE_ADV_37 | BLT_ENABLE_ADV_38 | BLT_ENABLE_ADV_39),
 }adv_chn_map_t;
 
 /* Advertising_Filter_Policy */
@@ -183,7 +183,7 @@ typedef enum {
     ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_WL         =        0x02,  // Process scan requests from all devices and only connection requests from devices that are in the White List..
     ADV_FP_ALLOW_SCAN_WL_ALLOW_CONN_WL          =        0x03,  // Process scan and connection requests only from devices in the White List.
 
-    ADV_FP_NONE                                    =        ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_ANY, //adv filter policy set to zero, not use whitelist
+    ADV_FP_NONE                                 =        ADV_FP_ALLOW_SCAN_ANY_ALLOW_CONN_ANY, //adv filter policy set to zero, not use whitelist
 } adv_fp_type_t;  //adv_filterPolicy_type_t
 
 
@@ -271,10 +271,10 @@ typedef enum{
 
 /* Scanning_Filter_Policy */
 typedef enum {
-    SCAN_FP_ALLOW_ADV_ANY                        =        0x00,  //except direct adv address not match
+    SCAN_FP_ALLOW_ADV_ANY                       =        0x00,  //except direct adv address not match
     SCAN_FP_ALLOW_ADV_WL                        =        0x01,  //except direct adv address not match
     SCAN_FP_ALLOW_UNDIRECT_ADV                  =        0x02,  //and direct adv address match initiator's resolvable private MAC
-    SCAN_FP_ALLOW_ADV_WL_DIRECT_ADV_MACTH        =        0x03,  //and direct adv address match initiator's resolvable private MAC
+    SCAN_FP_ALLOW_ADV_WL_DIRECT_ADV_MACTH       =        0x03,  //and direct adv address match initiator's resolvable private MAC
 
 } scan_fp_type_t;
 
@@ -334,7 +334,7 @@ typedef enum{
     CONN_INTERVAL_31P25MS            =            25,
     CONN_INTERVAL_32P5MS             =            26,
     CONN_INTERVAL_33P75MS            =            27,
-    CONN_INTERVAL_35MS                  =            28,
+    CONN_INTERVAL_35MS               =            28,
     CONN_INTERVAL_36P25MS            =            29,
     CONN_INTERVAL_37P5MS             =            30,
     CONN_INTERVAL_38P75MS            =            31,
@@ -374,23 +374,23 @@ typedef enum{
 /* Supervision_Timeout, Time = N * 10 ms,
  * Notice that these are just part of but not all Supervision_Timeout value */
 typedef enum{
-    CONN_TIMEOUT_500MS                 =              50,
+    CONN_TIMEOUT_500MS                  =               50,
     CONN_TIMEOUT_1S                     =               100,
-    CONN_TIMEOUT_1S5                 =               150,
+    CONN_TIMEOUT_1S5                    =               150,
     CONN_TIMEOUT_2S                     =               200,
-    CONN_TIMEOUT_2S5                 =               250,
+    CONN_TIMEOUT_2S5                    =               250,
     CONN_TIMEOUT_3S                     =               300,
-    CONN_TIMEOUT_3S5                 =               350,
+    CONN_TIMEOUT_3S5                    =               350,
     CONN_TIMEOUT_4S                     =               400,
-    CONN_TIMEOUT_4S5                 =               450,
+    CONN_TIMEOUT_4S5                    =               450,
     CONN_TIMEOUT_5S                     =               500,
     CONN_TIMEOUT_6S                     =               600,
     CONN_TIMEOUT_7S                     =               700,
     CONN_TIMEOUT_8S                     =               800,
     CONN_TIMEOUT_9S                     =               900,
-    CONN_TIMEOUT_10S                 =              1000,
-    CONN_TIMEOUT_15S                 =              1500,
-    CONN_TIMEOUT_20S                 =              2000,
+    CONN_TIMEOUT_10S                    =               1000,
+    CONN_TIMEOUT_15S                    =               1500,
+    CONN_TIMEOUT_20S                    =               2000,
 }conn_tm_t;
 
 
@@ -437,9 +437,9 @@ typedef struct {
 
 typedef struct {
     u16 connHandle;
-    u8     all_phys;
-    u8     tx_phys;
-    u8     rx_phys;
+    u8  all_phys;
+    u8  tx_phys;
+    u8  rx_phys;
     u16 phy_options;
 } hci_le_setPhyCmd_param_t;
 
@@ -449,26 +449,26 @@ typedef struct {
 typedef enum {
     BLE_PHY_1M             = 0x01,
     BLE_PHY_2M             = 0x02,
-    BLE_PHY_CODED         = 0x03,
+    BLE_PHY_CODED          = 0x03,
 } le_phy_type_t;
 
 typedef enum {
     PHY_PREFER_1M         = BIT(0),
-    PHY_PREFER_2M        = BIT(1),
-    PHY_PREFER_CODED     = BIT(2),
+    PHY_PREFER_2M         = BIT(1),
+    PHY_PREFER_CODED      = BIT(2),
 } le_phy_prefer_type_t;
 
 typedef enum {
     PHY_TRX_PREFER        = 0,                    //has      preference among TX & RX PHYs
-    PHY_TX_NO_PREFER     = BIT(0),               //has no preference among TX PHYs
-    PHY_RX_NO_PREFER     = BIT(1),                //has no preference among RX PHYs
+    PHY_TX_NO_PREFER      = BIT(0),               //has no preference among TX PHYs
+    PHY_RX_NO_PREFER      = BIT(1),                //has no preference among RX PHYs
     PHY_TRX_NO_PREFER     = (BIT(0) | BIT(1)),    //has no preference among TX & RX PHYs
 } le_phy_prefer_mask_t;
 
 typedef enum {
     CODED_PHY_PREFER_NONE     = 0,
-    CODED_PHY_PREFER_S2        = 1,
-    CODED_PHY_PREFER_S8     = 2,
+    CODED_PHY_PREFER_S2       = 1,
+    CODED_PHY_PREFER_S8       = 2,
 } le_ci_prefer_t;   //LE coding indication prefer
 
 
@@ -482,15 +482,15 @@ typedef enum {
  */
 typedef struct {
     u8        adv_handle;
-    u16        advEvt_props;
-    u8         pri_advIntMin[3];
+    u16       advEvt_props;
+    u8        pri_advIntMin[3];
     u8        pri_advIntMax[3];
-    u8         pri_advChnMap;
+    u8        pri_advChnMap;
     u8        ownAddrType;
-    u8         peerAddrType;
-    u8      peerAddr[6];
+    u8        peerAddrType;
+    u8        peerAddr[6];
     u8        advFilterPolicy;
-    u8         adv_tx_pow;
+    u8        adv_tx_pow;
     u8        pri_adv_phy;
     u8        sec_adv_max_skip;
     u8        sec_adv_phy;
@@ -509,9 +509,9 @@ typedef enum{
 
 /* Advertising Event Properties mask*/
 typedef enum{
-    ADVEVT_PROP_MASK_CONNECTABLE                        =    BIT(0),
-    ADVEVT_PROP_MASK_SCANNABLE                             =    BIT(1),
-    ADVEVT_PROP_MASK_DIRECTED                              =   BIT(2),
+    ADVEVT_PROP_MASK_CONNECTABLE                         =    BIT(0),
+    ADVEVT_PROP_MASK_SCANNABLE                           =    BIT(1),
+    ADVEVT_PROP_MASK_DIRECTED                            =    BIT(2),
     ADVEVT_PROP_MASK_HD_DIRECTED                         =    BIT(3),
     ADVEVT_PROP_MASK_LEGACY                              =    BIT(4),
     ADVEVT_PROP_MASK_ANON_ADV                            =    BIT(5),
@@ -519,28 +519,28 @@ typedef enum{
 }advEvtProp_mask_t;
 
 
-#define ADVEVT_PROP_MASK_CONNECTABLE_SCANNABLE                    (0x0003)  // ADVEVT_PROP_MASK_CONNECTABLE | ADVEVT_PROP_MASK_SCANNABLE
+#define ADVEVT_PROP_MASK_CONNECTABLE_SCANNABLE                   (0x0003)  // ADVEVT_PROP_MASK_CONNECTABLE | ADVEVT_PROP_MASK_SCANNABLE
 #define ADVEVT_PROP_MASK_LEGACY_SCANNABLE                        (0x0012)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_SCANNABLE
-#define    ADVEVT_PROP_MASK_LEGACY_DIRECTED                        (0x0014)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_DIRECTED
-#define    ADVEVT_PROP_MASK_LEGACY_HD_DIRECTED                        (0x0018)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_HD_DIRECTED
+#define ADVEVT_PROP_MASK_LEGACY_DIRECTED                         (0x0014)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_DIRECTED
+#define ADVEVT_PROP_MASK_LEGACY_HD_DIRECTED                      (0x0018)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_HD_DIRECTED
 #define ADVEVT_PROP_MASK_LEGACY_CONNECTABLE_SCANNABLE            (0x0013)  // ADVEVT_PROP_MASK_LEGACY | ADVEVT_PROP_MASK_CONNECTABLE | ADVEVT_PROP_MASK_SCANNABLE
 
 /* Advertising Event Properties
  * See the Core_v5.0(Vol 2/Part E/7.8.53 & Vol 6/Part B/4.4.2/Table 4.1) for more information
 */
 typedef enum{
-  ADV_EVT_PROP_LEGACY_CONNECTABLE_SCANNABLE_UNDIRECTED                            = 0x0013,        //  0001 0011'b     ADV_IND
-  ADV_EVT_PROP_LEGACY_CONNECTABLE_DIRECTED_LOW_DUTY                            = 0x0015,        //  0001 0101'b        ADV_DIRECT_IND(low duty cycle)
+  ADV_EVT_PROP_LEGACY_CONNECTABLE_SCANNABLE_UNDIRECTED                        = 0x0013,        //  0001 0011'b        ADV_IND
+  ADV_EVT_PROP_LEGACY_CONNECTABLE_DIRECTED_LOW_DUTY                           = 0x0015,        //  0001 0101'b        ADV_DIRECT_IND(low duty cycle)
   ADV_EVT_PROP_LEGACY_CONNECTABLE_DIRECTED_HIGH_DUTY                          = 0x001D,        //  0001 1101'b        ADV_DIRECT_IND(high duty cycle)
-  ADV_EVT_PROP_LEGACY_SCANNABLE_UNDIRECTED                                        = 0x0012,        //  0001 0010'b        ADV_SCAN_IND
+  ADV_EVT_PROP_LEGACY_SCANNABLE_UNDIRECTED                                    = 0x0012,        //  0001 0010'b        ADV_SCAN_IND
   ADV_EVT_PROP_LEGACY_NON_CONNECTABLE_NON_SCANNABLE_UNDIRECTED                = 0x0010,        //  0001 0000'b        ADV_NONCONN_IND
 
 
-  ADV_EVT_PROP_EXTENDED_NON_CONNECTABLE_NON_SCANNABLE_UNDIRECTED            = 0x0000,        //  0000 0000'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
-  ADV_EVT_PROP_EXTENDED_CONNECTABLE_UNDIRECTED                                  = 0x0001,        //  0000 0001'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
-  ADV_EVT_PROP_EXTENDED_SCANNABLE_UNDIRECTED                                = 0x0002,        //  0000 0010'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
+  ADV_EVT_PROP_EXTENDED_NON_CONNECTABLE_NON_SCANNABLE_UNDIRECTED              = 0x0000,        //  0000 0000'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
+  ADV_EVT_PROP_EXTENDED_CONNECTABLE_UNDIRECTED                                = 0x0001,        //  0000 0001'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
+  ADV_EVT_PROP_EXTENDED_SCANNABLE_UNDIRECTED                                  = 0x0002,        //  0000 0010'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
   ADV_EVT_PROP_EXTENDED_NON_CONNECTABLE_NON_SCANNABLE_DIRECTED                = 0x0004,        //  0000 0100'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
-  ADV_EVT_PROP_EXTENDED_CONNECTABLE_DIRECTED                                   = 0x0005,        //  0000 0101'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
+  ADV_EVT_PROP_EXTENDED_CONNECTABLE_DIRECTED                                  = 0x0005,        //  0000 0101'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
   ADV_EVT_PROP_EXTENDED_SCANNABLE_DIRECTED                                    = 0x0006,        //  0000 0110'b        ADV_EXT_IND + AUX_ADV_IND/AUX_CHAIN_IND
 
 
@@ -595,7 +595,7 @@ typedef enum {
 
 /* Fragment_Preference */
 typedef enum {
-    DATA_FRAGM_ALLOWED                      =    0x00,
+    DATA_FRAGM_ALLOWED                   =    0x00,
     DATA_FRAGM_NONE_OR_MINIMIZE          =    0x01,
 } data_fragm_t;
 
@@ -639,23 +639,23 @@ typedef enum{
  */
 typedef struct{
     u8        scan_type;
-    u16        scan_interval;
-      u16        scan_window;
+    u16       scan_interval;
+    u16       scan_window;
 } ext_scan_cfg_t;
 
 typedef struct{
     u8        ownAddress_type;
     u8        scan_filter_policy;
-      u8        scan_PHYs;
-      ext_scan_cfg_t        scanCfg[2];  //at most 2 kind of PHY: 1M and Coded
+    u8        scan_PHYs;
+    ext_scan_cfg_t        scanCfg[2];  //at most 2 kind of PHY: 1M and Coded
 } hci_le_setExtScan_cmdParam_t;
 
 
 /* Scanning_PHYs */
 typedef enum {
     SCAN_PHY_1M         = BIT(0),
-    SCAN_PHY_CODED        = BIT(2),
-    SCAN_PHY_1M_CODED     = (SCAN_PHY_1M | SCAN_PHY_CODED),
+    SCAN_PHY_CODED      = BIT(2),
+    SCAN_PHY_1M_CODED   = (SCAN_PHY_1M | SCAN_PHY_CODED),
 } scan_phy_t;
 
 
@@ -667,17 +667,17 @@ typedef enum {
 
 /* Filter_Duplicates for Extended Scan*/
 typedef enum {
-    DUPE_FLTR_DISABLE                 = 0x00,
+    DUPE_FLTR_DISABLE               = 0x00,
     DUPE_FLTR_ENABLE                = 0x01,
-    DUPE_FLTR_ENABLE_RST_PERIOD        = 0x02,
+    DUPE_FLTR_ENABLE_RST_PERIOD     = 0x02,
 } dupe_fltr_en_t;
 
 
 /* Scan duration, Range: 0x0001 to 0xFFFF, Time = N * 10 ms, Time Range: 10 ms to 655.35 s,
  * Notice that these are just part of but not all Scan duration value */
 typedef enum{
-    SCAN_DURATION_CONTINUOUS         =             0,
-    SCAN_DURATION_50MS                 =               5,
+    SCAN_DURATION_CONTINUOUS            =              0,
+    SCAN_DURATION_50MS                  =              5,
     SCAN_DURATION_100MS                 =              10,
     SCAN_DURATION_150MS                 =              15,
     SCAN_DURATION_200MS                 =              20,
@@ -696,26 +696,26 @@ typedef enum{
     SCAN_DURATION_850MS                 =              85,
     SCAN_DURATION_900MS                 =              90,
     SCAN_DURATION_950MS                 =              96,
-    SCAN_DURATION_1S                 =               100,
-    SCAN_DURATION_1S2                  =               120,
-    SCAN_DURATION_1S5                 =               150,
-    SCAN_DURATION_1S6                 =               160,
-    SCAN_DURATION_1S8                 =               180,
-    SCAN_DURATION_2S                 =               200,
-    SCAN_DURATION_3S                 =               300,
-    SCAN_DURATION_4S                 =               400,
-    SCAN_DURATION_5S                 =               500,
-    SCAN_DURATION_6S                 =               600,
-    SCAN_DURATION_7S                 =               700,
-    SCAN_DURATION_8S                 =               800,
-    SCAN_DURATION_9S                 =               900,
-    SCAN_DURATION_10S                 =               1000,
+    SCAN_DURATION_1S                    =              100,
+    SCAN_DURATION_1S2                   =              120,
+    SCAN_DURATION_1S5                   =              150,
+    SCAN_DURATION_1S6                   =              160,
+    SCAN_DURATION_1S8                   =              180,
+    SCAN_DURATION_2S                    =              200,
+    SCAN_DURATION_3S                    =              300,
+    SCAN_DURATION_4S                    =              400,
+    SCAN_DURATION_5S                    =              500,
+    SCAN_DURATION_6S                    =              600,
+    SCAN_DURATION_7S                    =              700,
+    SCAN_DURATION_8S                    =              800,
+    SCAN_DURATION_9S                    =              900,
+    SCAN_DURATION_10S                   =              1000,
 }scan_durn_t;
 
 /* Scan period, Range: 0x0001 to 0xFFFF, Time = N * 1.28 sec, Time Range: 1.28 s to 83,884.8 s
  * Notice that these are just part of but not all Scan period value */
 typedef enum{
-    SCAN_WINDOW_CONTINUOUS           =             0,
+    SCAN_WINDOW_CONTINUOUS           =               0,
     SCAN_WINDOW_1S28                 =               1,
     SCAN_WINDOW_2S56                 =               2,
     SCAN_WINDOW_3S84                 =               3,
@@ -723,9 +723,9 @@ typedef enum{
     SCAN_WINDOW_6S4                  =               5,
     SCAN_WINDOW_7S68                 =               6,
     SCAN_WINDOW_8S92                 =               7,
-    SCAN_WINDOW_10S24                 =               8,
-    SCAN_WINDOW_11S52                 =               9,
-    SCAN_WINDOW_12S8                 =              10,
+    SCAN_WINDOW_10S24                =               8,
+    SCAN_WINDOW_11S52                =               9,
+    SCAN_WINDOW_12S8                 =               10,
 }scan_period_t;
 
 
@@ -736,21 +736,21 @@ typedef enum{
 typedef struct{
     u16        scan_interval;
     u16        scan_window;
-      u16        connInter_min;
-      u16        connInter_max;
-      u16     connLatency;
-      u16        connTimeout;
-      u16        ceLen_min;
-      u16        ceLen_max;
+    u16        connInter_min;
+    u16        connInter_max;
+    u16        connLatency;
+    u16        connTimeout;
+    u16        ceLen_min;
+    u16        ceLen_max;
 } ext_init_cfg_t;
 
 typedef struct{
     u8        init_filter_policy;
     u8        ownAddr_type;
-      u8        peerAddr_type;
+    u8        peerAddr_type;
     u8        peer_addr[6];
     u8        init_PHYs;
-      ext_init_cfg_t        initCfg[3];
+    ext_init_cfg_t        initCfg[3];
 } hci_le_ext_createConn_cmdParam_t;
 
 #define EXT_CREATE_CONN_CMD_PARAM_MAX_LENGTH        (10 + 16 * 3)   //10 + sizeof(ext_init_cfg_t) * 3
@@ -759,11 +759,11 @@ typedef struct{
 typedef enum {
     INIT_PHY_1M             = BIT(0),
     INIT_PHY_2M             = BIT(1),
-    INIT_PHY_CODED            = BIT(2),
-    INIT_PHY_1M_2M             = (INIT_PHY_1M | INIT_PHY_2M),
-    INIT_PHY_1M_CODED         = (INIT_PHY_1M | INIT_PHY_CODED),
-    INIT_PHY_2M_CODED         = (INIT_PHY_2M | INIT_PHY_CODED),
-    INIT_PHY_1M_2M_CODED     = (INIT_PHY_1M | INIT_PHY_2M | INIT_PHY_1M_CODED),
+    INIT_PHY_CODED          = BIT(2),
+    INIT_PHY_1M_2M          = (INIT_PHY_1M | INIT_PHY_2M),
+    INIT_PHY_1M_CODED       = (INIT_PHY_1M | INIT_PHY_CODED),
+    INIT_PHY_2M_CODED       = (INIT_PHY_2M | INIT_PHY_CODED),
+    INIT_PHY_1M_2M_CODED    = (INIT_PHY_1M | INIT_PHY_2M | INIT_PHY_1M_CODED),
 } init_phy_t;
 
 
@@ -780,7 +780,7 @@ typedef enum {
      * 0: Use the adv_sid, adv_addr_type, and adv_address parameters to determine which advertiser to listen to.
      * 1: Use the Periodic Advertiser List to determine which advertiser to listen to. */
     SYNC_ADV_SPECIFY     = 0,
-    SYNC_ADV_FROM_LIST     = BIT(0),
+    SYNC_ADV_FROM_LIST   = BIT(0),
 
     /* BIT(1) ~ BIT(7) reserved */
 } option_msk_t;
@@ -797,28 +797,28 @@ typedef enum {
  */
 typedef struct {
     u8      cig_id;
-    u8        sdu_int_m2s[3];
-    u8        sdu_int_s2m[3];
-    u8        sca;
-    u8        packing;
-    u8        framing;
+    u8      sdu_int_m2s[3];
+    u8      sdu_int_s2m[3];
+    u8      sca;
+    u8      packing;
+    u8      framing;
     u16     max_trans_lat_m2s;
     u16     max_trans_lat_s2m;
-    u8        cis_count;
-    u8*        restparam;
+    u8      cis_count;
+    u8*     restparam;
 } hci_le_setCigParam_cmdParam_t;
 
 typedef struct{
     u8        cis_id;
     u8        nse;
-    u16        max_sdu_m2s;
-    u16        max_sdu_s2m;
-    u16        max_pdu_m2s;
-    u16        max_pdu_s2m;
-      u8      phy_m2s;
-      u8        phy_s2m;
-      u8        bn_m2s;
-      u8        bn_s2m;
+    u16       max_sdu_m2s;
+    u16       max_sdu_s2m;
+    u16       max_pdu_m2s;
+    u16       max_pdu_s2m;
+    u8        phy_m2s;
+    u8        phy_s2m;
+    u8        bn_m2s;
+    u8        bn_s2m;
 } cigParamTest_cisCfg_t;
 
 /* Slaves_Clock_Accuracy */
@@ -827,17 +827,17 @@ typedef enum {
     PPM_151_250     =    0x01,
     PPM_101_150     =    0x02,
     PPM_76_100      =    0x03,
-    PPM_51_75          =    0x04,
-    PPM_31_50          =    0x05,
-    PPM_21_30          =    0x06,
-    PPM_0_20          =    0x07,
+    PPM_51_75       =    0x04,
+    PPM_31_50       =    0x05,
+    PPM_21_30       =    0x06,
+    PPM_0_20        =    0x07,
 } slv_clk_accuracy_t;
 
 
 /* Packing */
 typedef enum {
     PACK_SEQUENTIAL     =    0x00,
-    PACK_INTERLEAVED     =    0x01,
+    PACK_INTERLEAVED    =    0x01,
 } packing_type_t;
 
 /* Framing */
@@ -854,15 +854,15 @@ typedef enum {
 typedef struct{
     u8        cig_id;
     u8        sdu_int_m2s[3];
-      u8        sdu_int_s2m[3];
+    u8        sdu_int_s2m[3];
     u8        ft_m2s;
     u8        ft_s2m;
-    u16     iso_intvl;
+    u16       iso_intvl;
     u8        sca;
     u8        packing;
     u8        framing;
-      u8        cis_count;   //15 B above
-      cigParamTest_cisCfg_t        cisCfg[1];  //14 B for one CIS configuration
+    u8        cis_count;   //15 B above
+    cigParamTest_cisCfg_t        cisCfg[1];  //14 B for one CIS configuration
 } hci_le_setCigParamTest_cmdParam_t;
 
 
@@ -872,16 +872,16 @@ typedef struct{
  */
 typedef struct {
     u8      status;
-    u8        cig_id;
-    u8        cis_count;
-    u16        cis_connHandle[1];  //not 4 byte aligned, but no problem
+    u8      cig_id;
+    u8      cis_count;
+    u16     cis_connHandle[1];  //not 4 byte aligned, but no problem
 } hci_le_setCigParam_retParam_t;
 
 
 /* ISO_Interval, Time = N * 1.25 ms,
  * Notice that these are just part of but not all ISO_Interval value */
 typedef enum{
-    ISO_INTERVAL_5MS                  =             4,
+    ISO_INTERVAL_5MS                  =          4,
     ISO_INTERVAL_6P75MS               =          5,
     ISO_INTERVAL_7P5MS                =          6,
     ISO_INTERVAL_8P75MS               =          7,
@@ -940,18 +940,18 @@ typedef struct
  */
 typedef struct
 {
-      u8      big_handle;            /* Used to identify the BIG */
-    u8        adv_handle;            /* Used to identify the periodic advertising train */
-    u8        num_bis;            /* Total number of BISes in the BIG */
-      u8      sdu_intvl[3];        /* The interval, in microseconds, of periodic SDUs */
-      u16        max_sdu;            /* Maximum size of an SDU, in octets */
-      u16        max_trans_lat;         /* Maximum time, in milliseconds, for transmitting an SDU */
-      u8      rtn;                 /* The maximum number of times that every BIS Data PDU should be retransmitted */
-      u8        phy;                /* The transmitter PHY of packets */
-    packing_type_t        packing;//type same as u8
-    framing_t            framing;//type same as u8
-    u8        enc;                /* Encryption flag */
-    u8      broadcast_code[16]; /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
+    u8      big_handle;            /* Used to identify the BIG */
+    u8      adv_handle;            /* Used to identify the periodic advertising train */
+    u8      num_bis;               /* Total number of BISes in the BIG */
+    u8      sdu_intvl[3];          /* The interval, in microseconds, of periodic SDUs */
+    u16     max_sdu;               /* Maximum size of an SDU, in octets */
+    u16     max_trans_lat;         /* Maximum time, in milliseconds, for transmitting an SDU */
+    u8      rtn;                   /* The maximum number of times that every BIS Data PDU should be retransmitted */
+    u8      phy;                   /* The transmitter PHY of packets */
+    packing_type_t       packing;  //type same as u8
+    framing_t            framing;  //type same as u8
+    u8      enc;                   /* Encryption flag */
+    u8      broadcast_code[16];    /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
 } hci_le_createBigParams_t;
 
 
@@ -962,22 +962,22 @@ typedef struct
  */
 typedef struct
 {
-      u8      big_handle;            /* Used to identify the BIG */
+    u8        big_handle;            /* Used to identify the BIG */
     u8        adv_handle;            /* Used to identify the periodic advertising train */
-    u8        num_bis;            /* Total number of BISes in the BIG */
-      u8      sdu_intvl[3];        /* The interval, in microseconds, of periodic SDUs */
-      u16     iso_intvl;            /* The time between consecutive BIG anchor points */
-      u8        nse;                /* The total number of subevents in each interval of each BIS in the BIG */
-      u16        max_sdu;            /* Maximum size of an SDU, in octets */
-      u16        max_pdu;             /* Maximum size, in octets, of payload */
-      u8        phy;                /* The transmitter PHY of packets */
-    packing_type_t packing : 8; //type same as u8
-    framing_t      framing : 8; //type same as u8
+    u8        num_bis;               /* Total number of BISes in the BIG */
+    u8        sdu_intvl[3];          /* The interval, in microseconds, of periodic SDUs */
+    u16       iso_intvl;             /* The time between consecutive BIG anchor points */
+    u8        nse;                   /* The total number of subevents in each interval of each BIS in the BIG */
+    u16       max_sdu;               /* Maximum size of an SDU, in octets */
+    u16       max_pdu;               /* Maximum size, in octets, of payload */
+    u8        phy;                   /* The transmitter PHY of packets */
+    packing_type_t packing : 8;      //type same as u8
+    framing_t      framing : 8;      //type same as u8
     u8        bn;                    /* The number of new payloads in each interval for each BIS */
-    u8        irc;                /* The number of times the scheduled payload(s) are transmitted in a given event*/
-    u8        pto;                /* Offset used for pre-transmissions */
-    u8        enc;                /* Encryption flag */
-    u8      broadcast_code[16]; /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
+    u8        irc;                   /* The number of times the scheduled payload(s) are transmitted in a given event*/
+    u8        pto;                   /* Offset used for pre-transmissions */
+    u8        enc;                   /* Encryption flag */
+    u8        broadcast_code[16];    /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
 } hci_le_createBigParamsTest_t;
 
 
@@ -997,15 +997,15 @@ typedef struct
 
 typedef struct
 {
-      u8      big_handle;            /* Used to identify the BIG */
-    u16        sync_handle;        /* Identifier of the periodic advertising train */
-    u8        enc;                /* Encryption flag */
-    u8      broadcast_code[16]; /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
-    u8        mse;                /* The Controller can schedule reception of any number of subevents up to NSE */
-      u16        big_sync_timeout;    /* Synchronization timeout for the BIG */
-      u16        max_trans_lat;         /* Maximum time, in milliseconds, for transmitting an SDU */
-      u8      num_bis;             /* Total number of BISes to synchronize */
-      u8*     bis;                /* List of indices of BISes */
+    u8      big_handle;            /* Used to identify the BIG */
+    u16     sync_handle;           /* Identifier of the periodic advertising train */
+    u8      enc;                   /* Encryption flag */
+    u8      broadcast_code[16];    /* The code used to derive the session key that is used to encrypt and decrypt BIS payloads */
+    u8      mse;                   /* The Controller can schedule reception of any number of subevents up to NSE */
+    u16     big_sync_timeout;      /* Synchronization timeout for the BIG */
+    u16     max_trans_lat;         /* Maximum time, in milliseconds, for transmitting an SDU */
+    u8      num_bis;               /* Total number of BISes to synchronize */
+    u8*     bis;                   /* List of indices of BISes */
 } hci_le_bigCreateSyncParams_t;
 
 
@@ -1021,10 +1021,10 @@ typedef struct
     u8  data_path_id;
     u8  codec_id[5];
 
-    u32 controller_delay           :24;
+    u32 controller_delay          :24;
     u32 codec_configration_length :8;
 
-    u8    codec_config[1];
+    u8  codec_config[1];
 
 }hci_le_setupIsoDataPathCmdParams_t;
 

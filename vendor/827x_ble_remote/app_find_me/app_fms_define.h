@@ -27,6 +27,9 @@
 #ifndef APP_FMS_DEFINE_H_
 #define APP_FMS_DEFINE_H_
 
+#define APP_FMS_SONG_MAX_PLAY_TIME                  (60)    // second
+
+
 typedef enum{
     APP_FMS_MODE_ALL_DISABLE                        = 0,
     APP_FMS_MODE_ALERT                              = 0xE100,
@@ -70,8 +73,8 @@ typedef enum{
 typedef int (*app_fms_mode_callback_t)(u8 *buf, u8 len);
 
 typedef struct {
+    u8 en_fms;
     u8 en_periodic_wakeup;
-    u8 reserved;
     u16 periodic_wakeup_interval;
 }app_fms_ctrl_t;
 

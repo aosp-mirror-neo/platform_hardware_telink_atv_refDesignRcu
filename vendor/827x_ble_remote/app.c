@@ -283,6 +283,7 @@ void app_adv_interval_downgrade_direct(void)
        else
        {
            app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
+
            status = bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_35MS,
               ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
               bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
@@ -377,6 +378,7 @@ void app_adv_direct(void)
            ll_resolvingList_reset();
            status = ll_resolvingList_add(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, bondInfo.local_irk);
            printf("LL resolving list add status: 0x%x\n", status);
+
            status = ll_resolvingList_setAddrResolutionEnable(1);
            printf("LL add resolution enable status: 0x%x\n", status);
            app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
@@ -1079,7 +1081,7 @@ void blt_pm_proc(void)
 
 void ble_remote_set_sleep_wakeup (u8 e, u8 *p, int n)
 {
-    if( blc_ll_getCurrentState() == BLS_LINK_STATE_CONN && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * CLOCK_16M_SYS_TIMER_CLK_1MS){  //suspend time > 30ms.add gpio wakeup
+    if( ((blc_ll_getCurrentState() == BLS_LINK_STATE_ADV)  || (blc_ll_getCurrentState() == BLS_LINK_STATE_CONN)) && ((u32)(bls_pm_getSystemWakeupTick() - clock_time())) > 80 * CLOCK_16M_SYS_TIMER_CLK_1MS){  //suspend time > 30ms.add gpio wakeup
         bls_pm_setWakeupSource(PM_WAKEUP_PAD);  //gpio pad wakeup suspend/deepsleep
     }
 }
@@ -1189,6 +1191,7 @@ void user_init_normal(void)
     //for 1M   Flash, flash_sector_mac_address equals to 0xFF000
     blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
 
+
     #if(BLE_DEVICE_ADDRESS_TYPE == BLE_DEVICE_ADDRESS_PUBLIC)
         app_own_address_type = OWN_ADDRESS_PUBLIC;
     #elif(BLE_DEVICE_ADDRESS_TYPE == BLE_DEVICE_ADDRESS_RANDOM_STATIC)
@@ -1261,6 +1264,7 @@ void user_init_normal(void)
             flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
             if(data != 0xff)
                 flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
+
             /* Preserve NEC IR data during Factory rest in v2.10 */
 //            flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
 //            if(data != 0xff)
@@ -1294,14 +1298,14 @@ void user_init_normal(void)
         smp_param_save_t  bondInfo;
         if(bond_number)   //at least 1 bonding device exist
         {
-        	u8 my_sch_ota_index = analog_read(DEEP_ANA_REG2);
-        	if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index)){
-        		/* This wake-up is for the periodic wake-up of the FMS
-        		 * When the wake-up source is Timer, currently there are only scheduled OTA and periodic wake-up
-        		 * If it is scheduled OTA, my_sch_ota_index is not 0.*/
-        		app_fms_try_connect();
+            u8 my_sch_ota_index = analog_read(DEEP_ANA_REG2);
+            if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index)){
+                /* This wake-up is for the periodic wake-up of the FMS
+                 * When the wake-up source is Timer, currently there are only scheduled OTA and periodic wake-up
+                 * If it is scheduled OTA, my_sch_ota_index is not 0.*/
+                app_fms_try_connect();
 
-        	}else{
+            }else{
                 bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
                 ll_resolvingList_reset();
                 ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
@@ -1344,8 +1348,8 @@ void user_init_normal(void)
                     app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
                     //ll_resolvingList_setResolvablePrivateAddrTimer(60);
                     status = bls_ll_setAdvParam( MY_ADV_INTERVAL_MIN, MY_ADV_INTERVAL_MAX,
-                    		ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
-                    		bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
+                            ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                            bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
                                                                MY_APP_ADV_CHANNEL,
                                                                ADV_FP_NONE);
                 }
@@ -1357,7 +1361,7 @@ void user_init_normal(void)
                 is_reconn_mode = 0x55;
                 bls_ll_setAdvEnable(1);  //adv enable
                 printf("direct adv\r\n");
-        	}
+            }
         }
         else   //set indirect adv
         {
@@ -1418,6 +1422,7 @@ void user_init_normal(void)
 
     bls_app_registerEventCallback (BLT_EV_FLAG_DATA_LENGTH_EXCHANGE, &task_datalengthexchange);
     blc_l2cap_registerConnUpdateRspCb(app_conn_param_update_response);
+
     #if(AUDIO_TRANS_USE_2M_PHY_ENABLE)
         blc_gap_setEventMask(GAP_EVT_MASK_ATT_EXCHANGE_MTU);
         blc_gap_registerHostEventHandler( app_host_event_callback );
@@ -1448,7 +1453,6 @@ void user_init_normal(void)
 #if    (TL_AUDIO_MODE & TL_AUDIO_MASK_SBC_MODE | TL_AUDIO_MASK_MSBC_MODE)
     blc_pm_setDeepsleepRetentionType(DEEPSLEEP_MODE_RET_SRAM_LOW32K);
 #else
-
 #endif
 
 #if (BLE_REMOTE_OTA_ENABLE)
@@ -1566,7 +1570,7 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
     bls_ll_setAdvEnable(0);
     memcpy(tbl_advData,advdata.data,advdata.rf_len);
     for(u8 i=0;i<25;i++)
-        printf(" %02 x",tbl_advData[i]);
+        printf(" %02X ",tbl_advData[i]);
     bls_ll_setAdvData( (u8 *)tbl_advData, advdata.rf_len);
 
     bls_ll_setAdvParam( ADV_INTERVAL_30MS, ADV_INTERVAL_30MS,

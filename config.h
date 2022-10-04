@@ -28,28 +28,28 @@
 #pragma once
 
 
-#define	CHIP_TYPE_825x  	1
+#define CHIP_TYPE_825x      1
 #define CHIP_TYPE_827x      2
-#define	CHIP_TYPE_9518		5
+#define CHIP_TYPE_9518      5
 
 #ifndef CHIP_TYPE
-#define	CHIP_TYPE 			CHIP_TYPE_825x
+#define CHIP_TYPE           CHIP_TYPE_825x
 #endif
 
 
-#define	MCU_CORE_825x 		1
-#define	MCU_CORE_8258 		1
+#define MCU_CORE_825x       1
+#define MCU_CORE_8258       1
 #define MCU_CORE_827x       2
 #define MCU_CORE_8278       2
 
-#define	MCU_CORE_9518 		5
+#define MCU_CORE_9518       5
 
 #if(CHIP_TYPE == CHIP_TYPE_825x)
-	#define MCU_CORE_TYPE	MCU_CORE_825x
+    #define MCU_CORE_TYPE   MCU_CORE_825x
 #elif(CHIP_TYPE == CHIP_TYPE_827x)
-	#define MCU_CORE_TYPE	MCU_CORE_827x
+    #define MCU_CORE_TYPE   MCU_CORE_827x
 #else
-	#define MCU_CORE_TYPE	1000
+    #define MCU_CORE_TYPE   1000
 #endif
 
 

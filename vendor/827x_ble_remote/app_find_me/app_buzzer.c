@@ -126,13 +126,14 @@ void app_buzzer_play(APP_BUZZER_STATUS_T reason, u8 sound_level){
     u16 note = app_song[0].note;
     u16 duration = app_song[0].duration;
 
-    s_p_app_buzzer_ctrl->note_timer_tick = clock_time()|1;
+    s_p_app_buzzer_ctrl->song_start_tick =  s_p_app_buzzer_ctrl->note_timer_tick = clock_time()|1;
     s_p_app_buzzer_ctrl->note_duration = duration;
 
     u16 counter = BUZZER_CLOCK/note;
     pwm_set_cycle_and_duty(PWM4_ID, counter, counter*s_p_app_buzzer_ctrl->sound_level/100);
 
     pwm_start(PWM4_ID);
+
     bls_pm_setSuspendMask (SUSPEND_DISABLE);
 }
 
@@ -150,6 +151,12 @@ void app_buzzer_task(void){
 
     if(clock_time_exceed(s_p_app_buzzer_ctrl->note_timer_tick,s_p_app_buzzer_ctrl->note_duration*1000)){
 
+        /* 220707. Make sure to play the complete note before stopping the song */
+        if(clock_time_exceed(s_p_app_buzzer_ctrl->song_start_tick, APP_FMS_SONG_MAX_PLAY_TIME*1000000)){
+            app_imc_stop_alert();
+            printf("Maximum play time reached !!!!!!!! \n");
+        }
+
         printf("pwm_state: 0x%02X song level: %d  index: %d  \n",
                 reg_pwm_enable&BIT(PWM4_ID),
                 s_p_app_buzzer_ctrl->sound_level,
@@ -158,7 +165,7 @@ void app_buzzer_task(void){
         s_p_app_buzzer_ctrl->song_index++;
 
         if(s_p_app_buzzer_ctrl->song_index >= s_p_app_buzzer_ctrl->song_size){
-//            app_buzzer_stop();
+
             if(APP_BUZZER_STATUS_FIND_ME == s_p_app_buzzer_ctrl->status){
                 /* If the buzzer is started by the find me command, it will loop infinitely */
                 s_p_app_buzzer_ctrl->song_index = 0;

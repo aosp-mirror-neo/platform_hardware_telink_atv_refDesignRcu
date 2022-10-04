@@ -952,7 +952,9 @@ void init_device_info (void)
 {
     //u8 my_FWRevtrs []     = {'V','1','.','1','.','1'};
     //u8 my_SWRevtrs []     = {'V','1','.','0','2'};
-    my_FWRevtrs[1] = ((FW_VERSION>>28)&0x0f) + 48;
+//    my_FWRevtrs[1] = ((FW_VERSION>>28)&0x0f) + 48;
+    my_FWRevtrs[1] = '1';
+
     //my_FWRevtrs[3] = ((FW_VERSION>>24)&0x0f) + 48;
     //my_FWRevtrs[5] = ((FW_VERSION>>20)&0x0f) + 48;
 

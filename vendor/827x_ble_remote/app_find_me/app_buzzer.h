@@ -31,7 +31,7 @@
 #define NT                        (400)           // note time
 
 #define BUZZER_GPIO               GPIO_PB4
-#define BUZZER_CLOCK              CLOCK_SYS_CLOCK_HZ	//2000000
+#define BUZZER_CLOCK              CLOCK_SYS_CLOCK_HZ // 2000000
 
 #define BUZZER_VOLUME_LOW         (3)             // 3%
 #define BUZZER_VOLUME_MEDIUM      (8)             // 8%
@@ -104,6 +104,7 @@ typedef struct {
 
     unsigned short        note_duration;
     unsigned int          note_timer_tick;
+    unsigned int          song_start_tick;
 }app_buzzer_ctrl_t;
 
 void app_buzzer_buffer_init(void);

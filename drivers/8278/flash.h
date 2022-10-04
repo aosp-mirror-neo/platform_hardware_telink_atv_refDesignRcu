@@ -38,27 +38,27 @@
 enum{
     //common cmd
     FLASH_WRITE_CMD                        =    0x02,
-    FLASH_READ_CMD                        =    0x03,
-    FLASH_WRITE_SECURITY_REGISTERS_CMD    =    0x42,
-    FLASH_READ_SECURITY_REGISTERS_CMD    =    0x48,
+    FLASH_READ_CMD                         =    0x03,
+    FLASH_WRITE_SECURITY_REGISTERS_CMD     =    0x42,
+    FLASH_READ_SECURITY_REGISTERS_CMD      =    0x48,
 
-    FLASH_SECT_ERASE_CMD                =    0x20,
-    FLASH_ERASE_SECURITY_REGISTERS_CMD    =    0x44,
+    FLASH_SECT_ERASE_CMD                   =    0x20,
+    FLASH_ERASE_SECURITY_REGISTERS_CMD     =    0x44,
 
-    FLASH_READ_UID_CMD_GD_PUYA_ZB_TH    =    0x4B,    //Flash Type = GD/PUYA/ZB/UT
-    FLASH_READ_UID_CMD_XTX                =    0x5A,    //Flash Type = XTX
+    FLASH_READ_UID_CMD_GD_PUYA_ZB_TH       =    0x4B,     //Flash Type = GD/PUYA/ZB/UT
+    FLASH_READ_UID_CMD_XTX                 =    0x5A,    //Flash Type = XTX
 
-    FLASH_GET_JEDEC_ID                    =    0x9F,
+    FLASH_GET_JEDEC_ID                     =    0x9F,
 
     //special cmd
-    FLASH_WRITE_STATUS_CMD_LOWBYTE        =    0x01,
+    FLASH_WRITE_STATUS_CMD_LOWBYTE         =    0x01,
     FLASH_WRITE_STATUS_CMD_HIGHBYTE        =    0x31,
 
-    FLASH_READ_STATUS_CMD_LOWBYTE        =    0x05,
-    FLASH_READ_STATUS_CMD_HIGHBYTE        =    0x35,
+    FLASH_READ_STATUS_CMD_LOWBYTE          =    0x05,
+    FLASH_READ_STATUS_CMD_HIGHBYTE         =    0x35,
 
-    FLASH_WRITE_DISABLE_CMD             =     0x04,
-    FLASH_WRITE_ENABLE_CMD                 =     0x06,
+    FLASH_WRITE_DISABLE_CMD                =    0x04,
+    FLASH_WRITE_ENABLE_CMD                 =    0x06,
 
 };
 
@@ -75,7 +75,7 @@ typedef enum{
  * @brief     flash uid cmd definition
  */
 typedef enum{
-    FLASH_UID_CMD_GD_PUYA   = 0x4b,
+    FLASH_UID_CMD_GD_PUYA     = 0x4b,
     FLASH_XTX_READ_UID_CMD    = 0x5A,
 }flash_uid_cmddef_e;
 

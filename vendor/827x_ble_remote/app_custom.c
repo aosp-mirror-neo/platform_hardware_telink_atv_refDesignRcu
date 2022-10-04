@@ -68,7 +68,7 @@ typedef enum
 _attribute_data_retention_  u8 en_powerkey_cache=1;
 _attribute_data_retention_  u8 en_google_wakeuppack=1;
 _attribute_data_retention_  u8 en_ble_adv=1;
-_attribute_data_retention_  u8 en_slave_rpa=0;
+_attribute_data_retention_  u8 en_slave_rpa=1;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
@@ -628,11 +628,15 @@ void app_custom_init(void)
 
         u8 my_woble_adv_type = ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
         flash_read_page(APP_WOBLE_ADV_TYPE_ADDR, 1, &my_woble_adv_type);
+        my_woble_adv_type = (0xff == my_woble_adv_type)?ADV_TYPE_CONNECTABLE_UNDIRECTED:ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
         app_woble_init_settings(_custom_data.wakeup_packet, my_woble_adv_type);
 
         my_FWRevtrs[3] = (_custom_data.device_type) + 0x30;
         my_FWRevtrs[4] = (_custom_data.device_ui_layout) + 0x30;
         app_custom_param_init(_custom_data.device_ui_layout);
+
+
+
         return;
     }
 
@@ -662,26 +666,34 @@ void app_custom_init(void)
     if(_custom_data.device_name_length>16)
         _custom_data.device_name_length = 16;
 
-    u8 read_data = 0xff;
+
     flash_read_page(APP_EN_CACHEKEY, 1, &en_powerkey_cache);
     flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, &en_google_wakeuppack);
     flash_read_page(APP_EN_BLE_ADV, 1, &en_ble_adv);
 
-    flash_read_page(APP_EN_SLAVE_RPA, 1, &read_data);
-    en_slave_rpa = (0 == read_data)?1:0;
+//    u8 read_data = 0xff;
+    flash_read_page(APP_EN_SLAVE_RPA, 1, &en_slave_rpa);
+//    en_slave_rpa = (0 == read_data)?1:0;
 
     u8 my_en_periodic_wakeup = 0;
     flash_read_page(APP_EN_PERIODIC_WAKE_UP, 1, &my_en_periodic_wakeup);
-    g_p_app_fms_ctrl->en_periodic_wakeup = (1==my_en_periodic_wakeup)?1:0;
+    g_p_app_fms_ctrl->en_fms = (0==my_en_periodic_wakeup)?1:0;
 
-    if(1 == g_p_app_fms_ctrl->en_periodic_wakeup){
-         u16 read_data = 0;
+    if(1 == g_p_app_fms_ctrl->en_fms){
+        u16 read_data = 0;
          flash_read_page(APP_PERIODIC_WAKE_UP_TIMER, 2, (u8 *)&read_data);
-         if((read_data>=5) && (read_data<=1440)){
-              g_p_app_fms_ctrl->periodic_wakeup_interval = read_data;
-		 }else{
-             /* If the interval data in the flash is wrong, use 30 */
+
+         if((0 == read_data) || (0xffff == read_data)){
+             /* 220707. 0 or 0xffff to disable periodic wakeup */
+             g_p_app_fms_ctrl->en_periodic_wakeup = 0;
+         }else if(read_data<=1440){
+             /* 220707. The valid range is changed to 1~1440(min) */
+             g_p_app_fms_ctrl->periodic_wakeup_interval = read_data;
+             g_p_app_fms_ctrl->en_periodic_wakeup = 1;
+         }else{
+            /* If the interval data in the flash is wrong, use 30 */
              g_p_app_fms_ctrl->periodic_wakeup_interval = 30;
+             g_p_app_fms_ctrl->en_periodic_wakeup = 1;
          }
     }
 
@@ -690,8 +702,9 @@ void app_custom_init(void)
     my_FWRevtrs[4] = (_custom_data.device_ui_layout) + 0x30;
     app_custom_wakeup_key_load(_custom_data.wakeup_key_1,_custom_data.wakeup_key_2);
 
-    u8 my_woble_adv_type = ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
+    u8 my_woble_adv_type = ADV_TYPE_CONNECTABLE_UNDIRECTED;
     flash_read_page(APP_WOBLE_ADV_TYPE_ADDR, 1, &my_woble_adv_type);
+    my_woble_adv_type = (0xff == my_woble_adv_type)?ADV_TYPE_CONNECTABLE_UNDIRECTED:ADV_TYPE_NONCONNECTABLE_UNDIRECTED;
     app_woble_init_settings(_custom_data.wakeup_packet, my_woble_adv_type);
 
     app_custom_param_init(_custom_data.device_ui_layout);

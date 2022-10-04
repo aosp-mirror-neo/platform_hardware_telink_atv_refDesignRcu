@@ -47,7 +47,7 @@ typedef struct{
 #define HCI_TX_FIFO_NUM              (2)
 
 extern u8 blt_buff_prepare_write[];
-#define hci_rtxfifo_b					(blt_buff_prepare_write + 4)								// 0x100
+#define hci_rtxfifo_b                    (blt_buff_prepare_write + 4)                                // 0x100
 
 
 my_fifo_t hci_rx_fifo = {

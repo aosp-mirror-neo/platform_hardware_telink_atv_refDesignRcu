@@ -190,10 +190,8 @@ void ir_nec_send_ext(u8 *dat)
             ir_send_ctrl.repeat_enable = 0;  //no need repeat signal
         }
 
-
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear  dma fifo mode done irq status
         reg_pwm_irq_mask |= FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //enable dma fifo mode done irq mask
-
 
         bls_pm_setSuspendMask(0);
         ir_send_ctrl.is_sending = IR_SENDING_DATA;
@@ -204,9 +202,6 @@ void ir_nec_send_ext(u8 *dat)
 
     }
 }
-
-
-
 
 int ir_is_sending()
 {
@@ -376,8 +371,6 @@ void rc_ir_init(void)
 //repeat signal  second part,  560 us carrier, 99190 us low(110 ms - 9000us - 2250us - 560us = 99190 us)
     waveform_repeat_3rd = pwm_config_dma_fifo_waveform(1, PWM0_PULSE_NORMAL, 560 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK);
     waveform_repeat_4th = pwm_config_dma_fifo_waveform(0, PWM0_PULSE_NORMAL, 96190 * CLOCK_SYS_CLOCK_1US/PWM_CARRIER_CYCLE_TICK);
-
-
 
 
 //add fifo stop irq, when all waveform send over, this irq will triggers

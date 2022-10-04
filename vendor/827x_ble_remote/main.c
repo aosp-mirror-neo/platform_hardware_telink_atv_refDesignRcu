@@ -67,6 +67,7 @@ _attribute_ram_code_ void irq_handler(void)
 
 }
 
+
 _attribute_ram_code_ int main (void)    //must run in ramcode
 {
     blc_pm_select_internal_32k_crystal();
@@ -103,6 +104,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
     GPIO_PB2_PULL_DOWN_100K;
     if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
     {
+
         extern void app_phytest_init(void);
         app_phytest_init();
 
@@ -143,7 +145,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         #endif
         printf("user_init_normal\n");
 
-        user_init_normal ();
+        user_init_normal();
     }
     irq_enable();
 
