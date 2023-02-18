@@ -604,6 +604,15 @@ void app_custom_data_update(void)
  */
 void app_custom_init(void)
 {
+    /* 2.17 only
+     * Special version, if the address APP_TX_POWER is 0xff, write 0x23 (TX power7.37dBm) */
+    u8 my_TxPoewr = 0x00;
+    flash_read_page(APP_TX_POWER_ADDR, 1 , &my_TxPoewr);
+    if(0xff == my_TxPoewr){
+        my_TxPoewr = RF_POWER_P7p37dBm;
+        flash_write_page(APP_TX_POWER_ADDR, 1 , &my_TxPoewr);
+    }
+
     u8 buffer[80];
     u8 addr_pos=0,i;
     u8 *pREMOTE_B046 = (u8 *)("RemoteB046");

@@ -1181,7 +1181,11 @@ void key_change_proc(void)
     u16 consumer_key[2]={0};
 
     key_not_released = 1;
-    if (kb_event.cnt == 2)   //two key press, do  not process
+    if(kb_event.cnt >= 3){
+
+        printf("[NOTICE] More than 2 buttons were pressed. key_type: [0x%x] \n",key_type);
+    }
+    else if (kb_event.cnt == 2)   //two key press, do  not process
     {
         //retime
         advertise_tick_retime();
@@ -1222,20 +1226,74 @@ void key_change_proc(void)
         }
         else if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[2])) || ((key0 == comb_key_keyid[2]) && (key1 == comb_key_keyid[0]))) //Bug report  back+center
         {
-            printf("bug report start\r\n");
+            printf("[NOTICE]  back+center: bug report start  !!!!!!!!!! \n");
             comb_key_stop_ir();
-            device_led_setup(led_cfg[LED_AUDIO_ON]);
+
+            //
+//            device_led_setup(led_cfg[LED_AUDIO_ON]);
+
+            if(device_in_connection_state){
+
+                consumer_key[0] = 0;
+                consumer_key[1] = 0;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+
+                device_led_off(APP_LED_GREEN);
+                if(lowbat == 0)
+                {
+                    device_led_setup(led_cfg[LED_AUDIO_ON]);
+                }
+                key_type = CONSUMER_KEY;
+
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_CENTER;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                app_keyboard_release_action_by_flag();
+            }else{
+//                keyScanLongPressTick = clock_time() | 1; //none zero
+//                LongPressTick = 1000000;
+//                Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
+            }
+
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 1000000;
             Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_BUGREPORT;
+
         }
         else if (((key0 == comb_key_keyid[0]) && (key1 == comb_key_keyid[7])) || ((key0 == comb_key_keyid[7]) && (key1 == comb_key_keyid[0]))) //  back+down
         {
-            printf("back+dwon\r\n");
+            // TODO
+            printf("[NOTICE]  back+dwon: talk back start  !!!!!!!!!! \n");
+
             comb_key_stop_ir();
+
+            if(device_in_connection_state){
+
+                consumer_key[0] = 0;
+                consumer_key[1] = 0;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+
+                device_led_off(APP_LED_GREEN);
+                if(lowbat == 0)
+                {
+                    device_led_setup(led_cfg[LED_AUDIO_ON]);
+                }
+                key_type = CONSUMER_KEY;
+
+                consumer_key[0] = GOOGLE_MKEY_BACK;
+                consumer_key[1] = GOOGLE_MKEY_DN;
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                app_keyboard_release_action_by_flag();
+            }else{
+//                keyScanLongPressTick = clock_time() | 1; //none zero
+//                LongPressTick = 2000000;
+//                Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+            }
+
             keyScanLongPressTick = clock_time() | 1; //none zero
-            LongPressTick = 2000000;
+            LongPressTick = 1000000;
             Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_DOWNBACK;
+
         }
         else
         {
@@ -1652,15 +1710,15 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = GOOGLE_MKEY_BACK;
-                consumer_key[1] = GOOGLE_MKEY_CENTER;
-                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                consumer_key[0] = GOOGLE_MKEY_BACK;
+//                consumer_key[1] = GOOGLE_MKEY_CENTER;
+//                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
         else if(Accessibility_Shortcut_Mode == APP_ACCESSIBILITY_SHORTCUT_DOWNBACK)
         {
             printf("APP_ACCESSIBILITY_SHORTCUT_DOWNBACK ongoning\r\n");
-            //device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
+            device_led_setup(led_cfg[LED_SHINE_SUCCESS]);
             if(device_in_connection_state == 0)
             {
                 key_type = IR_KEY;
@@ -1671,9 +1729,9 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = GOOGLE_MKEY_BACK;
-                consumer_key[1] = GOOGLE_MKEY_DN;
-                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                consumer_key[0] = GOOGLE_MKEY_BACK;
+//                consumer_key[1] = GOOGLE_MKEY_DN;
+//                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
         Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
