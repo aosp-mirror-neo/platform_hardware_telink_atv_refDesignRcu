@@ -54,6 +54,13 @@ typedef enum
 }app_custom_data_update_sts;
 
 
+typedef struct{
+    u8 vid_src;
+    u16 vid;
+    u16 pid;
+    u16 prod_ver;
+}app_pnpid_format_t;
+
 #define APP_CUSTOM_CMD_DATA_UPDATE_PREPARE      0xED00
 #define APP_CUSTOM_CMD_DATA_UPDATE_START        0xED01
 #define APP_CUSTOM_CMD_DATA_UPDATE_END          0xED02
@@ -604,15 +611,6 @@ void app_custom_data_update(void)
  */
 void app_custom_init(void)
 {
-    /* 2.17 only
-     * Special version, if the address APP_TX_POWER is 0xff, write 0x23 (TX power7.37dBm) */
-    u8 my_TxPoewr = 0x00;
-    flash_read_page(APP_TX_POWER_ADDR, 1 , &my_TxPoewr);
-    if(0xff == my_TxPoewr){
-        my_TxPoewr = RF_POWER_P7p37dBm;
-        flash_write_page(APP_TX_POWER_ADDR, 1 , &my_TxPoewr);
-    }
-
     u8 buffer[80];
     u8 addr_pos=0,i;
     u8 *pREMOTE_B046 = (u8 *)("RemoteB046");
@@ -678,6 +676,26 @@ void app_custom_init(void)
     my_FWRevtrs[4] = (_custom_data.device_ui_layout) + 0x30;
     app_custom_wakeup_key_load(_custom_data.wakeup_key_1,_custom_data.wakeup_key_2);
     app_custom_param_init(_custom_data.device_ui_layout);
+
+
+    /* 230214 by ken. read TX power settings */
+    extern void app_rcu_set_TxPower(u8 Index);
+
+    app_pnpid_format_t *p_my_pnpid = (app_pnpid_format_t *)_custom_data.pnp_id;
+
+    if((0x01 == p_my_pnpid->vid_src) && (0x0957 == p_my_pnpid->vid) && (0x0005 == p_my_pnpid->pid)){
+        /* Customized settings for special customers */
+        app_rcu_set_TxPower(RF_POWER_P7p37dBm);
+    }else{
+        u8 my_TxPoewr = 0x00;
+        flash_read_page(APP_TX_POWER_ADDR, 1 , &my_TxPoewr);
+        if(0xff != my_TxPoewr){
+            app_rcu_set_TxPower(my_TxPoewr);
+        }
+    }
+
+
+
 }
 
 /**

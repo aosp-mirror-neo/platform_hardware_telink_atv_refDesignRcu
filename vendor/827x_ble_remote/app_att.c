@@ -104,7 +104,9 @@ static const gap_periConnectParams_t my_periConnParameters = {8, 11, 0, 1000};
 
  _attribute_data_retention_ u8 my_FWRevtrs []     = {'V','1','.','1','1'};
  _attribute_data_retention_ u8 my_SWRevtrs []     = {'V','1','.','0','2'};
- static const u8 my_HWRevtrs []     = {'V','1','.','0'};
+// static const u8 my_HWRevtrs []     = {'V','1','.','0'};
+ _attribute_data_retention_ u8 my_HWRevtrs []     = {'V','1','.','0','_','A','6','3'};
+
  static const u8 my_ManuNametrs []  = {'T','e','l','i','n','k'};
 
 //////////////////////// Battery /////////////////////////////////////////////////
