@@ -43,6 +43,7 @@ extern "C" {
 #define APP_WOBLE_ADV_TYPE_ADDR               0x780F8
 #define APP_PERIODIC_WAKE_UP_TIMER            0x780F9
 #define APP_EN_PERIODIC_WAKE_UP               0x780FB
+#define APP_TX_POWER_ADDR                     0x780F0
 #define APP_EN_SLAVE_RPA                      0x780FC
 #define APP_EN_BLE_ADV                        0x780FD
 #define APP_EN_GOOGLE_WAKEUPPACK              0x780FE
