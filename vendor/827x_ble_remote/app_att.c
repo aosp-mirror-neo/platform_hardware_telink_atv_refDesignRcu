@@ -774,7 +774,7 @@ int app_ota_handle(void * p){
     };
 
 #if (MP_TEST_MODE)
-    static const attribute_t my_test_dome_Attributes[] = {
+    static const attribute_t my_test_demo_Attributes[] = {
 
         {ATT_END_H - 1, 0,0,0,0,0},    // total num of attribute
 
@@ -928,6 +928,19 @@ int app_ota_handle(void * p){
         {0,ATT_PERMISSIONS_RDWR,2,0,(u8*)(&clientCharacterCfgUUID), 0, &app_ir_callback},
 #endif
 
+#if FIND_ME_ENABLE
+        {6,ATT_PERMISSIONS_READ,2,16,(u8*)(&my_primaryServiceUUID),     (u8*)(&FMS_Server_UUID), 0},
+
+        {0,ATT_PERMISSIONS_READ,2,sizeof(my_fms_CharCtlVal),(u8*)(&my_characterUUID), (u8*)(my_fms_CharCtlVal), 0},
+        {0,ATT_PERMISSIONS_RDWR,16,2,(u8*)(&FMS_Char_UUID_CTL),(u8 *) g_p_app_fms_ctrl_val, &app_fms_att_ctl_cb},
+
+        {0,ATT_PERMISSIONS_READ,2,sizeof(my_fms_CharDataVal),(u8*)(&my_characterUUID),(u8*)(my_fms_CharDataVal), 0},
+        {0,ATT_PERMISSIONS_RDWR,16,2,(u8*)(&FMS_Char_UUID_DATA),(u8 *)g_p_app_fms_data_val, &app_fms_att_data_cb},
+        {0,ATT_PERMISSIONS_RDWR,2,sizeof(my_fms_data_ccc),(u8*)(&clientCharacterCfgUUID),(u8*)(&my_fms_data_ccc), &att_ccc_control},
+
+#endif
+
+
         /////////////////////////////////// 9. TEST MODE ///////////////////////////////////////////////////
         // 004E - 0051              (78-81)
         {4, ATT_PERMISSIONS_READ, 2, 16, (u8*)(&my_primaryServiceUUID), (u8*)(&my_TestModeServiceUUID), 0},
@@ -942,7 +955,7 @@ int app_ota_handle(void * p){
 void my_att_init (void)
 {
 #if (MP_TEST_MODE)
-    if (test_get_mode() == MODE_TEST) bls_att_setAttributeTable((u8 *)my_test_dome_Attributes);
+    if (test_get_mode() == MODE_TEST) bls_att_setAttributeTable((u8 *)my_test_demo_Attributes);
     else
 #endif
     bls_att_setAttributeTable ((u8 *)my_Attributes);

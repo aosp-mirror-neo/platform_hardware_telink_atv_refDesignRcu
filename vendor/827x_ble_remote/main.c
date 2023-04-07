@@ -110,6 +110,14 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
         extern void app_trigger_phytest_mode(void);
         app_trigger_phytest_mode();
+
+        /* 221116 by ken. Fix the problem of not being able to enter PHY TEST MODE */
+        irq_enable();
+
+        while(1){
+            bls_pm_setSuspendMask (SUSPEND_DISABLE);
+            blt_sdk_main_loop();
+        }
     }
 #endif
 

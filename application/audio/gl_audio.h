@@ -57,7 +57,8 @@
  ******************   google voice v0.4   *********************
  **************************************************************/
 
-#define APP_AUDIO_GOOGLE_TIMEOUT1           60000000  //60s  //1000000 // 1s
+/* 221129 by ken. Reduce the window time(60s to 30s) to receive MIC OPEN */
+#define APP_AUDIO_GOOGLE_TIMEOUT1           30000000 // 60s  //1000000 // 1s
 #define APP_AUDIO_GOOGLE_TIMEOUT2           15000000 // 15s
 
 #define PLAYBACK_MODE_THRESHOLD1            4    //16k audio change to 8k audio

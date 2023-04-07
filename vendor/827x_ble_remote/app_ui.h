@@ -81,6 +81,9 @@ extern    int     lowBatt_alarmFlag;
 
 extern u8  app_mtu_size;
 
+/* 221116 by ken.  This variable is used to wait for google voice mic open cmd */
+extern u32 g_delay_en_pm;
+
 extern void app_pairing_led(void);
 extern void app_pairing_error(void);
 extern u8 app_repairing(void);
@@ -92,6 +95,7 @@ extern void app_ota_timeout(void);
 extern int app_cachekey_send_timer(void);
 extern int app_is_key_released(void);
 
+void app_ui_check_delay_en_pm(void);
 
 void app_keyboard_release_action_by_flag(void);
 

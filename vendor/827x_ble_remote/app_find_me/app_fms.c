@@ -198,32 +198,35 @@ void app_fms_adv_settings(u16 interval_min, u16 interval_max){
 
         smp_param_save_t  bondInfo;
         bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
+        ll_resolvingList_reset();
         ll_resolvingList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr,bondInfo.peer_irk,bondInfo.local_irk);
         ll_whiteList_reset();
 
-        u8 status = 0;
+        u8 status=0,rpa_flag=0;
+        if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0)
+        {
+           rpa_flag = 0;
+        }
+        else
+        {
+           extern u8 en_slave_rpa;
+           if(en_slave_rpa == 0)
+               rpa_flag = 0;
+           else
+               rpa_flag = 1;
+        }
 
         // TODO check setting host address
-        if (memcmp(bondInfo.peer_id_addr, bondInfo.peer_addr, 6) == 0){
+        if (0 == rpa_flag){
+			ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
             status = bls_ll_setAdvParam(interval_min, interval_max,
                                         ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, OWN_ADDRESS_PUBLIC,
                                         bondInfo.peer_addr_type,  bondInfo.peer_addr,
                                         BLT_ENABLE_ADV_ALL,
                                         ADV_FP_NONE);
         }else{
-            ll_resolvingList_reset();
-            status = ll_resolvingList_add(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, bondInfo.local_irk);
-            status = ll_resolvingList_setAddrResolutionEnable(1);
-
-            extern u8 en_slave_rpa;
-            if(0 == en_slave_rpa) {
-                app_own_address_type = OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC;
-            }else{
-                app_own_address_type = OWN_ADDRESS_PUBLIC;
-            }
-
             status = bls_ll_setAdvParam(interval_min, interval_max,
-                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, app_own_address_type,
+                                        ADV_TYPE_CONNECTABLE_DIRECTED_LOW_DUTY, OWN_ADDRESS_RESOLVE_PRIVATE_PUBLIC,
                                         bondInfo.peer_id_adrType,  bondInfo.peer_id_addr,
                                         BLT_ENABLE_ADV_ALL,
                                         ADV_FP_NONE);

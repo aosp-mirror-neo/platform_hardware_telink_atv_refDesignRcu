@@ -880,6 +880,9 @@ void app_phy_update_complete_event(u8 e,u8 *p, int n)
 extern u32 drive_pins[];
 void blt_pm_proc(void)
 {
+    /* 221116 by ken */
+    app_ui_check_delay_en_pm();
+
 #if(BLE_REMOTE_PM_ENABLE)
 
     u8 time=0;
@@ -1006,6 +1009,12 @@ void blt_pm_proc(void)
             #endif
         }
 
+        /* The button has been released and g_delay_en_pm is not 0 */
+        if((0 == key_not_released) && g_delay_en_pm){
+            /* 221116 by ken. A short latency is required during the validity period of the delay PM.
+             * In order to quickly receive the mic open command of GOOGLE voice */
+            bls_pm_setManualLatency(5);
+        }
 
     #if 1 //deepsleep
         if(sendTerminate_before_enterDeep == 1){ //sending Terminate and wait for ack before enter deepsleep

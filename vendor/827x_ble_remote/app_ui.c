@@ -73,6 +73,10 @@ _attribute_data_retention_ u8  ota_flag = 0;  //0:pause 1:continue
 _attribute_data_retention_ u8  testmode_key_seq[5]={0};
 _attribute_data_retention_ u8  testmode_key_seq_count=0;
 
+/* 221116 by ken.  This variable is used to wait for google voice mic open cmd */
+_attribute_data_retention_ u32 g_delay_en_pm = 0;
+
+
 extern u8 wakeup_key_keycount;
 extern u8  comb_key_keyid[9];
 extern u32 latest_user_event_tick;
@@ -1433,6 +1437,11 @@ void key_change_proc(void)
                     if(consumer_key[0] == GOOGLE_MKEY_CENTER)
                     {
                         google_voice_dpad_select();
+
+                        /* 221116 by ken. Record delay PM Start Time. The delay condition is to press the ASSIST and CENTER buttons */
+                        g_delay_en_pm = clock_time()|1;
+
+                        printf("[NOTICE] Record delay PM tick ");
                     }
 #endif
                 }
@@ -1973,4 +1982,10 @@ void app_ui_check_wakeup_src(u8 deepRetWakeUp){
 }
 
 
-
+void app_ui_check_delay_en_pm(void){
+    /* 221116 by ken. clear delay PM flag. The delay condition is to press the ASSIST and CENTER buttons */
+    if(g_delay_en_pm && clock_time_exceed(g_delay_en_pm, 2000000)){
+        g_delay_en_pm = 0;
+        printf("[NOTICE] Clear delay PM flag ");
+    }
+}

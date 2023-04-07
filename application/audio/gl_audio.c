@@ -219,6 +219,10 @@ void google_voice_on_request(){
     if(prevent_repeat_trigger_on_request_tick && (!clock_time_exceed(prevent_repeat_trigger_on_request_tick,PREVENT_TIME*1000))) return;
     prevent_repeat_trigger_on_request_tick = clock_time()|1;
     google_voice_ctl |= FLAG_GOOGLE_SEARCH;
+
+    /* 221116 by ken. Record delay PM Start Time. The delay condition is to press the ASSIST and CENTER buttons */
+    extern u32 g_delay_en_pm;
+    g_delay_en_pm = clock_time()|1;
 }
 
 /**
@@ -464,6 +468,9 @@ void google_voice_v0p4(rf_packet_att_data_t *pw){
  */
 u8 verify_stream_id(u8 id){
 
+    /* 221129 by ken. Prevent infinite EXTEND. So only accept EXTEND requests during active. */
+    if(0 == flag_active_mic_open) return 4;
+
     switch(id){
         case 0x00:        //  Check if start reason is on-request.
         {
@@ -505,6 +512,11 @@ void google_voice_v1p0(rf_packet_att_data_t *pw){
 
         if(!flag_active_mic_open){
             printf("mic is not activated\n");
+
+            /* 221116 by ken. enable 4.6.2 Active Remote Timeout */
+            google_voice_ctl |= FLAG_GOOGLE_OPEN_ERROR;
+            mic_open_error_code = ERROR_RCU_NOT_ACTIVE;
+            return;
         }
 
         u8 mic_mode = pw->dat[1];
