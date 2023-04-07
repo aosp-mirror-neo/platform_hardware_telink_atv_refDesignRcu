@@ -50,4 +50,5 @@ extern u8 app_custom_is_enable_wakeup_key(void);
 extern u8  app_custom_wakeupkey_packet_index(u8 keyid);
 extern void app_custom_data_update_process(u8 *data,u16 len);
 extern void app_custom_data_update_sector_erase_loop(void);
+extern void app_custom_write_conditional(void);
 #endif

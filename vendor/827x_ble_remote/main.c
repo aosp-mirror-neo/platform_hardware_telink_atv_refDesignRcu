@@ -126,6 +126,7 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
 
     if(!deepRetWakeUp){//read flash size
         //app_custom_test();
+        app_custom_write_conditional();
         app_woble_buffer_init();
         app_fms_buffer_init();
         app_custom_init();

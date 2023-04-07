@@ -966,3 +966,160 @@ void app_custom_data_update_sector_erase_loop(void)
     }
 }
 #endif
+
+/**
+ * @brief       This function writes the buffer's content to the flash.
+ * @param[in]   addr - the start address of the area.
+ * @param[in]   len  - the length(in byte) of content needs to write into the flash.
+ * @param[in]   buf  - the start address of the content needs to write into.
+ * @return      0: success, -1: not empty, -2: validation error
+ */
+static int _app_custom_flash_write(unsigned long addr, unsigned long len, unsigned char *buf)
+{
+    unsigned long i = 0;
+    unsigned char data = 0;
+    for (i = 0; i < len; i++)
+    {
+        flash_read_page(addr + i, 1, &data);
+        if (data != 0xff)
+            return -1;
+    }
+
+    flash_write_page(addr, len, buf);
+
+    for (i = 0; i < len; i++)
+    {
+        flash_read_page(addr + i, 1, &data);
+        if (*(buf + i) != data)
+            return -2;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief       This function print the buffer's content.
+ * @param[in]   addr - the start address of the area.
+ * @param[in]   len  - the length(in byte) of content needs to print.
+ * @return      none
+ */
+static void _app_custom_flash_print(unsigned long addr, unsigned long len)
+{
+    unsigned long i = 0;
+    unsigned char data = 0;
+
+    printf("Flash(0x%x) = \r\n", addr);
+    for (i = 0; i < len; i++)
+    {
+        flash_read_page(addr + i, 1, &data);
+        if ((i + 1) % 16 == 0)
+            printf("%02x\r\n", data);
+        else if ((i + 1) % 16 == 1)
+            printf("    %02x ", data);
+        else
+            printf("%02x ", data);
+    }
+}
+
+/**
+ * @brief       Write wake up settings
+ * @param[in]   none
+ * @return      0: success, -1: not initialized, -2: not empty, -3: validation error
+ */
+static int app_custom_write_wakeup_settings(void)
+{
+    u8 device_name_length = 0;
+    u16 pos = 0;
+    int res = 0;
+
+    flash_read_page(APP_CUSTOM_ADDR + 8, 1, &device_name_length);
+    if (device_name_length == 0xff)
+        return -1;
+
+#if 0   // For debugging purposes only
+    printf("[app_custom_write_wakeup_settings] ");
+    _app_custom_flash_print(APP_CUSTOM_ADDR, 256);
+#endif
+
+    // Write Wake-up Key
+    u8 wakeup_key[4] = { 0x00, 0x04, 0x00, 0x20 };    // POWER, NETFLIX
+
+    pos = 9 + device_name_length + 1;
+    res = _app_custom_flash_write(APP_CUSTOM_ADDR + pos, sizeof(wakeup_key)/sizeof(wakeup_key[0]), wakeup_key);
+    if (res != 0)
+    {
+        if (res == -1)
+            printf("[app_custom_write_wakeup_settings] Wake-up Key area is not empty.\r\n");
+        else if (res == -2)
+            printf("[app_custom_write_wakeup_settings] Wake-up Key written value validation error.\r\n");
+
+        return res - 1;
+    }
+
+#if 0   // Enable if custom format is applied
+    // Write Wake-up Packet Custom Format
+    u8 wakeup_packet[34] = {                            // Wake-up Packet Custom Format
+        0x1e, 0x16, 0x1d, 0x17, 0x02, 0x01, 0x04, 0x03, 0x03, 0x12, 0x18, 0x03, 0x19, 0x80, 0x01, 0x12,
+        0xff, 0xff, 0xff, 0x41, 0x6d, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00 };
+
+    pos = 9 + device_name_length + 1 + 4;
+    res = _app_custom_flash_write(APP_CUSTOM_ADDR + pos, sizeof(wakeup_packet)/sizeof(wakeup_packet[0]), wakeup_packet);
+    if (res != 0)
+    {
+        if (res == -1)
+            printf("[app_custom_write_wakeup_settings] Wake-up Packet area is not empty.\r\n");
+        else if (res == -2)
+            printf("[app_custom_write_wakeup_settings] Wake-up Packet written value validation error.\r\n");
+
+        return res - 1;
+    }
+#endif
+
+#if 0   // For debugging purposes only
+    printf("[app_custom_write_wakeup_settings] ");
+    _app_custom_flash_print(APP_CUSTOM_ADDR, 256);
+#endif
+
+    return 0;
+}
+
+/**
+ * @brief       Write conditionally to custom flash area
+ * @param[in]   none
+ * @return      none
+ */
+void app_custom_write_conditional (void)
+{
+    // Condition - PnP ID
+    app_pnpid_format_t condition_pnpids[] = {   // SEI models
+        { 0x01, 0x0957, 0x0006, 0xFF },
+        { 0x01, 0x0957, 0x0019, 0xFF },
+        { 0x01, 0x0957, 0x000A, 0xFF },
+        { 0x01, 0x0957, 0x001A, 0xFF }
+    };
+
+    // Device PnP ID
+    app_pnpid_format_t my_pnpid = { 0x00, };
+    flash_read_page(APP_CUSTOM_ADDR + 1, 7, (u8 *)&my_pnpid);
+
+    // Check condition
+    u8 condition_match = 0;
+    for (u8 i = 0; i < sizeof(condition_pnpids)/sizeof(condition_pnpids[0]); i++) {
+        if ((my_pnpid.vid_src == condition_pnpids[i].vid_src) &&
+            (my_pnpid.vid == condition_pnpids[i].vid) &&
+            (my_pnpid.pid == condition_pnpids[i].pid)) {
+            condition_match = 1;
+            break;
+        }
+    }
+    if (condition_match == 0) {
+        printf("[app_custom_data_write] Condition mismatch. vid_src: 0x%04X, vid: 0x%04X, pid: 0x%04X\r\n",
+            my_pnpid.vid_src, my_pnpid.vid, my_pnpid.pid);
+        return;
+    }
+
+    int res = app_custom_write_wakeup_settings();
+    printf("[app_custom_data_write] Writing Wake-up Settings : %s(%d) !!\r\n", (res == 0) ? "Completed" : "Stopped", res);
+}
+
