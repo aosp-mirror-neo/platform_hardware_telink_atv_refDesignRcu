@@ -67,7 +67,8 @@
 #define     MY_ADV_INTERVAL_MAX                 ADV_INTERVAL_25MS
 
 #if (MCU_CORE_TYPE == MCU_CORE_8278)
-    #define        MY_RF_POWER_INDEX            RF_POWER_P7p37dBm
+    #define        MY_RF_POWER_INDEX            RF_POWER_P3p50dBm
+
 #else
     #define        MY_RF_POWER_INDEX            RF_POWER_P3p01dBm
 #endif
@@ -148,6 +149,10 @@ _attribute_data_retention_  u8  wakeup_key_keycount=0;
 _attribute_data_retention_  u8  detpowerkey=0;              //0:not det powerkey  1:det powerkey
 
 
+_attribute_data_retention_ u8 app_rcu_tx_power = RF_POWER_P3p50dBm;
+
+
+
 _attribute_data_retention_ u8 mac_public[6];
 
 extern u8 is_pairing_mode;
@@ -173,6 +178,79 @@ void app_set_printf_uart_flag(unsigned char data)
     printf_uart_flag = data;
 }
 #endif
+
+void app_rcu_set_TxPower(u8 Index){
+
+    switch (Index) {
+        case RF_POWER_P11p26dBm :
+        case RF_POWER_P11p09dBm :
+        case RF_POWER_P10p83dBm :
+        case RF_POWER_P10p62dBm :
+        case RF_POWER_P10p30dBm :
+        case RF_POWER_P10p05dBm :
+        case RF_POWER_P9p79dBm :
+        case RF_POWER_P9p54dBm :
+        case RF_POWER_P9p23dBm :
+        case RF_POWER_P8p92dBm :
+        case RF_POWER_P8p57dBm :
+        case RF_POWER_P8p20dBm :
+        case RF_POWER_P7p80dBm :
+        case RF_POWER_P7p37dBm :
+        case RF_POWER_P6p91dBm :
+        case RF_POWER_P6p45dBm :
+        case RF_POWER_P5p92dBm :
+        case RF_POWER_P5p33dBm :
+        case RF_POWER_P4p69dBm :
+        case RF_POWER_P3p99dBm :
+        case RF_POWER_P3p50dBm :
+        case RF_POWER_P3p33dBm :
+        case RF_POWER_P3p13dBm :
+        case RF_POWER_P2p93dBm :
+        case RF_POWER_P2p60dBm :
+        case RF_POWER_P2p36dBm :
+        case RF_POWER_P2p10dBm :
+        case RF_POWER_P1p83dBm :
+        case RF_POWER_P1p56dBm :
+        case RF_POWER_P1p25dBm :
+        case RF_POWER_P0p71dBm :
+        case RF_POWER_P0p52dBm :
+        case RF_POWER_N0p28dBm :
+        case RF_POWER_N0p51dBm :
+        case RF_POWER_N0p74dBm :
+        case RF_POWER_N1p21dBm :
+        case RF_POWER_N1p69dBm :
+        case RF_POWER_N2p23dBm :
+        case RF_POWER_N2p84dBm :
+        case RF_POWER_N3p48dBm :
+        case RF_POWER_N4p18dBm :
+        case RF_POWER_N4p97dBm :
+        case RF_POWER_N5p85dBm :
+        case RF_POWER_N6p83dBm :
+        case RF_POWER_N7p88dBm :
+        case RF_POWER_N9p14dBm :
+        case RF_POWER_N10p70dBm :
+        case RF_POWER_N12p57dBm :
+        case RF_POWER_N15p01dBm :
+        case RF_POWER_N18p40dBm :
+        case RF_POWER_N24p28dBm :
+            app_rcu_tx_power = Index;
+            break;
+        default:
+            app_rcu_tx_power = RF_POWER_P3p50dBm;
+            break;
+    }
+
+
+    /* set TX power index to hardware revision */
+    extern u8 my_HWRevtrs [];
+    my_HWRevtrs[5] = (app_rcu_tx_power&BIT(7))?'A':'B';
+    my_HWRevtrs[6] = (app_rcu_tx_power&0x3F)/10 + '0';
+    my_HWRevtrs[7] = (app_rcu_tx_power&0x3F)%10 + '0';
+
+    printf("[NOTICE] Set TX power[%c%c%c]\n",my_HWRevtrs[5],my_HWRevtrs[6],my_HWRevtrs[7]);
+
+}
+
 
 void app_enter_deep_timeset(void)
 {
@@ -649,7 +727,7 @@ _attribute_ram_code_ void user_set_rf_power (u8 e, u8 *p, int n)
         rf_set_power_level_index(RF_POWER_P7p37dBm);
     else
 #endif
-    rf_set_power_level_index (MY_RF_POWER_INDEX);
+    rf_set_power_level_index (app_rcu_tx_power);
 }
 
 
