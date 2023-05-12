@@ -97,6 +97,6 @@ extern int app_is_key_released(void);
 
 void app_ui_check_delay_en_pm(void);
 
-void app_keyboard_release_action_by_flag(void);
+void app_key_release_action(void);
 
 #endif /* APP_UI_H_ */

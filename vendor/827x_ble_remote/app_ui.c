@@ -308,47 +308,52 @@ u8 app_enter_ota_mode(u8 *data)
     return 0;
 }
 
+#if (CUSTOM_OTA_SET)
 /***************************************************************************
  ***     Use the following functions to modify various types of keys     ***
  *** These 3 keys can be applied to google or configured by yourselves   ***
  **************************************************************************/
 
-/*
-// change authentication plaintext and plaintext key.
-// This key needs to be consistent with the ota key selected in the demo ota app.
-// Otherwise it will trigger an authentication error
+
+/**
+ * change authentication plaintext and plaintext key.
+ * This key needs to be consistent with the OTA key(app_AuthKey.txt) selected in the demo ota app.
+ * Otherwise it will trigger an authentication error
+ **/
 void app_ota_get_plaintext_key(u8 *plaintext,u8 *cus_auth_key){
 
-    u8 auth_plaintext[16] = {'0','1','2','3','4','5','6','7','8','9','a','b',0x00,0x00,0x00,0x00,};
-    u8 auth_key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};  //OTA key;
+    u8 auth_plaintext[16] = {'D','e','v','i','c','e','M','o','d','e','l','0',0x00,0x00,0x00,0x00,};
+    u8 auth_key[16] = {'C','u','s','t','o','m','e','r','A','u','t','h','K','e','y','0',};  // APP key;
 
     memcpy(plaintext,auth_plaintext,16);
     memcpy(cus_auth_key,auth_key,16);
 }
 
-// Set FW encryption key
-// This key needs to be consistent with the FW_ENC_KEY in the 8271_ble_remote folder.
-// Otherwise, the OTA will fail due to decryption errors
+
+/**
+ * Set FW encryption key
+ * This key needs to be consistent with the FW_ENC_TEST_KEY in the 8271_ble_remote folder.
+ * Otherwise, the OTA will fail due to decryption errors
+ **/
 void app_ota_get_fw_decryption_key(u8 *dec_key){
 
-    u8 key[16] = {'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f',};
+    u8 key[16] = {'F','w','_','E','n','c','_','S','a','m','p','l','e','K','e','y',};
     memcpy(dec_key,key,16);
 }
 
-// change ecdsa public key
-// This key needs to be consistent with public_key.bin in the 8271_ble_remote folder.
-// Otherwise it will trigger a signature error
-// The private key and public key pair will be automatically generated after the SDK is compiled.
-// Private key file name : priv.pem
-// Public key file name  : public_key.bin
+/**
+ * change ECDSA public key
+ * The public key and PrivateSample.pem here are a pair.
+ * Users can use OpenSSL to generate public and private keys by themselves
+ **/
 void app_ota_get_ecdsa_pub_key(u8 *pub_key){
-    u8 key[64] = {0x8d,0x82,0x79,0xc1,0xbb,0x22,0xe7,0x99,0xe6,0x97,0x49,0xf6,0xab,0x28,0x44,0x6d,
-                  0x9f,0x21,0xce,0x13,0x5b,0x43,0xfa,0x74,0x87,0xe2,0x96,0x49,0xcd,0xc8,0xdd,0xc3,
-                  0x92,0x6f,0x6e,0x3d,0x89,0xb0,0x5c,0xa7,0xf9,0xce,0xb7,0x38,0x97,0xa3,0xce,0x9a,
-                  0xae,0xaf,0x89,0xbe,0x8d,0x8d,0x03,0x1e,0x6b,0xb9,0x14,0x24,0xda,0x14,0x11,0xbe};
+    u8 key[64] = {	0x9f, 0xbb, 0x58, 0xd1, 0x8b, 0x31, 0xc2, 0x41, 0xa0, 0x99, 0x78, 0x10, 0xdb, 0x1a, 0x54, 0x67, 
+					0x11, 0x11, 0xce, 0x42, 0x7c, 0xef, 0x1d, 0x4f, 0x5a, 0x86, 0x8c, 0x88, 0xa9, 0x76, 0x9c, 0x1b, 
+					0x78, 0x4a, 0xe1, 0x25, 0x0e, 0xc6, 0xed, 0x2d, 0x57, 0xec, 0x9f, 0xf8, 0x4f, 0x08, 0x93, 0x8a, 
+					0x7f, 0xd2, 0xd4, 0x08, 0x6f, 0x64, 0xd0, 0x48, 0xd7, 0xe5, 0x54, 0xfa, 0xf9, 0xbe, 0xce, 0x05, };
     memcpy(pub_key,key,64);
 }
-*/
+#endif
 
 void app_ota_result(u8 result)
 {
@@ -967,10 +972,10 @@ int app_factory_reset_timer(void)
     ir_flash_factory();
 #endif
     flash_erase_sector(MAC_DATA_SECT_ADDR);
-    u8 data=0;
-    flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
-    if(data != 0xff)
-        flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
+//    u8 data=0;
+//    flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
+//    if(data != 0xff)
+//        flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
 
     /* Preserve NEC IR data during Factory rest in v2.10 */
 //    flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
@@ -1249,23 +1254,24 @@ void key_change_proc(void)
             //
 //            device_led_setup(led_cfg[LED_AUDIO_ON]);
 
+            device_led_off(APP_LED_GREEN);
+            if(lowbat == 0)
+            {
+                device_led_setup(led_cfg[LED_AUDIO_ON]);
+            }
+
             if(device_in_connection_state){
 
                 consumer_key[0] = 0;
                 consumer_key[1] = 0;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
 
-                device_led_off(APP_LED_GREEN);
-                if(lowbat == 0)
-                {
-                    device_led_setup(led_cfg[LED_AUDIO_ON]);
-                }
+
                 key_type = CONSUMER_KEY;
 
                 consumer_key[0] = GOOGLE_MKEY_BACK;
                 consumer_key[1] = GOOGLE_MKEY_CENTER;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-//                app_keyboard_release_action_by_flag();
             }else{
 //                keyScanLongPressTick = clock_time() | 1; //none zero
 //                LongPressTick = 1000000;
@@ -1284,23 +1290,25 @@ void key_change_proc(void)
 
             comb_key_stop_ir();
 
+
+            device_led_off(APP_LED_GREEN);
+            if(lowbat == 0)
+            {
+                device_led_setup(led_cfg[LED_AUDIO_ON]);
+            }
+
             if(device_in_connection_state){
 
                 consumer_key[0] = 0;
                 consumer_key[1] = 0;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
 
-                device_led_off(APP_LED_GREEN);
-                if(lowbat == 0)
-                {
-                    device_led_setup(led_cfg[LED_AUDIO_ON]);
-                }
+
                 key_type = CONSUMER_KEY;
 
                 consumer_key[0] = GOOGLE_MKEY_BACK;
                 consumer_key[1] = GOOGLE_MKEY_DN;
                 bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-//                app_keyboard_release_action_by_flag();
             }else{
 //                keyScanLongPressTick = clock_time() | 1; //none zero
 //                LongPressTick = 2000000;
@@ -1505,6 +1513,21 @@ void key_change_proc(void)
     {
         printf("key release\r\n");
         advertise_tick_retime();
+
+        key_not_released = 0;
+        keyScanLongPressTick = 0;
+        LongPressTick = 0;
+
+        app_key_release_action();
+
+        Accessibility_Shortcut_Flag = 0;
+
+    }
+}
+
+/* This function is implemented to achieve couch mode (1) */
+void app_key_release_action(void){
+
 #if    BLE_AUDIO_ENABLE
         if((audio_start_reason == REASON_HTT) && (google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA)){
             printf("key release_audio_start_reason:0x%x\n",audio_start_reason);
@@ -1515,12 +1538,11 @@ void key_change_proc(void)
             g_delay_send_audio_stop = clock_time();
         }
 #endif  /* BLE_AUDIO_ENABLE */
-        key_not_released = 0;
-        keyScanLongPressTick = 0;
-        LongPressTick = 0;
-        #if (STUCK_KEY_PROCESS_ENABLE)
+
+#if (STUCK_KEY_PROCESS_ENABLE)
         stuckkey_keypresstimer = 0;
-        #endif
+#endif
+
 #if APP_IR_OVER_BLE
         if(is_programming_key_send() == 1)
         {
@@ -1529,37 +1551,39 @@ void key_change_proc(void)
         }
         programming_key_set(0);
 #endif
-        printf("key_type=%x\r\n",key_type);
-        if(key_type == CONSUMER_KEY)
-        {
-            consumer_key[0] = 0;
-            consumer_key[1] = 0;
-            bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-        }
-        else if(key_type == KEYBOARD_KEY)
-        {
-            key_buf[2] = 0;
-            bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
-        }
+
+    printf(" app_key_release_action. key_type=%x\r\n",key_type);
+    if(key_type == CONSUMER_KEY)
+    {
+        u16 consumer_key[2]={0};
+        bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+    }
+    else if(key_type == KEYBOARD_KEY)
+    {
+        u8 key_buf[8] = {0,0,0,0,0,0,0,0};
+        bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
+    }
 
 #if (REMOTE_IR_ENABLE)
-        else if(key_type == IR_KEY)
-        {
-            if(ir_not_released){
-                ir_not_released = 0;
-                if(ir_send_ctrl.is_sending)
-                {
-                    ir_dispatch(TYPE_IR_RELEASE, 0, 0);  //release
-                }
-#if (APP_IR_OVER_BLE)
-                ir_repeat_delay_release_time();
-#endif  /* APP_IR_OVER_BLE */
+    else if(key_type == IR_KEY)
+    {
+        if(ir_not_released){
+            ir_not_released = 0;
+            if(ir_send_ctrl.is_sending)
+            {
+                ir_dispatch(TYPE_IR_RELEASE, 0, 0);  //release
             }
+#if (APP_IR_OVER_BLE)
+            ir_repeat_delay_release_time();
+#endif  /* APP_IR_OVER_BLE */
         }
-#endif  /* REMOTE_IR_ENABLE */
-        Accessibility_Shortcut_Flag = 0;
     }
+#endif  /* REMOTE_IR_ENABLE */
+
+    key_type = 0;
+
 }
+
 
 void app_factory_reset(void)
 {
@@ -1621,7 +1645,7 @@ _attribute_data_retention_    static u32 keyScanTick = 0;
 
 void proc_keyboard (u8 e, u8 *p, int n)
 {
-    u16 consumer_key[2];
+//    u16 consumer_key[2];
     //when key press gpio wakeup suspend, proc keyscan at least GPIO_WAKEUP_KEYPROC_CNT times
     //regardless of 8000 us interval
     if(e == BLT_EV_FLAG_GPIO_EARLY_WAKEUP){
@@ -1758,9 +1782,10 @@ void proc_keyboard (u8 e, u8 *p, int n)
             }
             else
             {
-                consumer_key[0] = GOOGLE_MKEY_BACK;
-                consumer_key[1] = GOOGLE_MKEY_DN;
-                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+//                key_type = CONSUMER_KEY;
+//                consumer_key[0] = GOOGLE_MKEY_BACK;
+//                consumer_key[1] = GOOGLE_MKEY_DN;
+//                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
             }
         }
         Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_NONE;
@@ -1936,30 +1961,6 @@ int att_ccc_control(void* p){
 int app_is_key_released(void)
 {
     return key_not_released;
-}
-
-
-
-
-void app_keyboard_release_action_by_flag(void){
-
-    printf("%s \n", __FUNCTION__);
-    /* If CONSUMER_KEY set, send consumer release packet */
-    if(BIT_IS_SET(key_type, CONSUMER_KEY)){
-        BIT_CLR(key_type,CONSUMER_KEY);
-        u16 consumer_key[2]={0};
-        bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-    }
-
-    /* If KEYBOARD_KEY set, send keyboard release packet */
-    if(BIT_IS_SET(key_type, KEYBOARD_KEY)){
-        BIT_CLR(key_type,KEYBOARD_KEY);
-
-        u8 key_buf[8] = {0};
-        bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8); //release
-    }
-
-    /* Add IR release code later */
 }
 
 

@@ -150,6 +150,7 @@ _attribute_data_retention_  u8  detpowerkey=0;              //0:not det powerkey
 
 
 _attribute_data_retention_ u8 app_rcu_tx_power = RF_POWER_P3p50dBm;
+_attribute_data_retention_ u8 app_rcu_CouchMode = 0;
 
 
 
@@ -978,26 +979,31 @@ void blt_pm_proc(void)
     if(key_not_released && stuckkey_keypresstimer && clock_time_exceed(stuckkey_keypresstimer, STUCK_KEY_ENTERDEEP_TIME*1000000))
     {
          printf("stuck key\r\n");
-         stuckkey_keypresstimer = 0;
-         u8 len = app_custom_get_drive_len();
-         {
-            for(int i=0; i<len;i++)
-            {
-                 extern u8 stuckKeyPress[];
-                 if(stuckKeyPress[i])
-                 {
-                     printf("stuck key i=%x\r\n",i);
-                     cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 1);
-                 }
-                 else
-                 {
-                    cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
-                 }
-            }
-            app_release_hid_key();
-            printf("deep\r\n");
-            cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
-            printf("into deep fail\r\n");
+
+         if(1 == app_rcu_CouchMode){
+             app_key_release_action();
+         }else{
+             stuckkey_keypresstimer = 0;
+             u8 len = app_custom_get_drive_len();
+             {
+                for(int i=0; i<len;i++)
+                {
+                     extern u8 stuckKeyPress[];
+                     if(stuckKeyPress[i])
+                     {
+                         printf("stuck key i=%x\r\n",i);
+                         cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 1);
+                     }
+                     else
+                     {
+                        cpu_set_gpio_wakeup(drive_pins[i], KB_LINE_HIGH_VALID, 0);
+                     }
+                }
+                app_release_hid_key();
+                printf("deep\r\n");
+                cpu_sleep_wakeup(DEEPSLEEP_MODE,PM_WAKEUP_PAD,0);
+                printf("into deep fail\r\n");
+             }
          }
     }
 #endif
@@ -1347,16 +1353,21 @@ void user_init_normal(void)
             flash_erase_sector(MAC_DATA_SECT_ADDR);
             flash_erase_sector(IR_KEY_EVENT_NOTIFY_SECT_ADDR);
             flash_erase_sector(CCC_DATA_AREA);
-            u8 data=0;
-            flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
-            if(data != 0xff)
-                flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
+//            u8 data=0;
+//            flash_read_page(APP_DATA_UPDATE_OVER_OTA_ADDR, 1, &data);
+//            if(data != 0xff)
+//                flash_erase_sector(APP_DATA_UPDATE_OVER_OTA_ADDR);
 
             /* Preserve NEC IR data during Factory rest in v2.10 */
 //            flash_read_page(APP_NEC_IR_CODE_TABLE, 1, &data);
 //            if(data != 0xff)
 //                flash_erase_sector(APP_NEC_IR_CODE_TABLE);
-
+            analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) & (~POWER_ON_FLG));
+            u16 my_KeyReleaseCnt = 0;
+            while(kb_detbackkey() && my_KeyReleaseCnt<400){
+                my_KeyReleaseCnt++;
+                WaitMs(10);
+            }
             start_reboot();
         }
         if(kb_detpowerkey())
@@ -1588,7 +1599,7 @@ _attribute_ram_code_ void user_init_deepRetn(void)
         rf_set_power_level_index(RF_POWER_P7p37dBm);
     else
 #endif
-    rf_set_power_level_index (MY_RF_POWER_INDEX);
+    rf_set_power_level_index (app_rcu_tx_power);
 
     blc_ll_recoverDeepRetention();
 

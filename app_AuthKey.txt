@@ -1,0 +1,2 @@
+CustomerAuthKey0
+DeviceModel0

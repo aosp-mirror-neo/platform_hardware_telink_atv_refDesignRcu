@@ -23,20 +23,6 @@
 2. Download the .a files and copy them into the folder "proj_lib" under the SDK directory "Google_ATV_RCU_Reference_SDK".
 
 
-========== Instructions for adding build utility files into the SDK ==========
-
-1. Find the utility files from link below:
-
-   https://drive.google.com/drive/folders/1hPm0duyIuXlKpla71gIy1qfiH0npy9Nf
-
-   The current version of the utility file is in folder "Google Ref RCU For ATV/Firmware_Check".
-
-2. Download the check_fw and FW_SIG_ENC files and modify their attribute to executable by running command line "chmod +x check_fw"
-   and "chmod +x FW_SIG_ENC".
-
-3. Copy the check_fw and FW_SIG_ENC files into the SDK root directory "Google_ATV_RCU_Reference_SDK".
-
-
 ========== Instructions for building the SDK ==========
 
 1. cd into the "8271_ble_remote" directory under the SDK root directory "Google_ATV_RCU_Reference_SDK".
@@ -47,15 +33,15 @@
 
 3.1. The normal bin file "8271_ble_remote.bin" is the one without encription.
 
-3.2. The file "sign_enc_FW.bin" has been encripted and signed with the default key file "FW_ENC_KEY".
-     This bin file created with the default FW_ENC_KEY" is just for example purpose and
+3.2. The file "8271_ble_remote_enc_sign.bin" has been encripted and signed with the default key file "FW_ENC_TEST_KEY".
+     This bin file created with the default FW_ENC_TEST_KEY" is just for example purpose and
      is not able to pass the OTA process if encription is enforced.
 
 **********!!!!! Important !!!!!**********
 
 3.3. Vendors need to contact Google for two key files "FW_ENC_KEY" and "priv.pem" and
      copy them into the build directory "8271_ble_remote" to build a right encripted bin file
-     "sign_enc_FW.bin" that can pass an OTA process with encription enforced.
+     "8271_ble_remote_enc_sign.bin" that can pass an OTA process with encription enforced.
 
 **********!!!!! Important !!!!!**********
 
@@ -79,8 +65,6 @@
 1. Follow the instructions in the document "Telink Linux tcdb user guide.pdf" to flash a bin file.
 
 
-========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
-========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
 ========== Instructions for getting the reference hardware design files for the ATV ref RCU PCB ==========
 
 1. The hardware reference design files can be downloaded from the following link

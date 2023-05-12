@@ -75,7 +75,7 @@ typedef struct{
 _attribute_data_retention_  u8 en_powerkey_cache=1;
 _attribute_data_retention_  u8 en_google_wakeuppack=1;
 _attribute_data_retention_  u8 en_ble_adv=1;
-_attribute_data_retention_  u8 en_slave_rpa=1;
+_attribute_data_retention_  u8 en_slave_rpa=0;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
@@ -483,7 +483,7 @@ void app_custom_data_update_by_id(u8 id, u8* data, u8 length)
             break;
 
         case 31: //enable or disable slave rpa function
-            en_slave_rpa = data[0];
+            en_slave_rpa = (0 == data[0])?1:0;
             break;
 
         case 32: //enable/disable ble adv
@@ -678,9 +678,9 @@ void app_custom_init(void)
     flash_read_page(APP_EN_GOOGLE_WAKEUPPACK, 1, &en_google_wakeuppack);
     flash_read_page(APP_EN_BLE_ADV, 1, &en_ble_adv);
 
-//    u8 read_data = 0xff;
-    flash_read_page(APP_EN_SLAVE_RPA, 1, &en_slave_rpa);
-//    en_slave_rpa = (0 == read_data)?1:0;
+    u8 read_data = 0xff;
+    flash_read_page(APP_EN_SLAVE_RPA, 1, &read_data);
+    en_slave_rpa = (0 == read_data)?1:0;
 
     u8 my_en_periodic_wakeup = 0;
     flash_read_page(APP_EN_PERIODIC_WAKE_UP, 1, &my_en_periodic_wakeup);
@@ -733,6 +733,11 @@ void app_custom_init(void)
         }
     }
 
+    /* 230220 by ken. read couch off settings */
+    u8 my_CouchMode = 0x00;
+    flash_read_page(APP_COUCH_MODE_ADDR, 1 , &my_CouchMode);
+    extern u8 app_rcu_CouchMode;
+    app_rcu_CouchMode = (1==my_CouchMode)?1:0;
 
 
 }
@@ -1003,7 +1008,7 @@ static int _app_custom_flash_write(unsigned long addr, unsigned long len, unsign
  * @param[in]   len  - the length(in byte) of content needs to print.
  * @return      none
  */
-static void _app_custom_flash_print(unsigned long addr, unsigned long len)
+void _app_custom_flash_print(unsigned long addr, unsigned long len)
 {
     unsigned long i = 0;
     unsigned char data = 0;
