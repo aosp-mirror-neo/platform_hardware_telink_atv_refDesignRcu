@@ -355,6 +355,8 @@ typedef enum {
 //reference:  <<HID Usage Tables>>  Consumer Page(0x0C)
 typedef enum {
 //device_layout
+    GOOGLE_MKEY_MAGIC      = 0x0186,
+
     GOOGLE_MKEY_NOTIFICATION = 0x009f,
     GOOGLE_MKEY_LIVETV     = 0x0089,
     GOOGLE_MKEY_TELETEXT   = 0x0185,

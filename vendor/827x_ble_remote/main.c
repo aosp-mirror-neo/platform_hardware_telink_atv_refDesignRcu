@@ -104,6 +104,19 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
     GPIO_PB2_PULL_DOWN_100K;
     if (gpio_read(DUT_INPUT_PORT) && test_get_mode() == MODE_TEST)
     {
+        extern u8 mac_public[6];
+        u8  mac_random_static[6];
+        //for 512K Flash, flash_sector_mac_address equals to 0x76000
+        //for 1M   Flash, flash_sector_mac_address equals to 0xFF000
+        blc_initMacAddress(flash_sector_mac_address, mac_public, mac_random_static);
+
+        blc_app_loadCustomizedParameters();  //load customized freq_offset cap value
+
+        rf_set_power_level_index (RF_POWER_P11p26dBm);
+
+        ////// Controller Initialization  //////////
+        blc_ll_initBasicMCU();                      //mandatory
+        blc_ll_initStandby_module(mac_public);                //mandatory
 
         extern void app_phytest_init(void);
         app_phytest_init();

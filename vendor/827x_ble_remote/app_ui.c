@@ -77,6 +77,10 @@ _attribute_data_retention_ u8  testmode_key_seq_count=0;
 _attribute_data_retention_ u32 g_delay_en_pm = 0;
 
 
+/* 230525 by ken.  Add a second pairing key combo key */
+_attribute_data_retention_ u8 g_2ndPairKey[2] = {0xff, 0xff};
+
+
 extern u8 wakeup_key_keycount;
 extern u8  comb_key_keyid[9];
 extern u32 latest_user_event_tick;
@@ -104,6 +108,10 @@ extern int bls_smp_param_deleteByIndex(u8 index);
 extern void app_stop_wakeup_loop(void);
 
 static const u16 vk_consumer_map[] = {
+    /* 230529 by ken. add magic key code */
+    GOOGLE_MKEY_MAGIC,
+
+
     GOOGLE_MKEY_NOTIFICATION,
     GOOGLE_MKEY_LIVETV,
     GOOGLE_MKEY_TELETEXT,
@@ -1232,6 +1240,21 @@ void key_change_proc(void)
             keyScanLongPressTick = clock_time() | 1; //none zero
             LongPressTick = 4000000;
             Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_PAIRING;
+        }else if( ((key0 == g_2ndPairKey[0]) && (key1 == g_2ndPairKey[1])) || ((key0 == g_2ndPairKey[1]) && (key1 == g_2ndPairKey[0])) ){
+            printf("pair start by 2nd pair key\r\n");
+            comb_key_stop_ir();
+            //in voice mode need disable enter pairing mode
+            if(ui_mic_enable)
+            {
+               return;
+            }
+            if(lowbat == 0)
+            {
+                device_led_setup(led_cfg[LED_AUDIO_ON]);
+            }
+            keyScanLongPressTick = clock_time() | 1; //none zero
+            LongPressTick = 4000000;
+            Accessibility_Shortcut_Mode = APP_ACCESSIBILITY_SHORTCUT_PAIRING;
         }
         else if (((key0 == comb_key_keyid[2]) && (key1 == comb_key_keyid[3])) || ((key0 == comb_key_keyid[3]) && (key1 == comb_key_keyid[2]))) //Factory Reset Mode center+mute
         {
@@ -1993,7 +2016,7 @@ void app_ui_check_wakeup_src(u8 deepRetWakeUp){
 
         if(WAKEUP_STATUS_PAD == (my_power_flags & (WAKEUP_STATUS_TIMER|WAKEUP_STATUS_PAD))){
             app_ui_set_wakeup_src(APP_WAKEUP_SRC_DEEP_PAD);
-        }else if(my_power_flags & APP_WAKEUP_SRC_DEEP_TIMER){
+        }else if(my_power_flags & WAKEUP_STATUS_TIMER){
             app_ui_set_wakeup_src(APP_WAKEUP_SRC_DEEP_TIMER);
         }else{
             app_ui_set_wakeup_src(APP_WAKEUP_SRC_SOFT_RESET);
@@ -2012,3 +2035,18 @@ void app_ui_check_delay_en_pm(void){
         printf("[NOTICE] Clear delay PM flag ");
     }
 }
+
+
+void app_ui_set_2ndPairKey(u8 key0, u8 key1){
+
+    if((0xFF == key0) || (0xFF == key1)){
+        g_2ndPairKey[0] = 0xFF;
+        g_2ndPairKey[1] = 0xFF;
+        return;
+    }
+
+    g_2ndPairKey[0] = key0;
+    g_2ndPairKey[1] = key1;
+    printf("[NOTICE] Enable 2nd pair COMBO key. key0:[%d] key2:[%d]", g_2ndPairKey[0], g_2ndPairKey[1]);
+}
+

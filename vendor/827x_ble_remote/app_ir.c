@@ -124,6 +124,15 @@ const key_button_pair_t key_button_map_g10[MAX_KEY_COUNT] = {
     {0x00B2, KEY_IDX_INPUT, 0x03}
 };
 
+/* 230529 by ken. change input(android key code) to Magic  */
+const key_button_pair_t key_button_map_g10_magic[MAX_KEY_COUNT] = {
+    {0x0018, KEY_IDX_VOLUP, 0x10},
+    {0x0019, KEY_IDX_VOLDN, 0x02},
+    {0x00A4, KEY_IDX_MUTE, 0x16},
+    {0x001A, KEY_IDX_POWER, 0 },
+    {0x0139, KEY_IDX_MAGIC, 0x03}
+};
+
 //keyid: receive from the host. button_idx: Corresponding to the key index in the memory ir_table[].button:The actual keyid corresponding to the board
 const key_button_pair_t key_button_map_g20[MAX_KEY_COUNT] = {
     {0x0018, KEY_IDX_VOLUP, 0x1f},
@@ -131,6 +140,15 @@ const key_button_pair_t key_button_map_g20[MAX_KEY_COUNT] = {
     {0x00A4, KEY_IDX_MUTE,  0x2B},
     {0x001A, KEY_IDX_POWER, 0 },
     {0x00B2, KEY_IDX_INPUT, 0x06}
+};
+
+/* 230529 by ken. change input(android key code) to Magic  */
+const key_button_pair_t key_button_map_g20_magic[MAX_KEY_COUNT] = {
+    {0x0018, KEY_IDX_VOLUP, 0x1f},
+    {0x0019, KEY_IDX_VOLDN, 0x02},
+    {0x00A4, KEY_IDX_MUTE,  0x2B},
+    {0x001A, KEY_IDX_POWER, 0 },
+    {0x0139, KEY_IDX_MAGIC, 0x06}
 };
 
 //The following address corresponds to the flash memory address written each time. Upto 5 keys can be written at a time, and each key occupies a maximum of 256 bytes.
@@ -227,16 +245,32 @@ u8 ir_get_button_idx_from_button(u8 button)
     {
         if(app_custom_get_device_type() == REMOTE_G10)
         {
-            if (key_button_map_g10[i].button == button)
-            {
-                return key_button_map_g10[i].button_idx;
+            /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[3]){
+                if (key_button_map_g10[i].button == button)
+                {
+                    return key_button_map_g10[i].button_idx;
+                }
+            }else{
+                if (key_button_map_g10_magic[i].button == button)
+                {
+                    return key_button_map_g10_magic[i].button_idx;
+                }
             }
         }
         else
         {
-            if (key_button_map_g20[i].button == button)
-            {
-                return key_button_map_g20[i].button_idx;
+            /* 230529 by ken. Select key_button_map_g20 or key_button_map_g20_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[6]){
+                if (key_button_map_g20[i].button == button)
+                {
+                    return key_button_map_g20[i].button_idx;
+                }
+            }else{
+                if (key_button_map_g20_magic[i].button == button)
+                {
+                    return key_button_map_g20_magic[i].button_idx;
+                }
             }
         }
     }
@@ -255,17 +289,35 @@ u8 ir_get_button_idx_from_key_id(u16 key_id)
     {
         if(app_custom_get_device_type() == REMOTE_G10)
         {
-            if (key_button_map_g10[i].key_id == key_id)
-            {
-                return key_button_map_g10[i].button_idx;
+
+            /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[3]){
+                if (key_button_map_g10[i].key_id == key_id)
+                {
+                    return key_button_map_g10[i].button_idx;
+                }
+            }else{
+                if (key_button_map_g10_magic[i].key_id == key_id)
+                {
+                    return key_button_map_g10_magic[i].button_idx;
+                }
             }
         }
         else
         {
-            if (key_button_map_g20[i].key_id == key_id)
-            {
-                return key_button_map_g20[i].button_idx;
+            /* 230529 by ken. Select key_button_map_g20 or key_button_map_g20_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[6]){
+                if (key_button_map_g20[i].key_id == key_id)
+                {
+                    return key_button_map_g20[i].button_idx;
+                }
+            }else{
+                if (key_button_map_g20_magic[i].key_id == key_id)
+                {
+                    return key_button_map_g20_magic[i].button_idx;
+                }
             }
+
         }
     }
     return KEY_IDX_NULL;
@@ -1161,10 +1213,24 @@ int ir_fallback_send(u8 key_down)
     {
         //Besides sending IR code, also notify ATV that the key event
         printf("send notify\r\n");
-        if(app_custom_get_device_type() == REMOTE_G10)
-            key_id = key_button_map_g10[ir_app_parm.current_programming_key_send].key_id;
-        else
-            key_id = key_button_map_g20[ir_app_parm.current_programming_key_send].key_id;
+        if(app_custom_get_device_type() == REMOTE_G10){
+
+            /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[3]){
+                key_id = key_button_map_g10[ir_app_parm.current_programming_key_send].key_id;
+            }else{
+                key_id = key_button_map_g10_magic[ir_app_parm.current_programming_key_send].key_id;
+            }
+        }
+        else{
+            /* 230529 by ken. Select key_button_map_g20 or key_button_map_g20_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[6]){
+                key_id = key_button_map_g20[ir_app_parm.current_programming_key_send].key_id;
+            }else{
+                key_id = key_button_map_g20_magic[ir_app_parm.current_programming_key_send].key_id;
+            }
+
+        }
         //printf("key_id=%x\r\n",key_id);
         ir_cache_key[0] = key_down ? 0:1;
         ir_cache_key[1] = (key_id >> 8);
@@ -1353,12 +1419,22 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
     {
         if(app_custom_get_device_type() == REMOTE_G10)
         {
-            button = key_button_map_g10[button_index].button;
+            /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[3]){
+                button = key_button_map_g10[button_index].button;
+            }else{
+                button = key_button_map_g10_magic[button_index].button;
+            }
             //printf("ir_table[button_index].key_id=%x \r\n",button);
         }
         else
         {
-            button = key_button_map_g20[button_index].button;
+            /* 230529 by ken. Select key_button_map_g20 or key_button_map_g20_magic according to the key value of the input (magic) key */
+            if(CR_INPUT == key_map_ble[6]){
+                button = key_button_map_g20[button_index].button;
+            }else{
+                button = key_button_map_g20_magic[button_index].button;
+            }
            // printf("ir_table[button_index].key_id=%x \r\n",button);
         }
         //printf("ir_table[button_index].button_idx=%x \r\n",button_index);

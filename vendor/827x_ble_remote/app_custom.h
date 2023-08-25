@@ -41,6 +41,8 @@ extern u8 en_ble_adv;
 extern u8 en_slave_rpa;
 extern const unsigned char navi_key_index_g10[4];
 extern const unsigned char navi_key_index_g20[4];
+extern unsigned char key_map_ble[48];
+
 
 extern void app_custom_init(void);
 extern u8 app_custom_get_drive_len(void);

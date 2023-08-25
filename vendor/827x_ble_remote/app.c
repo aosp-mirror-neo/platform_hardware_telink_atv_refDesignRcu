@@ -131,7 +131,7 @@ _attribute_data_retention_  u32 mtuExchange_check_timer=12000000;
 _attribute_data_retention_  u32 ir_flash_erase_tick=0;
 _attribute_data_retention_  u32 delay3s_to_sleep_tick=0;
 _attribute_data_retention_  u16 enterdeep_time_count = 0;
-_attribute_data_retention_  u16 enterdeep_time = 0;
+_attribute_data_retention_  u16 enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 _attribute_data_retention_  u16 service_change = 0;
 _attribute_data_retention_  u8  device_timeout_state=0;
 _attribute_data_retention_  u8  flag_schedule_ota=0;
@@ -1074,6 +1074,13 @@ void blt_pm_proc(void)
             bls_pm_setSuspendMask (SUSPEND_ADV | SUSPEND_CONN);
         #endif
 
+        /* The button has been released and g_delay_en_pm is not 0 */
+        if((0 == key_not_released) && g_delay_en_pm){
+            /* 221116 by ken. A short latency is required during the validity period of the delay PM.
+             * In order to quickly receive the mic open command of GOOGLE voice */
+            bls_pm_setManualLatency(5);
+        }
+
         int user_task_flg = ota_is_working || scan_pin_need || key_not_released;
 
         if(user_task_flg){
@@ -1091,13 +1098,6 @@ void blt_pm_proc(void)
             #else
                 bls_pm_setManualLatency(0);
             #endif
-        }
-
-        /* The button has been released and g_delay_en_pm is not 0 */
-        if((0 == key_not_released) && g_delay_en_pm){
-            /* 221116 by ken. A short latency is required during the validity period of the delay PM.
-             * In order to quickly receive the mic open command of GOOGLE voice */
-            bls_pm_setManualLatency(5);
         }
 
     #if 1 //deepsleep
@@ -1130,7 +1130,7 @@ void blt_pm_proc(void)
                 clock_time_exceed(advertise_begin_tick , ADV_IDLE_ENTER_DEEP_TIME * 1000000))
             {
                 enterdeep_time_count++;
-                printf("enterdeep_time_count=%x\r\n",enterdeep_time_count);
+                printf("enterdeep_time_count=%x enterdeep_time:[%d]\r\n",enterdeep_time_count, enterdeep_time);
                 if(enterdeep_time_count == enterdeep_time)
                 {
                     if(enterdeep_time >1)
@@ -1397,7 +1397,7 @@ void user_init_normal(void)
         if(bond_number)   //at least 1 bonding device exist
         {
             u8 my_sch_ota_index = analog_read(DEEP_ANA_REG2);
-            if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index)){
+            if( (APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index) && (g_p_app_fms_ctrl->en_periodic_wakeup) ){
                 /* This wake-up is for the periodic wake-up of the FMS
                  * When the wake-up source is Timer, currently there are only scheduled OTA and periodic wake-up
                  * If it is scheduled OTA, my_sch_ota_index is not 0.*/

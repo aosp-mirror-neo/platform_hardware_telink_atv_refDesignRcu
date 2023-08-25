@@ -46,7 +46,10 @@ typedef enum{
     KEY_IDX_VOLDN,
     KEY_IDX_MUTE,
     KEY_IDX_POWER,
-    KEY_IDX_INPUT
+    KEY_IDX_INPUT,
+
+    /* 230529 by ken. add Magic.Magic and input are the same key */
+    KEY_IDX_MAGIC = KEY_IDX_INPUT,
 }ATV_IR_KEY_IDX;
 
 typedef void (*app_ir_programming_end_Cb_t)(void);

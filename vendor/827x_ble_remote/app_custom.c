@@ -30,6 +30,7 @@
 #include "app_custom_lib.h"
 #include "stack/ble/ble.h"
 #include "app_test.h"
+#include "app_ui.h"
 #include "./app_find_me/app_fms.h"
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
@@ -236,6 +237,13 @@ void app_custom_ui_layout(u8 ui_layout)
             key_map_ble[Kb_Map_devicelayout_Correspend_Index_G10[2]] = CR_ALLAPPS;
             nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G10[2]] = IR_ALLAPPS;
         }
+
+        /* 230529 by ken. add Input/Magic settings */
+        if(BIT_IS_SET(ui_layout, 7)){
+            /* set to magic key. IR code:0x68, BLE Page:0x0c value:0x9186 */
+            key_map_ble[3] = CR_MAGIC;
+            nec_ir_cmd1_table[3] = IR_MAGIC;
+        }
     }
     else
     {
@@ -279,6 +287,13 @@ void app_custom_ui_layout(u8 ui_layout)
         {
             key_map_ble[Kb_Map_devicelayout_Correspend_Index_G20[8]] = CR_PERIOD;
             nec_ir_cmd1_table[Kb_Map_devicelayout_Correspend_Index_G20[8]] = IR_PERIOD;
+        }
+
+        /* 230529 by ken. add Input/Magic settings */
+        if(BIT_IS_SET(ui_layout, 7)){
+            /* set to magic key. IR code:0x68, BLE Page:0x0c value:0x9186 */
+            key_map_ble[6] = CR_MAGIC;
+            nec_ir_cmd1_table[6] = IR_MAGIC;
         }
     }
 }
@@ -343,6 +358,8 @@ void app_custom_set_new_ir_table(void)
  */
 void app_custom_param_init(u8 device_layout)
 {
+    printf("device type:[%d] UI_layout:[%02X]", _custom_data.device_type, device_layout);
+
     if(_custom_data.device_type == REMOTE_G10)
     {
         p_kb_map_ble =  key_map_ble;
@@ -739,6 +756,23 @@ void app_custom_init(void)
     extern u8 app_rcu_CouchMode;
     app_rcu_CouchMode = (1==my_CouchMode)?1:0;
 
+    if(0 == app_rcu_CouchMode){
+        /* 230526 by ken.Set couch mode according to VID/PID. ohsung's special needs
+         * VID/PID: 0x0957/0x000B
+         * VID/PID: 0x02AF/0x0314
+         **/
+        if((0x01 == p_my_pnpid->vid_src) && (0x0957 == p_my_pnpid->vid) && (0x000B == p_my_pnpid->pid)){
+            app_rcu_CouchMode = 1;
+        }else if((0x01 == p_my_pnpid->vid_src) && (0x02AF == p_my_pnpid->vid) && (0x0314 == p_my_pnpid->pid)){
+            app_rcu_CouchMode = 1;
+        }
+    }
+
+
+    /* 230525 by ken.  Add a second pairing key combo key */
+    u8 my_2ndPairkey[2] = {0xff, 0xff};
+    flash_read_page(APP_2ND_PAIR_KEY0, 2 , my_2ndPairkey);
+    app_ui_set_2ndPairKey(my_2ndPairkey[0], my_2ndPairkey[1]);
 
 }
 

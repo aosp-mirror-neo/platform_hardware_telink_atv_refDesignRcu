@@ -42,6 +42,10 @@ extern "C" {
 
 #define APP_COUCH_MODE_ADDR                   0x780EF
 #define APP_TX_POWER_ADDR                     0x780F0
+
+#define APP_2ND_PAIR_KEY0                     0x780F6
+#define APP_2ND_PAIR_KEY1                     0x780F7
+
 #define APP_WOBLE_ADV_TYPE_ADDR               0x780F8
 #define APP_PERIODIC_WAKE_UP_TIMER            0x780F9
 #define APP_EN_PERIODIC_WAKE_UP               0x780FB
@@ -216,9 +220,12 @@ extern "C" {
 #define CR_VOL_DN                             0x81
 #define CR_PERIOD                             0x37
 
-#define CR_MEDIA_KEY_INDEX                    CR_NOTIFICATION
+#define CR_MEDIA_KEY_INDEX                    CR_MAGIC  // 230529 by ken. CR_NOTIFICATION -> CR_MAGIC
 
 //device layout
+/* 230529 by ken. add magic key code */
+#define CR_MAGIC                              0xdc
+
 #define CR_NOTIFICATION                       0xdd
 #define CR_LIVETV                             0xde
 #define CR_TELETEXT                           0xdf
@@ -325,6 +332,7 @@ extern "C" {
 #define IR_RECORD                             0x54
 #define IR_PLAYPAUSE                          0x52
 #define IR_FASTFORWARD                        0x53
+#define IR_MAGIC                              0x68
 
 #define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
 

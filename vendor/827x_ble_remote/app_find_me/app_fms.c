@@ -276,6 +276,8 @@ int app_fms_adv_timer(void){
 
 void app_fms_try_connect(void){
 
+    if(!g_p_app_fms_ctrl->en_periodic_wakeup) return;
+
     printf("%s \n", __FUNCTION__ );
 
     s_p_app_fms_adv_count[0] = 0;
