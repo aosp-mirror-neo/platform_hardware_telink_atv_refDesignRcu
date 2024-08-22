@@ -48,6 +48,8 @@
 #include "app_custom_lib.h"
 #include "app_test.h"
 #include "./app_find_me/app_fms.h"
+#include "./app_fmr/app_fmr.h"
+#include "./app_fmr/app_buzzer.h"
 
 
 #if (__PROJECT_8258_BLE_REMOTE__ || __PROJECT_8278_BLE_REMOTE__)
@@ -81,7 +83,7 @@ _attribute_data_retention_    own_addr_type_t   app_own_address_type = OWN_ADDRE
 
 //#define RX_FIFO_SIZE            96                    //-24//64
 //#define RX_FIFO_SIZE           160                    //-24//64
-#define RX_FIFO_SIZE             160                    //-24//64
+#define RX_FIFO_SIZE             144                    //-24//64
 
 #define RX_FIFO_NUM                8
 
@@ -699,9 +701,10 @@ void ble_remote_terminate(u8 e,u8 *p, int n) //*p is terminate reason
     mtuExchange_check_tick = 0;
     flag_dle = 0;
 #if (FIND_ME_ENABLE)
-    if(app_buzzer_is_buzy()){
-        app_buzzer_stop();
-    }
+    // TODO change API
+//    if(app_buzzer_is_buzy()){
+//        app_buzzer_stop();
+//    }
 #endif
 
 #if (BLE_REMOTE_PM_ENABLE)
@@ -916,7 +919,7 @@ void task_connect (u8 e, u8 *p, int n)
     latest_user_event_tick = clock_time();
     blt_soft_timer_add(app_terminate_timeout, 2000000);
 //    bls_ota_set_random(p+12);
-    app_fms_delete_adv_task();
+    app_fmr_delete_adv_task();
 }
 
 void task_conn_update_req (u8 e, u8 *p, int n)
@@ -1015,7 +1018,7 @@ void blt_pm_proc(void)
     }
 
 #if FIND_ME_ENABLE
-    if(app_buzzer_is_buzy())
+    if(app_fmr_is_busy() )
     {
         bls_pm_setSuspendMask (SUSPEND_DISABLE);
         return;
@@ -1151,7 +1154,7 @@ void blt_pm_proc(void)
                  printf("adv timeout\r\n");
                  app_schedule_ota_enter_deep();
             }
-            if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg  && (0 == s_p_app_fms_flag_adv[0]))
+            if((is_pairing_mode == 0) && (is_reconn_mode == 0) && (device_in_connection_state == 0) &&  !user_task_flg  && (0 == app_fmr_is_adv_busy()))
             {
                  if(enterdeep_time == ADV_RECONN_ENTER_DEEP_COUNT)
                         time = ADV_IDLE_ENTER_DEEP_TIME;
@@ -1397,11 +1400,11 @@ void user_init_normal(void)
         if(bond_number)   //at least 1 bonding device exist
         {
             u8 my_sch_ota_index = analog_read(DEEP_ANA_REG2);
-            if( (APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index) && (g_p_app_fms_ctrl->en_periodic_wakeup) ){
+            if( (APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (!my_sch_ota_index) && app_fmr_is_periodic_wakeup_en() ){
                 /* This wake-up is for the periodic wake-up of the FMS
                  * When the wake-up source is Timer, currently there are only scheduled OTA and periodic wake-up
                  * If it is scheduled OTA, my_sch_ota_index is not 0.*/
-                app_fms_try_connect();
+                app_fmr_try_connect();
 
             }else{
                 bls_smp_param_loadByIndex( bond_number - 1, &bondInfo);  //get the latest bonding device (index: bond_number-1 )
@@ -1586,7 +1589,7 @@ void user_init_normal(void)
 
     // TODO test WOBLE code
 //    app_woboe_set_para(0,wakeup_key_keycount);
-    app_fms_init();
+
 }
 
 
@@ -1721,6 +1724,7 @@ void main_loop (void)
 
 #if FIND_ME_ENABLE
 //    app_custom_find_me_buzzer_on();
+    app_fmr_task();
     app_buzzer_task();
 #endif
 

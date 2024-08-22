@@ -7,20 +7,20 @@ C_SRCS += \
 ../application/app/usbaud.c \
 ../application/app/usbcdc.c \
 ../application/app/usbkb.c \
-../application/app/usbmouse.c 
+../application/app/usbmouse.c
 
 OBJS += \
 ./application/app/usbaud.o \
 ./application/app/usbcdc.o \
 ./application/app/usbkb.o \
-./application/app/usbmouse.o 
+./application/app/usbmouse.o
 
 
 # Each subdirectory must supply rules for building sources it contributes
 application/app/%.o: ../application/app/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: TC32 Compiler'
-	tc32-elf-gcc -ffunction-sections -fdata-sections -I"../" -I"../drivers\8278" -D__PROJECT_8278_BLE_REMOTE__=1 -DCHIP_TYPE=CHIP_TYPE_827x -Wall -O2 -fpack-struct -fshort-enums -finline-small-functions -std=gnu99 -fshort-wchar -fms-extensions -c -o"$@" "$<"
+	tc32-elf-gcc -ffunction-sections -fdata-sections -I../ -I../drivers/8278 -D__PROJECT_8278_BLE_REMOTE__=1 -DCHIP_TYPE=CHIP_TYPE_827x -Wall -O2 -fpack-struct -fshort-enums -finline-small-functions -std=gnu99 -fshort-wchar -fms-extensions -c -o"$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

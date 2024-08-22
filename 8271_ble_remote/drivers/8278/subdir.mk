@@ -2,7 +2,7 @@
 # Automatically-generated file. Do not edit!
 ################################################################################
 
-# Add inputs and outputs from these tool invocations to the build variables 
+# Add inputs and outputs from these tool invocations to the build variables
 C_SRCS += \
 ../drivers/8278/adc.c \
 ../drivers/8278/aes.c \
@@ -22,7 +22,7 @@ C_SRCS += \
 ../drivers/8278/spi.c \
 ../drivers/8278/timer.c \
 ../drivers/8278/uart.c \
-../drivers/8278/watchdog.c 
+../drivers/8278/watchdog.c
 
 OBJS += \
 ./drivers/8278/adc.o \
@@ -43,14 +43,14 @@ OBJS += \
 ./drivers/8278/spi.o \
 ./drivers/8278/timer.o \
 ./drivers/8278/uart.o \
-./drivers/8278/watchdog.o 
+./drivers/8278/watchdog.o
 
 
 # Each subdirectory must supply rules for building sources it contributes
 drivers/8278/%.o: ../drivers/8278/%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: TC32 Compiler'
-	tc32-elf-gcc -ffunction-sections -fdata-sections -I"../" -I"../drivers\8278" -D__PROJECT_8278_BLE_REMOTE__=1 -DCHIP_TYPE=CHIP_TYPE_827x -Wall -O2 -fpack-struct -fshort-enums -finline-small-functions -std=gnu99 -fshort-wchar -fms-extensions -c -o"$@" "$<"
+	tc32-elf-gcc -ffunction-sections -fdata-sections -I../ -I../drivers/8278 -D__PROJECT_8278_BLE_REMOTE__=1 -DCHIP_TYPE=CHIP_TYPE_827x -Wall -O2 -fpack-struct -fshort-enums -finline-small-functions -std=gnu99 -fshort-wchar -fms-extensions -c -o"$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

@@ -31,7 +31,6 @@
 
 #include "application/keyboard/keyboard.h"
 #include "application/usbstd/usbkeycode.h"
-#include "../common/blt_led.h"
 #include "../common/blt_soft_timer.h"
 
 #include "rc_ir.h"
@@ -48,6 +47,7 @@
 #include "app_custom.h"
 #include "app_custom_lib.h"
 #include "./app_find_me/app_fms.h"
+#include "./app_fmr/app_fmr.h"
 
 
 
@@ -153,38 +153,24 @@ static const u16 vk_consumer_map[] = {
 /////////////////////////// led management /////////////////////
 #if (BLT_APP_LED_ENABLE)
 
-    enum{
-        LED_POWER_ON = 0,
-        LED_AUDIO_ON,    //1
-        LED_AUDIO_OFF,    //2
-        LED_SHINE_SLOW, //3
-        LED_SHINE_FAST, //4
-        LED_SHINE_SUCCESS, //5
-        LED_SHINE_PAIRING, //6
-        LED_SHINE_PTT, //7
-        LED_SHINE_LOWBAT,
-        LED_PAIR_ERROR,
-        LED_OTA_START,
-        LED_OTA_END,
-        LED_KEYPRESS
-    };
 
-    const led_cfg_t led_cfg[] = {
-            {APP_LED_GREEN,   1,   1000,     0,      1,      0,  },    //power-on, 1s on
-            {APP_LED_GREEN,   1,   100,      0 ,     0,      1,  },    //audio on, long on
-            {APP_LED_GREEN,   0,    0,       100 ,   0,      1,  },    //audio off, long off
-            {APP_LED_GREEN,   1,   500,      500 ,   2,      0,  },    //1Hz for 3 seconds
-            {APP_LED_GREEN,   1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
-            {APP_LED_GREEN,   0,   100,      100 ,   2,      0,  },    //2Hz for 50 seconds
-            {APP_LED_GREEN,   1,   250,      250 ,   0,      0,  },    //2Hz
-            {APP_LED_GREEN,   1,   500,      500 ,   0,      0,  },    //1Hz
-            {APP_LED_RED,     1,   100,      100 ,   5,      0,  },    //5Hz for 5 seconds
-            {APP_LED_RED,     1,   50,       50,     4,      0,  },
-            {APP_LED_RED,     1,   100,      0,      0,      1,  },
-            {APP_LED_RED,     1,   0,        1000,   3,      1,  },
-            {APP_LED_RED,     1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
 
-    };
+const led_cfg_t led_cfg[] = {
+        {APP_LED_GREEN,   1,   1000,     0,      1,      0,  },    //power-on, 1s on
+        {APP_LED_GREEN,   1,   100,      0 ,     0,      1,  },    //audio on, long on
+        {APP_LED_GREEN,   0,    0,       100 ,   0,      1,  },    //audio off, long off
+        {APP_LED_GREEN,   1,   500,      500 ,   2,      0,  },    //1Hz for 3 seconds
+        {APP_LED_GREEN,   1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
+        {APP_LED_GREEN,   0,   100,      100 ,   2,      0,  },    //2Hz for 50 seconds
+        {APP_LED_GREEN,   1,   250,      250 ,   0,      0,  },    //2Hz
+        {APP_LED_GREEN,   1,   500,      500 ,   0,      0,  },    //1Hz
+        {APP_LED_RED,     1,   100,      100 ,   5,      0,  },    //5Hz for 5 seconds
+        {APP_LED_RED,     1,   50,       50,     4,      0,  },
+        {APP_LED_RED,     1,   100,      0,      0,      1,  },
+        {APP_LED_RED,     1,   0,        1000,   3,      1,  },
+        {APP_LED_RED,     1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
+        {APP_LED_RED,     1,   1000,     1000 ,  15,     0,  },    //5Hz for 3 seconds
+};
 
 #endif
 
@@ -509,7 +495,7 @@ void app_schedule_ota_enter_deep(void)
 
         /* If the schedule OTA is not working, the value of my_entry_deep_time should be 0 */
         printf("[NOTICE] Check periodic wakeup for FMS !!! \n");
-        app_fms_periodic_wake_up();
+        app_fmr_periodic_wake_up();
 
         printf("[NOTICE] Idle to sleep \n");
         cpu_sleep_wakeup(DEEPSLEEP_MODE, PM_WAKEUP_PAD, 0);
@@ -1398,139 +1384,145 @@ void key_change_proc(void)
     }
     else if(kb_event.cnt == 1)
     {
+        //retime
+        advertise_tick_retime();
 
-    #if FIND_ME_ENABLE
-        app_imc_stop_alert();
+        printf("key_id=%x\r\n",key0);
+
+        app_testmode_seq_record(key0);
+
+    #if (STUCK_KEY_PROCESS_ENABLE)
+        stuckkey_keypresstimer = clock_time() | 1;
     #endif
-          //retime
-          advertise_tick_retime();
 
-          printf("key_id=%x\r\n",key0);
-
-          app_testmode_seq_record(key0);
-
-#if (STUCK_KEY_PROCESS_ENABLE)
-          stuckkey_keypresstimer = clock_time() | 1;
-#endif
-
-          if(device_in_connection_state == 0)
-          {
-              u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
-              if(bond_number == 1)
-              {
-                  if(app_custom_is_wakeup_key(key0) == 1)
-                  {
-                      wakeup_key_keycount++;
-                      if(is_wakeup_keyindex_flash_info_full())
-                      {
-                          flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
-                      }
-
-                      write_wakeup_keyindex_info(wakeup_key_keycount);
-
-                      app_woboe_set_para(key0,wakeup_key_keycount);
-
-                      advertise_begin_tick = 0;
-
-                  }else{
-                      app_woble_clear_para();
-                  }
-              }
-          }
-
-#if (BLE_AUDIO_ENABLE)
-          if(device_in_connection_state)
-          {
-            if (key0 == VOICE)
+        if(device_in_connection_state == 0)
+        {
+            u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();
+            if(bond_number == 1)
             {
-                if(google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA) return;
-                printf("CONSUMER_KEY\n");
-                key_type = VOICE_KEY;
-                google_voice_start();
-                return;
-            }
-         }
+                if(app_custom_is_wakeup_key(key0) == 1)
+                {
+                    wakeup_key_keycount++;
+                    if(is_wakeup_keyindex_flash_info_full())
+                    {
+                        flash_erase_sector(WAKEUP_KEYINDEX_DATA_SECT_ADDR);
+                    }
 
-          active_mic_open();
-#endif
-          key_type = IR_KEY;
+                    write_wakeup_keyindex_info(wakeup_key_keycount);
+
+                    app_woboe_set_para(key0,wakeup_key_keycount);
+
+                    advertise_begin_tick = 0;
+
+                }else{
+                    app_woble_clear_para();
+                }
+            }
+        }
+
+        if(app_fmr_is_busy()){
+            /* Do nothing
+             * When FMR is ON, the remote should avoid sending key events
+             * (neither BLE,nor IR, nor Assistant) while in buzz mode. */
+        }else{
+        #if (BLE_AUDIO_ENABLE)
+            if(device_in_connection_state)
+            {
+                if (key0 == VOICE)
+                {
+                    if(google_voice_ctl & FLAG_NOTIFY_AUDIO_DATA) return;
+                    printf("CONSUMER_KEY\n");
+                    key_type = VOICE_KEY;
+                    google_voice_start();
+                    return;
+                }
+            }
+
+            active_mic_open();
+        #endif
+            key_type = IR_KEY;
 #if (APP_IR_OVER_BLE)
-          if(ir_key_is_suppress(key0) == 0)
-          {
-              //printf("is suppress\r\n");
-              app_keypress_led(1);
-              if(ir_fallback_send_key_code(key0,1))
-              {
+            if(ir_key_is_suppress(key0) == 0)
+            {
+                //printf("is suppress\r\n");
+                app_keypress_led(1);
+                if(ir_fallback_send_key_code(key0,1))
+                {
                   if(!ir_not_released)
                       ir_not_released = 1;
                   return;
-              }
-          }
+                }
+            }
 #endif
-          app_keypress_led(0);
-          if(app_keycache(key0) == 1)
-          {
+            app_keypress_led(0);
+            if(app_keycache(key0) == 1)
+            {
               return;
-          }
-#if APP_IR_OVER_BLE
-          programming_key_set(0);
-#endif
-          if(device_in_connection_state)
-          {
-                key_value = p_kb_map_ble[key0];
-                printf("key_value=%x\r\n",key_value);
+            }
+            #if APP_IR_OVER_BLE
+                programming_key_set(0);
+            #endif
+        }
 
-                if(key_value >= CR_MEDIA_KEY_INDEX )
+        if(app_fmr_is_busy()){
+            /* Do nothing
+             * When FMR is ON, the remote should avoid sending key events
+             * (neither BLE,nor IR, nor Assistant) while in buzz mode. */
+        }else if(device_in_connection_state){
+            key_value = p_kb_map_ble[key0];
+            printf("key_value=%x\r\n",key_value);
+
+            if(key_value >= CR_MEDIA_KEY_INDEX )
+            {
+                key_type = CONSUMER_KEY;
+                consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
+                consumer_key[1] = 0;
+                printf("consume key=%x \r\n",consumer_key[0]);
+                bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
+            #if BLE_AUDIO_ENABLE
+                if(consumer_key[0] == GOOGLE_MKEY_CENTER)
                 {
-                    key_type = CONSUMER_KEY;
-                    consumer_key[0] = vk_consumer_map[key_value-CR_MEDIA_KEY_INDEX];
-                    consumer_key[1] = 0;
-                    printf("consume key=%x \r\n",consumer_key[0]);
-                    bls_att_pushNotifyData (HID_CONSUME_REPORT_INPUT_DP_H, (u8 *)&consumer_key, 4);
-#if BLE_AUDIO_ENABLE
-                    if(consumer_key[0] == GOOGLE_MKEY_CENTER)
-                    {
-                        google_voice_dpad_select();
+                    google_voice_dpad_select();
 
-                        /* 221116 by ken. Record delay PM Start Time. The delay condition is to press the ASSIST and CENTER buttons */
-                        g_delay_en_pm = clock_time()|1;
+                    /* 221116 by ken. Record delay PM Start Time. The delay condition is to press the ASSIST and CENTER buttons */
+                    g_delay_en_pm = clock_time()|1;
 
-                        printf("[NOTICE] Record delay PM tick ");
-                    }
-#endif
+                    printf("[NOTICE] Record delay PM tick ");
                 }
-                else
-                {
-                    //printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
+            #endif
+            }else{
+                //printf("KEYBOARD_KEY_key_value=%x \r\n",key_value);
 
-                    key_type = KEYBOARD_KEY;
-                    key_buf[2] = key_value;
-                    bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
-                }
+                key_type = KEYBOARD_KEY;
+                key_buf[2] = key_value;
+                bls_att_pushNotifyData (HID_NORMAL_KB_REPORT_INPUT_DP_H, key_buf, 8);
+            }
 
-          }
-          else
-          {
-             if((key0 == comb_key_keyid[0]) && (is_pairing_mode == 0x55))
-             {
-                 printf("back key, stop adv\r\n");
-                 device_led_off(APP_LED_GREEN);
-                 bls_ll_setAdvEnable(0);
-                 is_pairing_mode = 0;
-                 is_reconn_mode = 0;
-                 app_enter_deep_timeset();
-                 u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
-                  printf("bond_number_1=%x\r\n",bond_number);
-             }
+        }else{
+            if((key0 == comb_key_keyid[0]) && (is_pairing_mode == 0x55))
+            {
+                printf("back key, stop adv\r\n");
+                device_led_off(APP_LED_GREEN);
+                bls_ll_setAdvEnable(0);
+                is_pairing_mode = 0;
+                is_reconn_mode = 0;
+                app_enter_deep_timeset();
+                u8 bond_number = blc_smp_param_getCurrentBondingDeviceNumber();  //get bonded device number
+                printf("bond_number_1=%x\r\n",bond_number);
+            }
 
-             key_type = IR_KEY;
-             if(!ir_not_released){
-                 printf("ir_dispatch send\r\n");
-                 ir_dispatch_ext(TYPE_IR_SEND, key0);
-                 ir_not_released = 1;
-             }
-          }
+            key_type = IR_KEY;
+            if(!ir_not_released){
+                printf("ir_dispatch send\r\n");
+                ir_dispatch_ext(TYPE_IR_SEND, key0);
+                ir_not_released = 1;
+            }
+        }
 
+    #if FIND_ME_ENABLE
+        // TODO stop
+        app_fmr_on_button_event();
+    #endif
     }
     else   //kb_event.cnt == 0,  key release
     {

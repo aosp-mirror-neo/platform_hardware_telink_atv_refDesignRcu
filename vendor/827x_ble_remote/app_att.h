@@ -27,6 +27,7 @@
 #define APP_ATT_H_
 
 #include "app_config.h"
+#include "app_fmr/app_fmr.h"
 
 ///////////////////////////////////// ATT  HANDLER define ///////////////////////////////////////
 typedef enum
@@ -187,6 +188,7 @@ typedef enum
 
 #endif
 
+
 #if FIND_ME_ENABLE
     FMS_GOOGLE_PS_H ,
     FMS_GOOGLE_CTL_CD_H,
@@ -195,6 +197,9 @@ typedef enum
     FMS_GOOGLE_DATA_DP_H,
     FMS_GOOGLE_DATA_CCC_H,
 #endif
+
+    APP_FMR_HANDLE
+
 
 #if (MP_TEST_MODE)
     //// Test Mode ////

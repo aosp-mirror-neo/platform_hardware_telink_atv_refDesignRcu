@@ -29,11 +29,18 @@
 
 #define APP_CUSTOM_WAKEUPKEY_NUM 12
 
+extern u8 ota_hold_dat_buff[];
+#define nec_ir_addr1_table      ((u8 *)(ota_hold_dat_buff))
+#define nec_ir_addr2_table      ((u8 *)(ota_hold_dat_buff) + 48)
+#define nec_ir_cmd1_table       ((u8 *)(ota_hold_dat_buff) + 48*2)
+#define nec_ir_cmd2_table       ((u8 *)(ota_hold_dat_buff) + 48*3)
+#define key_map_ble             ((u8 *)(ota_hold_dat_buff) + 48*4)
+
 extern const unsigned char Kb_Map_Normal[8][3];
-extern u8 nec_ir_addr1_table[48];
-extern u8 nec_ir_addr2_table[48];
-extern u8 nec_ir_cmd1_table[48];
-extern u8 nec_ir_cmd2_table[48];
+//extern u8 nec_ir_addr1_table[48];
+//extern u8 nec_ir_addr2_table[48];
+//extern u8 nec_ir_cmd1_table[48];
+//extern u8 nec_ir_cmd2_table[48];
 extern u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 extern u8 en_google_wakeuppack;
@@ -41,7 +48,7 @@ extern u8 en_ble_adv;
 extern u8 en_slave_rpa;
 extern const unsigned char navi_key_index_g10[4];
 extern const unsigned char navi_key_index_g20[4];
-extern unsigned char key_map_ble[48];
+//extern unsigned char key_map_ble[48];
 
 
 extern void app_custom_init(void);

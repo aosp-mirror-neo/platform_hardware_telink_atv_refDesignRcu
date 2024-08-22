@@ -28,6 +28,7 @@
 #define APP_UI_H_
 
 #include "app_config.h"
+#include "../common/blt_led.h"
 
 typedef enum {
 
@@ -43,6 +44,26 @@ typedef enum {
     APP_WAKEUP_SRC_NOT_USE,
 
 }APP_UI_WAKEUP_SRC_T;
+
+enum{
+    LED_POWER_ON = 0,
+    LED_AUDIO_ON,    //1
+    LED_AUDIO_OFF,    //2
+    LED_SHINE_SLOW, //3
+    LED_SHINE_FAST, //4
+    LED_SHINE_SUCCESS, //5
+    LED_SHINE_PAIRING, //6
+    LED_SHINE_PTT, //7
+    LED_SHINE_LOWBAT,
+    LED_PAIR_ERROR,
+    LED_OTA_START,
+    LED_OTA_END,
+    LED_KEYPRESS,
+    LED_BUZZER
+};
+
+extern const led_cfg_t led_cfg[];
+
 
 void app_ui_check_wakeup_src(u8 deepRetWakeUp);
 APP_UI_WAKEUP_SRC_T app_ui_get_wakeup_src(void);

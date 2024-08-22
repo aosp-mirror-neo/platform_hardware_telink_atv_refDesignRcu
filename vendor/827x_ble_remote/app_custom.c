@@ -32,6 +32,7 @@
 #include "app_test.h"
 #include "app_ui.h"
 #include "./app_find_me/app_fms.h"
+#include "./app_fmr/app_fmr.h"
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
@@ -80,11 +81,11 @@ _attribute_data_retention_  u8 en_slave_rpa=0;
 _attribute_data_retention_  u8 wakeup_key1[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 wakeup_key2[APP_CUSTOM_WAKEUPKEY_NUM];
 _attribute_data_retention_  u8 comb_key_keyid[9]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};  //back,home,center,mute,setting,guide,subtitle,down
-_attribute_data_retention_  u8 nec_ir_addr1_table[48]={0};
-_attribute_data_retention_  u8 nec_ir_addr2_table[48]={0};
-_attribute_data_retention_  u8 nec_ir_cmd1_table[48]={0};
-_attribute_data_retention_  u8 nec_ir_cmd2_table[48]={0};
-_attribute_data_retention_  u8 key_map_ble[48]={0};
+//_attribute_data_retention_  u8 nec_ir_addr1_table[48]={0};
+//_attribute_data_retention_  u8 nec_ir_addr2_table[48]={0};
+//_attribute_data_retention_  u8 nec_ir_cmd1_table[48]={0};
+//_attribute_data_retention_  u8 nec_ir_cmd2_table[48]={0};
+//_attribute_data_retention_  u8 key_map_ble[48]={0};
 
 extern _tCustom_Data _custom_data;
 
@@ -701,24 +702,24 @@ void app_custom_init(void)
 
     u8 my_en_periodic_wakeup = 0;
     flash_read_page(APP_EN_PERIODIC_WAKE_UP, 1, &my_en_periodic_wakeup);
-    g_p_app_fms_ctrl->en_fms = (0==my_en_periodic_wakeup)?1:0;
+    u8 my_fmr_en = (0==my_en_periodic_wakeup)?1:0;
+    app_fmr_set_fmr_en(my_fmr_en);
 
-    if(1 == g_p_app_fms_ctrl->en_fms){
+    if(app_fmr_is_fmr_en()){
         u16 read_data = 0;
          flash_read_page(APP_PERIODIC_WAKE_UP_TIMER, 2, (u8 *)&read_data);
 
+         u8 my_en_periodic_wake = 0;
+         u16 my_periodic_wake_interrval = 0;
          if((0 == read_data) || (0xffff == read_data)){
              /* 220707. 0 or 0xffff to disable periodic wakeup */
-             g_p_app_fms_ctrl->en_periodic_wakeup = 0;
-         }else if(read_data<=1440){
-             /* 220707. The valid range is changed to 1~1440(min) */
-             g_p_app_fms_ctrl->periodic_wakeup_interval = read_data;
-             g_p_app_fms_ctrl->en_periodic_wakeup = 1;
+             my_en_periodic_wake = 0;
          }else{
-            /* If the interval data in the flash is wrong, use 30 */
-             g_p_app_fms_ctrl->periodic_wakeup_interval = 30;
-             g_p_app_fms_ctrl->en_periodic_wakeup = 1;
+             my_en_periodic_wake = 1;
+             my_periodic_wake_interrval = read_data;
          }
+         printf("en_periodic_wake:[%d]  periodic_wake_interrval:[%d] \n", my_en_periodic_wake, my_periodic_wake_interrval);
+         app_fmr_set_periodic_wakeup(my_en_periodic_wake, my_periodic_wake_interrval);
     }
 
     app_custom_data_update();
@@ -739,7 +740,12 @@ void app_custom_init(void)
 
     app_pnpid_format_t *p_my_pnpid = (app_pnpid_format_t *)_custom_data.pnp_id;
 
-    if((0x01 == p_my_pnpid->vid_src) && (0x0957 == p_my_pnpid->vid) && (0x0005 == p_my_pnpid->pid)){
+    if((0x01 == p_my_pnpid->vid_src) &&
+            ( ((0x0957 == p_my_pnpid->vid) && (0x0005 == p_my_pnpid->pid)) ||
+              ((0x0957 == p_my_pnpid->vid) && (0x002D == p_my_pnpid->pid)))    ){
+        /* Customized settings for special customers */
+        app_rcu_set_TxPower(RF_POWER_P7p37dBm);
+    }else if((0x02 == p_my_pnpid->vid_src) && (0x248a == p_my_pnpid->vid) && (0x0005 == p_my_pnpid->pid) ){
         /* Customized settings for special customers */
         app_rcu_set_TxPower(RF_POWER_P7p37dBm);
     }else{

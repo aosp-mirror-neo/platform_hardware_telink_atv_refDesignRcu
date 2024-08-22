@@ -74,6 +74,11 @@
    The design files can be found in folder "Reference Design".
 
 
+========== Instructions for python packages ==========
+1. The python script needs to use cryptography, please use the following command to install it
+   pip install cryptography
+   pip install pycryptodome
+
 ========== Instructions for updateing the new bin file into RCU via OTA process ==========
 
 1. To be added

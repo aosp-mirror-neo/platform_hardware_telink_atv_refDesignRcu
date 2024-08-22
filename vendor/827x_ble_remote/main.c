@@ -141,7 +141,6 @@ _attribute_ram_code_ int main (void)    //must run in ramcode
         //app_custom_test();
         app_custom_write_conditional();
         app_woble_buffer_init();
-        app_fms_buffer_init();
         app_custom_init();
         user_init_battery_power_check(); //battery check must do before flash code
         blc_readFlashSize_autoConfigCustomFlashSector();
