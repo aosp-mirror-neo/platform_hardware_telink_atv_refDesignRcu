@@ -50,6 +50,7 @@
 #include "./app_find_me/app_fms.h"
 #include "./app_fmr/app_fmr.h"
 #include "./app_fmr/app_buzzer.h"
+#include "./app_backlight/app_backlight.h"
 
 
 #if (__PROJECT_8258_BLE_REMOTE__ || __PROJECT_8278_BLE_REMOTE__)
@@ -1011,14 +1012,14 @@ void blt_pm_proc(void)
     }
 #endif
 
-    if(device_led_busy())
+    if(device_led_busy() || app_backlight_is_busy())
     {
         bls_pm_setSuspendMask (SUSPEND_DISABLE);
         return;
     }
 
 #if FIND_ME_ENABLE
-    if(app_fmr_is_busy() )
+    if(app_fmr_is_busy())
     {
         bls_pm_setSuspendMask (SUSPEND_DISABLE);
         return;
@@ -1727,6 +1728,8 @@ void main_loop (void)
     app_fmr_task();
     app_buzzer_task();
 #endif
+
+    app_backlight_task();
 
     #if (BATT_CHECK_ENABLE)
         if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){

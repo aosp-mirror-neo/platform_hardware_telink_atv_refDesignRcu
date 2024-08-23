@@ -48,7 +48,7 @@
 #include "app_custom_lib.h"
 #include "./app_find_me/app_fms.h"
 #include "./app_fmr/app_fmr.h"
-
+#include "./app_backlight/app_backlight.h"
 
 
 //////////////////// key type ///////////////////////
@@ -109,6 +109,7 @@ extern void app_stop_wakeup_loop(void);
 
 static const u16 vk_consumer_map[] = {
     /* 230529 by ken. add magic key code */
+    GOOGLE_MKEY_FREETV,
     GOOGLE_MKEY_MAGIC,
 
 
@@ -227,7 +228,7 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 
         if(keyindex == VOICE)
         {
-         if(app_custom_get_device_type() == REMOTE_G10)
+         if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
              keyindex = 9;
          else
              keyindex = 18;
@@ -825,7 +826,7 @@ u8 app_is_navi_key(u8 data0,u8 data1)
     if(data0 == data1) return 0;
     for(u8 i=0;i<4;i++)
     {
-        if(app_custom_get_device_type() == REMOTE_G10)
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
         {
             if(data0 == navi_key_index_g10[i])
                 flag[0] = i;
@@ -1122,7 +1123,7 @@ void app_testmode_seq_record(u8 keyid)
     if(detpowerkey)
     {
         printf("app_testmode_seq_record\r\n");
-        if(app_custom_get_device_type() == REMOTE_G10)
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
         {
              if(testmode_key_seq[0] == Kb_Map_Testmode_Seq_Correspend_Index_G10[0])
              {
@@ -1163,7 +1164,7 @@ void app_testmode_seq_record(u8 keyid)
         if(testmode_key_seq_count == 5)
         {
             printf("testmode_key_seq[0] =%d, %d, %d, %d, %d\r\n",testmode_key_seq[0],testmode_key_seq[1],testmode_key_seq[2],testmode_key_seq[3],testmode_key_seq[4]);
-            if(app_custom_get_device_type() == REMOTE_G10)
+            if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
             {
                 if(memcmp(testmode_key_seq,Kb_Map_Testmode_Seq_Correspend_Index_G10,5) == 0)
                    {
@@ -1203,6 +1204,8 @@ void key_change_proc(void)
     }
     else if (kb_event.cnt == 2)   //two key press, do  not process
     {
+        app_backlight_start();
+
         //retime
         advertise_tick_retime();
         if(is_pairing_mode)    return;
@@ -1384,10 +1387,12 @@ void key_change_proc(void)
     }
     else if(kb_event.cnt == 1)
     {
+        app_backlight_start();
+
         //retime
         advertise_tick_retime();
 
-        printf("key_id=%x\r\n",key0);
+        printf("key_id=%d\r\n",key0);
 
         app_testmode_seq_record(key0);
 
@@ -2040,5 +2045,16 @@ void app_ui_set_2ndPairKey(u8 key0, u8 key1){
     g_2ndPairKey[0] = key0;
     g_2ndPairKey[1] = key1;
     printf("[NOTICE] Enable 2nd pair COMBO key. key0:[%d] key2:[%d]", g_2ndPairKey[0], g_2ndPairKey[1]);
+}
+
+
+u8 pwm_hw_initialed = 0;  //note: can not be retention variable
+
+void app_ui_init_pwm_clock(void){
+
+    if(pwm_hw_initialed) return;
+
+    pwm_hw_initialed = 1;
+    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, CLOCK_SYS_CLOCK_HZ);
 }
 

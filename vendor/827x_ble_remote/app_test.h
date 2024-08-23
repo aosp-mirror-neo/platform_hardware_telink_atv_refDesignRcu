@@ -27,7 +27,6 @@
 #ifndef APP_TEST_H_
 #define APP_TEST_H_
 
-
 typedef struct
 {
     u8 device_type;
@@ -51,6 +50,8 @@ typedef enum
     TEST_STAT_IR_KEY,
     TEST_STAT_CURRENT,
     TEST_STAT_LED,
+    TEST_STAT_BUZZER,
+    TEST_STAT_BACKLIGHT,
     TEST_STAT_USERMODE,
 } tTest_State;
 

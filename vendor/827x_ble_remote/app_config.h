@@ -43,6 +43,7 @@ extern "C" {
 #define APP_COUCH_MODE_ADDR                   0x780EF
 #define APP_TX_POWER_ADDR                     0x780F0
 
+#define APP_EN_BACKLIGHT                      0x780F5
 #define APP_2ND_PAIR_KEY0                     0x780F6
 #define APP_2ND_PAIR_KEY1                     0x780F7
 
@@ -110,9 +111,6 @@ extern "C" {
 #define FIRMWARES_SIGNATURE_ENABLE            0
 
 #define AUDIO_TRANS_USE_2M_PHY_ENABLE         0
-
-#define REMOTE_G10                            1
-#define REMOTE_G20                            2
 
 
 #define MP_TEST_MODE                          1
@@ -220,10 +218,11 @@ extern "C" {
 #define CR_VOL_DN                             0x81
 #define CR_PERIOD                             0x37
 
-#define CR_MEDIA_KEY_INDEX                    CR_MAGIC  // 230529 by ken. CR_NOTIFICATION -> CR_MAGIC
+#define CR_MEDIA_KEY_INDEX                    CR_FREETV  // 230529 by ken. CR_NOTIFICATION -> CR_MAGIC
 
 //device layout
 /* 230529 by ken. add magic key code */
+#define CR_FREETV                             0xdb
 #define CR_MAGIC                              0xdc
 
 #define CR_NOTIFICATION                       0xdd
@@ -313,6 +312,9 @@ extern "C" {
 #define T_VK_CH_UP                            0xd0
 #define T_VK_CH_DN                            0xd1
 
+//G11
+#define IR_FREETV                             0x70
+
 //G20
 #define IR_INFO                               0x29
 #define IR_SUBTITLE                           0x58
@@ -332,7 +334,7 @@ extern "C" {
 #define IR_RECORD                             0x54
 #define IR_PLAYPAUSE                          0x52
 #define IR_FASTFORWARD                        0x53
-#define IR_MAGIC                              0x68
+#define IR_MAGIC                              0x69
 
 #define KB_SCAN_PINS   {GPIO_PA1, GPIO_PA2, GPIO_PA3, GPIO_PA4, GPIO_PA5, GPIO_PA6,GPIO_PB5,GPIO_PB6}
 
@@ -421,6 +423,14 @@ enum{
     CLOCK_32K_CLOCK_1S    = CLOCK_32K_CLOCK_HZ,
     CLOCK_32K_CLOCK_1MIN  = (CLOCK_32K_CLOCK_1S * 60),
     CLOCK_32K_CLOCK_1HOUR = (CLOCK_32K_CLOCK_1MIN * 60),
+};
+
+
+enum{
+    REMOTE_G10 = 0x01,
+    REMOTE_G20 = 0x02,
+
+    REMOTE_G11 = 0x03,
 };
 
 

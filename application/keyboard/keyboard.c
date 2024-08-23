@@ -133,7 +133,7 @@ void kb_p_map_init(void)
     u8 len = app_custom_get_drive_len();
     printf("len=%x\r\n",len);
     kb_p_map[0] = p_kb_map_normal;
-    if(app_custom_get_device_type() == REMOTE_G10)
+    if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11))
     {
         memcpy(drive_pins,Kb_Drive_Pins_G10,len*4);
         memcpy(comb_key_keyid,Kb_CombKey_KeyId_G10,9);

@@ -29,6 +29,7 @@
 
 #include "rc_ir.h"
 #include "app_ir.h"
+#include "app_ui.h"
 
 extern void         bls_pm_setSuspendMask (u8 mask);
 extern u8      ir_hw_initialed;
@@ -248,7 +249,8 @@ void ir_send_release(void)
 
         ir_send_ctrl.is_sending = IR_SENDING_NONE;
         ir_send_ctrl.is_full_sequence = 0;
-        pwm_stop_dma_ir_sending();
+//        pwm_stop_dma_ir_sending();
+        dma_chn_enable(FLD_DMA_CHN_PWM, 0);
         reg_pwm_irq_sta = FLD_IRQ_PWM0_IR_DMA_FIFO_DONE;   //clear irq status
         reg_pwm_irq_mask &= ~FLD_IRQ_PWM0_IR_DMA_FIFO_DONE; //disable irq mask
     }
@@ -391,7 +393,8 @@ void  ir_send_specil (u16 freq, u8 cycle)
 
     max_tick = CLOCK_SYS_CLOCK_HZ/freq;
     cmp_tick = cycle*max_tick/100;
-    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, CLOCK_SYS_CLOCK_HZ);
+//    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, CLOCK_SYS_CLOCK_HZ);
+    app_ui_init_pwm_clock();
     pwm_n_revert(PWM0_ID);    //if use PWMx_N, user must set "pwm_n_revert" before gpio_set_func(pwmx_N).
     gpio_set_func(GPIO_PB3,AS_PWM0_N );
     pwm_set_mode(PWM0_ID, PWM_IR_DMA_FIFO_MODE);

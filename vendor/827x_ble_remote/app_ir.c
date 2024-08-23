@@ -243,7 +243,7 @@ u8 ir_get_button_idx_from_button(u8 button)
     u8 i;
     for(i = 0; i < MAX_KEY_COUNT; i++)
     {
-        if(app_custom_get_device_type() == REMOTE_G10)
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
         {
             /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
             if(CR_INPUT == key_map_ble[3]){
@@ -287,7 +287,7 @@ u8 ir_get_button_idx_from_key_id(u16 key_id)
     u8 i;
     for(i = 0; i < MAX_KEY_COUNT; i++)
     {
-        if(app_custom_get_device_type() == REMOTE_G10)
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
         {
 
             /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
@@ -1213,7 +1213,7 @@ int ir_fallback_send(u8 key_down)
     {
         //Besides sending IR code, also notify ATV that the key event
         printf("send notify\r\n");
-        if(app_custom_get_device_type() == REMOTE_G10){
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) ){
 
             /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
             if(CR_INPUT == key_map_ble[3]){
@@ -1417,7 +1417,7 @@ u8 ir_table_add_key(u16 key_id, u16 code_size, u8* code)
     if ((ir_app_parm.ir_programming.programmed_key_count < MAX_KEY_COUNT)
         && (code_size <= MAX_CODE_LENGTH))
     {
-        if(app_custom_get_device_type() == REMOTE_G10)
+        if( (app_custom_get_device_type() == REMOTE_G10) || (app_custom_get_device_type() == REMOTE_G11) )
         {
             /* 230529 by ken. Select key_button_map_g10 or key_button_map_g10_magic according to the key value of the input (magic) key */
             if(CR_INPUT == key_map_ble[3]){

@@ -46,6 +46,8 @@ _attribute_data_retention_ _tCustom_Data _custom_data = { 0x00, };
 #include "battery_check.h"
 #include "app_flash_write.h"
 
+#include "app_ui.h"
+
 
 #define _ON                          1
 #define _OFF                         0
@@ -137,6 +139,7 @@ typedef enum
     _KEY_IDX_GREEN,
     _KEY_IDX_YELLOW,
     _KEY_IDX_BLUE,
+    _KEY_IDX_FREETV,
     _KEY_IDX_NONE = 0xFF
 } _tKey_Index;
 
@@ -164,10 +167,8 @@ extern _attribute_data_retention_ u8 bak_batpercent;
 static tTest_State _stat = TEST_STAT_USERMODE;
 static _tKey_Index _key = _KEY_IDX_NONE;
 
-static void _output_ir_nec(u8 ir_code)
-{
-    ir_dispatch(_TYPE_IR_SEND, _IR_CODE_CUSTOM, ir_code);
-}
+#define _output_ir_nec(c) ir_dispatch(_TYPE_IR_SEND, _IR_CODE_CUSTOM, c)
+#define _release_ir_nec() ir_dispatch(_TYPE_IR_RELEASE, 0, 0)
 
 static void _output_ir_nec_custom(u8 addr1, u8 addr2, u8 cmd1, u8 cmd2)
 {
@@ -182,16 +183,13 @@ static void _output_ir_nec_custom(u8 addr1, u8 addr2, u8 cmd1, u8 cmd2)
 
     /// add data
     u32 data = cmd2<<24 | cmd1<<16 | addr2<<8 | addr1;
-    for (int i = 0; i < 32; i++)
-    {
-        if (data & BIT(i))
-        {
+    for (int i = 0; i < 32; i++) {
+        if (data & BIT(i)) {
             ///waveform for logic_1
             T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_1_1st;
             T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_1_2nd;
         }
-        else
-        {
+        else {
             ///waveform for logic_0
             T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_0_1st;
             T_dmaData_buf.data[T_dmaData_buf.data_num ++] = waveform_logic_0_2nd;
@@ -217,38 +215,59 @@ static void _output_ir_nec_custom(u8 addr1, u8 addr2, u8 cmd1, u8 cmd2)
 
 static void _ctrl_led(u8 green_stat, u8 red_stat)
 {
-    (green_stat == _ON) ? device_led_on(APP_LED_GREEN) : device_led_off(APP_LED_GREEN);
-    (red_stat == _ON) ? device_led_on(APP_LED_RED) : device_led_off(APP_LED_RED);
+    if (green_stat == _ON)
+        device_led_on(APP_LED_GREEN);
+    else
+        device_led_off(APP_LED_GREEN);
+
+    if (red_stat == _ON)
+        device_led_on(APP_LED_RED);
+    else
+        device_led_off(APP_LED_RED);
 }
 
 static _tKey_Index _conv_key_code_to_idx(u8 key_code)
 {
-    u8 key_codes_G10[] = {
-        0x00, 0x03, 0x06, 0xC0, 0x0C, 0x0F, 0x12, 0x15, 0x01, 0x04, 0x07,
-        0x0A, 0x0D, 0x10, 0x13, 0x16, 0x02, 0x05, 0x08, 0x0B, 0x0E, 0x11
+    u8 key_codes_G10_G11[] = {
+        0x00, 0x03, 0x06, 0xC0, 0x0C, 0x0F, 0x12, 0x15, 0x01, 0x04, 
+        0x07, 0x0A, 0x0D, 0x10, 0x13, 0x16, 0x02, 0x05, 0x08, 0x0B, 
+        0x0E, 0x11, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 
+        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x14
     };
-
     u8 key_codes_G20[] = {
-        0x00, 0x06, 0x0C, 0xC0, 0x18, 0x1E, 0x24, 0x2A, 0x01, 0x07, 0x0D,
-        0x13, 0x19, 0x1F, 0x25, 0x2B, 0x02, 0x08, 0x0E, 0x14, 0x1A, 0x20,
-        0x16, 0x10, 0x0A, 0x04, 0x17, 0x11, 0x21, 0x1B, 0x15, 0x0F, 0x09,
-        0x03, 0x0B, 0x05, 0x22, 0x1C
+        0x00, 0x06, 0x0C, 0xC0, 0x18, 0x1E, 0x24, 0x2A, 0x01, 0x07, 
+        0x0D, 0x13, 0x19, 0x1F, 0x25, 0x2B, 0x02, 0x08, 0x0E, 0x14, 
+        0x1A, 0x20, 0x16, 0x10, 0x0A, 0x04, 0x17, 0x11, 0x21, 0x1B, 
+        0x15, 0x0F, 0x09, 0x03, 0x0B, 0x05, 0x22, 0x1C
     };
 
-    u8 *key_codes = (_custom_data.device_type == REMOTE_G20) ? key_codes_G20 : key_codes_G10;
-    u8 key_codes_cnt = (_custom_data.device_type == REMOTE_G20) ? sizeof(key_codes_G20) : sizeof(key_codes_G10);
-    u8 key_idx = _KEY_IDX_POWER;
+    u8 *key_codes = 0;
+    u8 key_codes_cnt = 0;
 
-    for (; key_idx < key_codes_cnt; key_idx++)
-        if (key_codes[key_idx] == key_code) return (_tKey_Index)key_idx;
+    switch (_custom_data.device_type) {
+    case REMOTE_G10:
+    case REMOTE_G11:
+        key_codes = key_codes_G10_G11;
+        key_codes_cnt = sizeof(key_codes_G10_G11);
+        break;
+    case REMOTE_G20:
+        key_codes = key_codes_G20;
+        key_codes_cnt = sizeof(key_codes_G20);
+        break;
+    }
+
+    for (u8 key_idx = 0; key_idx < key_codes_cnt; key_idx++) {
+        if (key_codes[key_idx] == key_code)
+            return (_tKey_Index)key_idx;
+    }
 
     return _KEY_IDX_NONE;
 }
+
 #if BLE_AUDIO_ENABLE
 static void _ctrl_google_voice(bool is_start)
 {
-    if (is_start)
-    {
+    if (is_start) {
         google_voice_codec_used = CODEC_USED_16K;
         google_voice_packet_length = VOICE_V0P4_ADPCM_PACKET_LEN;
         google_voice_pcm_sample_packet = VOICE_V0P4_ADPCM_UNIT_SIZE;
@@ -259,13 +278,82 @@ static void _ctrl_google_voice(bool is_start)
 
         app_audio_transfer_timer = 0;
     }
-    else
-    {
+    else {
         ui_enable_mic(0);
         _ctrl_led(_ON, _ON);
     }
 }
 #endif
+
+#if FIND_ME_ENABLE
+#define BUZZER_GPIO             GPIO_PB4
+#define BUZZER_PWM_ID           PWM4_ID
+#define BUZZER_CLOCK            CLOCK_SYS_CLOCK_HZ
+#define TEST_BUZZER_NOTE        2700	// 2.7 GHz
+#define TEST_BUZZER_COUNTER     (BUZZER_CLOCK/TEST_BUZZER_NOTE)
+
+static void _buzzer_pwm_init(void)
+{
+    app_ui_init_pwm_clock();
+    gpio_set_func(BUZZER_GPIO, AS_PWM4);
+    pwm_set_mode(BUZZER_PWM_ID, PWM_NORMAL_MODE);
+}
+
+static void _buzzer_play(u8 sound_level)
+{
+    _buzzer_pwm_init();
+
+    pwm_set_cycle_and_duty(BUZZER_PWM_ID, TEST_BUZZER_COUNTER, TEST_BUZZER_COUNTER * sound_level / 100);
+    pwm_start(BUZZER_PWM_ID);
+
+    bls_pm_setSuspendMask (SUSPEND_DISABLE);
+}
+
+static void _buzzer_stop(void){
+    pwm_stop(BUZZER_PWM_ID);
+}
+#endif
+
+#define BOOST_IC_EN_GPIO                            (GPIO_PA0)
+#define BACKLIGHT_PWM_GPIO                          (GPIO_PC5)
+#define BACKLIGHT_PWM_ID                            (PWM3_ID)
+#define BACKLIGHT_PWM_FREQUENCY                     (600)     // hz
+#define BACKLIGHT_PWM_CYCLE_TICK                    (CLOCK_SYS_CLOCK_HZ/BACKLIGHT_PWM_FREQUENCY)     // hz
+#define BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE       (50)     // %
+#define BACKLIGHT_END_BRIGHTNESS                    (BACKLIGHT_PWM_CYCLE_TICK * BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE / 100)
+
+static void _backlight_init(void)
+{
+    app_ui_init_pwm_clock();
+    gpio_set_func(BACKLIGHT_PWM_GPIO, AS_PWM3_N);
+    pwm_set_mode(BACKLIGHT_PWM_ID, PWM_NORMAL_MODE);
+    pwm_n_revert(BACKLIGHT_PWM_ID);
+
+    /* enable boost */
+    gpio_set_func(BOOST_IC_EN_GPIO, AS_GPIO);
+    gpio_set_input_en(BOOST_IC_EN_GPIO, 0);
+    gpio_set_output_en(BOOST_IC_EN_GPIO, 1);
+
+    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_PULLUP_10K);
+    gpio_write(BOOST_IC_EN_GPIO, 1);
+}
+
+static void _backlight_start(void)
+{
+    _backlight_init();
+
+    pwm_set_cycle_and_duty(BACKLIGHT_PWM_ID, BACKLIGHT_PWM_CYCLE_TICK, BACKLIGHT_END_BRIGHTNESS);
+    pwm_start(BACKLIGHT_PWM_ID);
+
+    bls_pm_setSuspendMask (SUSPEND_DISABLE);
+}
+
+static void _backlight_stop(void)
+{
+    pwm_stop(BACKLIGHT_PWM_ID);
+    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_UP_DOWN_FLOAT);
+    gpio_write(BOOST_IC_EN_GPIO, 0);
+}
 
 static void _switch_to_user_mode(void)
 {
@@ -287,12 +375,8 @@ static void _parse_custom_data(void)
     u8 idx = 0;
 
     flash_read_page(_FLASH_CUSTOM_DATA_AREA, sizeof(_tCustom_Data), buf);
-    if(buf[0] == 0xff)
-    {
-        _custom_data.device_type = REMOTE_G10;
-    }
-    else
-        _custom_data.device_type = buf[idx++];
+
+    _custom_data.device_type = (buf[0] == 0xff) ? REMOTE_G10 : buf[idx++];
 
     memcpy(_custom_data.pnp_id, &buf[idx], sizeof(_custom_data.pnp_id));
     idx += sizeof(_custom_data.pnp_id);
@@ -311,15 +395,13 @@ static void _parse_custom_data(void)
     idx += sizeof(_custom_data.wakeup_key_2);
 
     if (_custom_data.wakeup_key_1[0] == 0xFF && _custom_data.wakeup_key_1[1] == 0xFF
-        && _custom_data.wakeup_key_2[0] == 0xFF && _custom_data.wakeup_key_2[1] == 0xFF)
-    {
+        && _custom_data.wakeup_key_2[0] == 0xFF && _custom_data.wakeup_key_2[1] == 0xFF) {
         memset(_custom_data.wakeup_packet, 0xFF, sizeof(_custom_data.wakeup_packet));
         return;
     }
 
     _custom_data.wakeup_packet[0] = (buf[idx] > 31) ? 31 : buf[idx];
-    if (_custom_data.wakeup_packet[0] == 0) /// use google format only
-    {
+    if (_custom_data.wakeup_packet[0] == 0) {   /// use google format only
         memset(&_custom_data.wakeup_packet[1], 0xFF, sizeof(_custom_data.wakeup_packet) - 1);
         return;
     }
@@ -329,24 +411,24 @@ static void _parse_custom_data(void)
 
 void test_entry_mode(void)
 {
-    if (!ir_hw_initialed)
-    {
+    if (!ir_hw_initialed) {
         ir_hw_initialed = 1;
         rc_ir_init();
     }
 
     app_factory_reset();
 
-
     _parse_custom_data();
 
     _stat = TEST_STAT_ROOT;
     _ctrl_led(_ON, _ON);
+    _backlight_start();
 }
 
 tTest_State test_get_state(void)
 {
-    if (_stat > TEST_STAT_USERMODE) _stat = TEST_STAT_USERMODE;
+    if (_stat > TEST_STAT_USERMODE)
+        _stat = TEST_STAT_USERMODE;
     return _stat;
 }
 
@@ -367,128 +449,158 @@ void test_set_mode(u8 mode)
 
     if (cur_mode == mode) return;
 
-    if (cur_mode == MODE_USER) flash_erase_sector(_FLASH_MODE_AREA);
+    if (cur_mode == MODE_USER)
+        flash_erase_sector(_FLASH_MODE_AREA);
     flash_write_page(_FLASH_MODE_AREA, _FLASH_MODE_LEN, &mode);
 }
 
 void test_proc_key(void)
 {
-    if (kb_event.cnt == 1)
-    {
+    if (kb_event.cnt == 1) {
         _tKey_Index key_idx = _conv_key_code_to_idx(kb_event.keycode[0]);
 
-        _ctrl_led(_OFF, _OFF);
+        u8 led_off = 1;
 
-        if (_stat == TEST_STAT_ROOT)
-        {
-            switch (key_idx)
-            {
+        if (_stat == TEST_STAT_ROOT) {
+            switch (key_idx) {
             case _KEY_IDX_POWER:
                 _output_ir_nec(IR_POWER);
                 break;
-
+#if FIND_ME_ENABLE
+            case _KEY_IDX_INPUT:
+                _stat = TEST_STAT_BUZZER;
+                _buzzer_play(50);
+                break;
+#endif
             case _KEY_IDX_BOOKMARK:
-                {
-                    u8 mac[6] = { 0x00, };
-
-                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
-                    _output_ir_nec_custom(mac[5], mac[4], mac[3], 0x00);
-                }
+            {
+                u8 mac[6] = { 0x00, };
+                memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
+                _output_ir_nec_custom(mac[5], mac[4], mac[3], 0x00);
+            }
                 break;
-
             case _KEY_IDX_ASSISTANT:
-                {
-                    u8 mac[6] = { 0x00, };
-
-                    memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
-                    _output_ir_nec_custom(mac[2], mac[1], mac[0], 0x00);
-                }
+            {
+                u8 mac[6] = { 0x00, };
+                memcpy(mac, (u32 *)CFG_ADR_MAC_512K_FLASH, sizeof(mac));
+                _output_ir_nec_custom(mac[2], mac[1], mac[0], 0x00);
+            }
                 break;
-
+            case _KEY_IDX_SETTINGS:
+                _stat = TEST_STAT_BACKLIGHT;
+                break;
             case _KEY_IDX_DPAD_CENTER:
-                {
-                    u8 version_major = 0x00, version_minor = 0x00;
-
-                    version_major = (FW_VERSION >> 8) & 0xFF;
-                    version_minor = FW_VERSION & 0xFF;
-                    _output_ir_nec_custom((u8)_IR_CODE_CUSTOM, (u8)(~_IR_CODE_CUSTOM),
-                                          version_major, version_minor);
-
-                    _stat = TEST_STAT_IR_KEY;
-                }
+            {
+                u8 version_major = 0x00, version_minor = 0x00;
+                version_major = (FW_VERSION >> 8) & 0xFF;
+                version_minor = FW_VERSION & 0xFF;
+                _output_ir_nec_custom((u8)_IR_CODE_CUSTOM, (u8)(~_IR_CODE_CUSTOM), version_major, version_minor);
+                _stat = TEST_STAT_IR_KEY;
+            }
                 break;
-
+            case _KEY_IDX_HOME:
+                _backlight_stop();
+                break;
             case _KEY_IDX_GUIDE:
-                {
-                    u8 battVal = bak_batpercent, battLvl = 0;
-
-                    if (battVal >= 80) battLvl = 1;
-                    else if (battVal >= 60) battLvl = 2;
-                    else if (battVal >= 40) battLvl = 3;
-                    else if (battVal >= 20) battLvl = 4;
-                    else battLvl = 0;
-
-                    _output_ir_nec(battLvl);
-                }
+            {
+                u8 battVal = bak_batpercent, battLvl = 0;
+                if (battVal >= 80) battLvl = 1;
+                else if (battVal >= 60) battLvl = 2;
+                else if (battVal >= 40) battLvl = 3;
+                else if (battVal >= 20) battLvl = 4;
+                else battLvl = 0;
+                _output_ir_nec(battLvl);
+            }
                 break;
-
+            case _KEY_IDX_PROGRAM_UP:
+            {
+                u8 vender_id[2] = { 0x00, };
+                u8 product_id[2] = { 0x00, };
+                flash_read_page(_FLASH_CUSTOM_DATA_AREA + 2, 2, vender_id);
+                flash_read_page(_FLASH_CUSTOM_DATA_AREA + 4, 2, product_id);
+                _output_ir_nec_custom(vender_id[1], vender_id[0], product_id[1], product_id[0]);
+            }
+                break;
             case _KEY_IDX_MUTE:
                 bls_ll_setAdvParam(ADV_INTERVAL_20MS, ADV_INTERVAL_25MS,
                                    ADV_TYPE_CONNECTABLE_UNDIRECTED, OWN_ADDRESS_PUBLIC,
                                    0, NULL, BLT_ENABLE_ADV_ALL, ADV_FP_NONE);
                 bls_ll_setAdvEnable(1);
                 break;
-
             case _KEY_IDX_YOUTUBE:
             case _KEY_IDX_NETFLIX:
-                if (key_idx == _KEY_IDX_YOUTUBE) _ctrl_led(_OFF, _ON);
-                else if (key_idx == _KEY_IDX_NETFLIX) _ctrl_led(_ON, _OFF);
+                if (key_idx == _KEY_IDX_YOUTUBE)
+                    _ctrl_led(_OFF, _ON);
+                else if (key_idx == _KEY_IDX_NETFLIX)
+                    _ctrl_led(_ON, _OFF);
                 _stat = TEST_STAT_LED;
-                break;
-
-            case _KEY_IDX_PROGRAM_UP:
-                {
-                    u8 vender_id[2] = { 0x00, };
-                    u8 product_id[2] = { 0x00, };
-                    flash_read_page(_FLASH_CUSTOM_DATA_AREA + 2, 2, vender_id);
-                    flash_read_page(_FLASH_CUSTOM_DATA_AREA + 4, 2, product_id);
-                    _output_ir_nec_custom(vender_id[1], vender_id[0], product_id[1], product_id[0]);
-                }
+                led_off = 0;
                 break;
             default:
-                _ctrl_led(_ON, _ON);
+                led_off = 0;
                 break;
             }
         }
-        else if (_stat == TEST_STAT_IR_KEY)
-        {
+        else if (_stat == TEST_STAT_IR_KEY) {
             _output_ir_nec((u8)key_idx);
 
-            if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
+            if (key_idx == _KEY_IDX_BACK)
+                _stat = TEST_STAT_ROOT;
         }
-        else if (_stat == TEST_STAT_CURRENT)
-        {
-            if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
+        else if (_stat == TEST_STAT_CURRENT) {
+            if (key_idx != _KEY_IDX_HOME) {
+                _stat = TEST_STAT_ROOT;
+                _ctrl_led(_ON, _ON);
+                _backlight_start();
+                led_off = 0;
+            }
         }
-        else if (_stat == TEST_STAT_LED)
-        {
-            if (key_idx == _KEY_IDX_YOUTUBE) _ctrl_led(_OFF, _ON);
-            else if (key_idx == _KEY_IDX_NETFLIX) _ctrl_led(_ON, _OFF);
-            else if (key_idx == _KEY_IDX_BACK) _stat = TEST_STAT_ROOT;
+        else if (_stat == TEST_STAT_LED) {
+            if (key_idx == _KEY_IDX_YOUTUBE)
+                _ctrl_led(_OFF, _ON);
+            else if (key_idx == _KEY_IDX_NETFLIX)
+                _ctrl_led(_ON, _OFF);
+            else if (key_idx == _KEY_IDX_BACK) {
+                _stat = TEST_STAT_ROOT;
+                _ctrl_led(_ON, _ON);
+            }
+            led_off = 0;
         }
+#if FIND_ME_ENABLE
+        else if (_stat == TEST_STAT_BUZZER) {
+            if (key_idx == _KEY_IDX_BACK) {
+                _buzzer_stop();
+                _stat = TEST_STAT_ROOT;
+            }
+        }
+#endif
+        else if (_stat == TEST_STAT_BACKLIGHT) {
+            if (key_idx == _KEY_IDX_BACK) {
+                _stat = TEST_STAT_ROOT;
+                _ctrl_led(_ON, _ON);
+                led_off = 0;
+            }
+        }
+
+        if (led_off)
+            _ctrl_led(_OFF, _OFF);
 
         _key = key_idx;
     }
-    else
-    {
-        if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_HOME) _stat = TEST_STAT_CURRENT;
-        else
-        {
-            if (ir_send_ctrl.is_sending) ir_dispatch(_TYPE_IR_RELEASE, 0, 0);
+    else {
+        if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_HOME)
+            _stat = TEST_STAT_CURRENT;
+        else {
+            if (ir_send_ctrl.is_sending)
+                _release_ir_nec();
 
-            if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_POWER) _switch_to_user_mode();
-            else _ctrl_led(_ON, _ON);
+            if (_stat == TEST_STAT_ROOT && _key == _KEY_IDX_POWER)
+                _switch_to_user_mode();
+            else if ((_stat != TEST_STAT_CURRENT) && (_stat != TEST_STAT_LED) && (_stat != TEST_STAT_BACKLIGHT))
+                _ctrl_led(_ON, _ON);
         }
+
+        _key = _KEY_IDX_NONE;
     }
 }
 
@@ -500,16 +612,15 @@ int test_write_cb(void *p)
     u8 buf[256] = { 0x00, };
     u8 idx = 0;
 
-    if (len != 1) return 1;
+    if (len != 1)
+        return 1;
 
-    switch (cmd)
-    {
+    switch (cmd) {
 #if BLE_AUDIO_ENABLE
     case _RF_CMD_VOICE_START:
         blc_att_requestMtuSizeExchange(BLS_CONN_HANDLE, 0x009e);
         _ctrl_google_voice(TRUE);
         break;
-
     case _RF_CMD_VOICE_STOP:
         _ctrl_google_voice(FALSE);
         break;
@@ -519,40 +630,34 @@ int test_write_cb(void *p)
         buf[idx++] = blc_ll_getLatestAvgRSSI();
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_VER_REQ:
         buf[idx++] = _RF_CMD_VER_RES;
         buf[idx++] = (FW_VERSION >> 8) & 0xFF;
         buf[idx++] = FW_VERSION & 0xFF;
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_DEV_TYPE_REQ:
         buf[idx++] = _RF_CMD_DEV_TYPE_RES;
         buf[idx++] = _custom_data.device_type;
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_PNP_ID_REQ:
         buf[idx++] = _RF_CMD_PNP_ID_RES;
         memcpy(buf+idx, _custom_data.pnp_id, sizeof(_custom_data.pnp_id));
         idx += sizeof(_custom_data.pnp_id);
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_DEV_NAME_REQ:
         buf[idx++] = _RF_CMD_DEV_NAME_RES;
         memcpy(buf+idx, _custom_data.device_name, _custom_data.device_name_length);
         idx += _custom_data.device_name_length;
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_DEV_UI_LAYOUT_REQ:
         buf[idx++] = _RF_CMD_DEV_UI_LAYOUT_RES;
         buf[idx++] = _custom_data.device_ui_layout;
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_WAKEUP_KEYS_REQ:
         buf[idx++] = _RF_CMD_WAKEUP_KEYS_RES;
         memcpy(buf+idx, _custom_data.wakeup_key_1, sizeof(_custom_data.wakeup_key_1));
@@ -561,30 +666,26 @@ int test_write_cb(void *p)
         idx += sizeof(_custom_data.wakeup_key_2);
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_WAKEUP_PACKET_REQ:
         buf[idx++] = _RF_CMD_WAKEUP_PACKET_RES;
         buf[idx++] = _custom_data.wakeup_packet[0];
-        if (_custom_data.wakeup_packet[0] != 0 && _custom_data.wakeup_packet[0] != 0xFF)
-        {
+        if (_custom_data.wakeup_packet[0] != 0 && _custom_data.wakeup_packet[0] != 0xFF) {
             memcpy(buf+idx, &_custom_data.wakeup_packet[1], 3 + _custom_data.wakeup_packet[0]);
             idx += 3 + _custom_data.wakeup_packet[0];
         }
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, idx);
         break;
-
     case _RF_CMD_FACTORY_REQ:
         buf[0] = _RF_CMD_FACTORY_RES;
         bls_att_pushNotifyData(TEST_MODE_DP_H, buf, 1);
         _switch_to_user_mode();
         break;
-
     case _RF_CMD_CONN_COMPLETED:
         bls_ll_setAdvEnable(0);
         _ctrl_led(_ON, _ON);
         break;
-
-    default: break;
+    default:
+        break;
     }
 
     return 1;

@@ -122,4 +122,7 @@ void app_key_release_action(void);
 
 void app_ui_set_2ndPairKey(u8 key0, u8 key1);
 
+
+void app_ui_init_pwm_clock(void);
+
 #endif /* APP_UI_H_ */

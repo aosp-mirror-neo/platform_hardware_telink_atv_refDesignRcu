@@ -33,9 +33,11 @@
 #include "app_ui.h"
 #include "./app_find_me/app_fms.h"
 #include "./app_fmr/app_fmr.h"
+#include "./app_backlight/app_backlight.h"
 
 const u8 *pREMOTE_G10 = (u8 *)("RemoteG10");
 const u8 *pREMOTE_G20 = (u8 *)("RemoteG20");
+const u8 *pREMOTE_G11 = (u8 *)("RemoteG11");
 
 extern u8 *p_kb_map_ble;
 extern u8 *p_kb_map_ir;
@@ -215,7 +217,7 @@ void app_custom_ui_layout(u8 ui_layout)
     {
         return;
     }
-    if(_custom_data.device_type == REMOTE_G10)
+    if( (_custom_data.device_type == REMOTE_G10) || (_custom_data.device_type == REMOTE_G11))
     {
         if((ui_layout&LAYOUT_MASK_BIT0))
         {
@@ -310,7 +312,7 @@ void app_custom_set_new_ir_table(void)
     u8 g10_table[96];
     u8 i,j;
 
-    if(_custom_data.device_type == REMOTE_G10)
+    if( (_custom_data.device_type == REMOTE_G10) || (_custom_data.device_type == REMOTE_G11) )
     {
         flash_read_page(APP_NEC_IR_CODE_TABLE, 48*4, dat);
         //line up g10,g20
@@ -365,8 +367,24 @@ void app_custom_param_init(u8 device_layout)
     {
         p_kb_map_ble =  key_map_ble;
         memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G10,sizeof(Kb_Map_Ble_G10));
+
         p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
         memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G10,sizeof(Kb_Map_Ir_G10));
+
+        p_kb_map_normal = (u8 *)Kb_Map_Normal_G10;
+    }else if(_custom_data.device_type == REMOTE_G11){
+        p_kb_map_ble =  key_map_ble;
+        memcpy(key_map_ble,(u8 *)Kb_Map_Ble_G10,sizeof(Kb_Map_Ble_G10));
+
+        /* Set freeTV BLE key */
+        key_map_ble[20] = CR_FREETV;
+
+        p_kb_map_ir = (u8 *)nec_ir_cmd1_table;
+        memcpy(p_kb_map_ir,(u8 *)Kb_Map_Ir_G10,sizeof(Kb_Map_Ir_G10));
+
+        /* Set freeTV IR key */
+        nec_ir_cmd1_table[20] = IR_FREETV;
+
         p_kb_map_normal = (u8 *)Kb_Map_Normal_G10;
     }
     else if(_custom_data.device_type == REMOTE_G20)
@@ -399,7 +417,7 @@ void app_custom_wakeup_key_load(u8* wakeup_mask1, u8* wakeup_mask2)
 
     if((mask1 != 0xffff) && (mask2 != 0xffff) && ((mask1 & mask2) == 0))
     {
-        if(_custom_data.device_type == REMOTE_G10)
+        if( (_custom_data.device_type == REMOTE_G10) || (_custom_data.device_type == REMOTE_G11) )
         {
             wakeupkey_num = APP_CUSTOM_WAKEUPKEY_NUM-4;
             p_kb_map = (u8*)Kb_Wakeup_Key_Map_Correspend_Index_G10;
@@ -446,7 +464,7 @@ void app_custom_data_update_by_id(u8 id, u8* data, u8 length)
     switch(id)
     {
         case 1:  //device type
-            if((data[0] == REMOTE_G10) || (data[0] == REMOTE_G20))
+            if((data[0] == REMOTE_G10) || (data[0] == REMOTE_G11) || (data[0] == REMOTE_G20))
             {
                 _custom_data.device_type = data[0];
             }
@@ -640,7 +658,7 @@ void app_custom_init(void)
     }
     _custom_data.device_type = buffer[0];
     _custom_data.wakeup_packet[0] = 0xff;
-    if((_custom_data.device_type == 0xff) || ((_custom_data.device_type != REMOTE_G10) && (_custom_data.device_type != REMOTE_G20)))
+    if((_custom_data.device_type == 0xff) || ((_custom_data.device_type != REMOTE_G10) && (_custom_data.device_type != REMOTE_G11) && (_custom_data.device_type != REMOTE_G20)))
     {
         printf("default custom info\r\n");
         _custom_data.device_type = REMOTE_G10;
@@ -780,6 +798,14 @@ void app_custom_init(void)
     flash_read_page(APP_2ND_PAIR_KEY0, 2 , my_2ndPairkey);
     app_ui_set_2ndPairKey(my_2ndPairkey[0], my_2ndPairkey[1]);
 
+
+    /* 231218 by ken.  Add back-light EN/DIS settings */
+    u8 my_Backlight = 0x00;
+    flash_read_page(APP_EN_BACKLIGHT, 1, &my_Backlight);
+    /* disable backlight when the value is 0xff */
+    my_Backlight = (0xff==my_Backlight)?0:my_Backlight;
+    app_backlight_set_ability(my_Backlight);
+
 }
 
 /**
@@ -859,7 +885,7 @@ u8 app_custom_get_drive_len(void)
 {
     u8 len;
 
-    if(_custom_data.device_type == REMOTE_G10)
+    if( (_custom_data.device_type == REMOTE_G10) || (_custom_data.device_type == REMOTE_G11) )
         len = sizeof(Kb_Drive_Pins_G10)/sizeof(Kb_Drive_Pins_G10[0]);
     else
         len = sizeof(Kb_Drive_Pins_G20)/sizeof(Kb_Drive_Pins_G20[0]);
