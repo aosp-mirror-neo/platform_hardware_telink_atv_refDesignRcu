@@ -92,12 +92,106 @@ const light_action_t s_backlight_behavior[] = {
 
 
 _attribute_data_retention_ u8 s_en_backlight = 0;
+_attribute_data_retention_ u16 s_boost_gpio = BOOST_IC_EN_GPIO;
 _attribute_data_retention_ app_backlight_ctr_t app_backlight_ctr = {0};
 static u32 s_backlight_task_tick = 0;
 
-void app_backlight_set_ability(u8 en){
+void app_backlight_set_ability(u8 en, u16 boost_pin){
 
-    s_en_backlight = en;
+    s_en_backlight = (0xff==en)?0:en;
+
+    if(0 == s_en_backlight) return;
+
+    switch (boost_pin) {
+        case GPIO_PA0:
+        case GPIO_PA1:
+        case GPIO_PA2:
+        case GPIO_PA3:
+        case GPIO_PA4:
+        case GPIO_PA5:
+        case GPIO_PA6:
+        case GPIO_PA7:
+        case GPIO_PB0:
+        case GPIO_PB1:
+        case GPIO_PB2:
+        case GPIO_PB3:
+        case GPIO_PB4:
+        case GPIO_PB5:
+        case GPIO_PB6:
+        /* GPIO_PB7 is used for battery detection */
+        case GPIO_PC0:
+        /* GPIO_PC1 is used for AMIC input */
+        case GPIO_PC2:
+        case GPIO_PC3:
+        case GPIO_PC4:
+        /* GPIO_PC5 is used for on/off backlight */
+        case GPIO_PC6:
+        case GPIO_PC7:
+        case GPIO_PD0:
+        case GPIO_PD1:
+        case GPIO_PD2:
+        case GPIO_PD3:
+        case GPIO_PD4:
+        case GPIO_PD5:
+        case GPIO_PD6:
+        case GPIO_PD7:
+            s_boost_gpio = boost_pin;
+            break;
+        case 0xFFFF:
+            s_boost_gpio = BOOST_IC_EN_GPIO;
+            break;
+        default:
+            s_en_backlight = 0;
+            break;
+    }
+
+    printf("BACKLIGHT SETTINGS. EN[0x%02X] GPIO:[0x%04X]\n", s_en_backlight, s_boost_gpio);
+}
+
+u16 app_backlight_get_boost_pin(void){
+
+    u16 my_boost_pin = s_boost_gpio;
+    switch (my_boost_pin) {
+        case GPIO_PA0:
+        case GPIO_PA1:
+        case GPIO_PA2:
+        case GPIO_PA3:
+        case GPIO_PA4:
+        case GPIO_PA5:
+        case GPIO_PA6:
+        case GPIO_PA7:
+        case GPIO_PB0:
+        case GPIO_PB1:
+        case GPIO_PB2:
+        case GPIO_PB3:
+        case GPIO_PB4:
+        case GPIO_PB5:
+        case GPIO_PB6:
+        /* GPIO_PB7 is used for battery detection */
+        case GPIO_PC0:
+        /* GPIO_PC1 is used for AMIC input */
+        case GPIO_PC2:
+        case GPIO_PC3:
+        case GPIO_PC4:
+        /* GPIO_PC5 is used for on/off backlight */
+        case GPIO_PC6:
+        case GPIO_PC7:
+        case GPIO_PD0:
+        case GPIO_PD1:
+        case GPIO_PD2:
+        case GPIO_PD3:
+        case GPIO_PD4:
+        case GPIO_PD5:
+        case GPIO_PD6:
+        case GPIO_PD7:
+            break;
+        default:
+            s_en_backlight = 0;
+            my_boost_pin = 0;
+            break;
+    }
+
+    return my_boost_pin;
 }
 
 
@@ -109,19 +203,22 @@ u8 app_backlight_is_busy(void){
 void app_backlight_init(void){
     printf("%s\n", __FUNCTION__);
 
-//    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, BACKLIGHT_PWM_CLOCK);
+    /* enable boost */
+    u16 my_boot_pin = app_backlight_get_boost_pin();
+    if(0 == my_boot_pin) return;
+
+    gpio_set_func(my_boot_pin, AS_GPIO);
+    gpio_set_input_en(my_boot_pin, 0);
+    gpio_set_output_en(my_boot_pin, 1);
+
+    gpio_setup_up_down_resistor(my_boot_pin, PM_PIN_PULLUP_10K);
+    gpio_write(s_boost_gpio, 1);
+
+    //    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, BACKLIGHT_PWM_CLOCK);
     app_ui_init_pwm_clock();
     gpio_set_func(BACKLIGHT_PWM_GPIO, AS_PWM3_N);
     pwm_set_mode(BACKLIGHT_PWM_ID, PWM_NORMAL_MODE);
     pwm_n_revert(PWM3_ID);
-
-    /* enable boost */
-    gpio_set_func(BOOST_IC_EN_GPIO, AS_GPIO);
-    gpio_set_input_en(BOOST_IC_EN_GPIO, 0);
-    gpio_set_output_en(BOOST_IC_EN_GPIO, 1);
-
-    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_PULLUP_10K);
-    gpio_write(BOOST_IC_EN_GPIO, 1);
 }
 
 void app_backlight_stop(void){
@@ -129,8 +226,12 @@ void app_backlight_stop(void){
     if(0 == s_en_backlight) return;
 
     pwm_stop(BACKLIGHT_PWM_ID);
-    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_UP_DOWN_FLOAT);
-    gpio_write(BOOST_IC_EN_GPIO, 0);
+
+    u16 my_boot_pin = app_backlight_get_boost_pin();
+    if(0 == my_boot_pin) return;
+
+    gpio_setup_up_down_resistor(my_boot_pin, PM_PIN_UP_DOWN_FLOAT);
+    gpio_write(s_boost_gpio, 0);
 }
 
 
@@ -145,6 +246,8 @@ void app_backlight_start(void){
     }else{
         app_backlight_ctr.table_pos = 0;
         app_backlight_init();
+        /* When initialization fails, backlight disable may be set in app_backlight_init */
+        if(0 == s_en_backlight) return;
     }
 
     app_backlight_ctr.duration_cnt = 0;

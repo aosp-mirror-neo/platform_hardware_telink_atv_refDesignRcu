@@ -9,7 +9,7 @@
 #define APP_BACKLIGHT_H_
 
 
-void app_backlight_set_ability(unsigned char en);
+void app_backlight_set_ability(unsigned char en, unsigned short boost_pin);
 
 unsigned char app_backlight_is_busy(void);
 void app_backlight_start(void);

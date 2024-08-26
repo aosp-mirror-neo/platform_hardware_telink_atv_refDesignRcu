@@ -83,7 +83,8 @@ void app_buzzer_buffer_init(void){
 
 void app_buzzer_pwm_init(void){
 
-    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, BUZZER_CLOCK);
+//    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, BUZZER_CLOCK);
+    app_ui_init_pwm_clock();
     gpio_set_func(BUZZER_GPIO, AS_PWM4);
     pwm_set_mode(BUZZER_PWM_ID, PWM_NORMAL_MODE);
 }

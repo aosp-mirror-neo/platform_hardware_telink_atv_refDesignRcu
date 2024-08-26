@@ -801,10 +801,13 @@ void app_custom_init(void)
 
     /* 231218 by ken.  Add back-light EN/DIS settings */
     u8 my_Backlight = 0x00;
-    flash_read_page(APP_EN_BACKLIGHT, 1, &my_Backlight);
+    u16 my_BoostGpio = 0x00;
+
+    flash_read_page(APP_EN_BACKLIGHT,   sizeof(my_Backlight), &my_Backlight);
+    flash_read_page(APP_BOOST_PIN,      sizeof(my_BoostGpio), &my_BoostGpio);
+
     /* disable backlight when the value is 0xff */
-    my_Backlight = (0xff==my_Backlight)?0:my_Backlight;
-    app_backlight_set_ability(my_Backlight);
+    app_backlight_set_ability(my_Backlight, my_BoostGpio);
 
 }
 

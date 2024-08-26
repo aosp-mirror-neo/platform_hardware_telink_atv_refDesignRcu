@@ -43,12 +43,13 @@ extern "C" {
 #define APP_COUCH_MODE_ADDR                   0x780EF
 #define APP_TX_POWER_ADDR                     0x780F0
 
+#define APP_BOOST_PIN                         0x780F2   // 0x780F2~0x780F2(2B)
 #define APP_EN_BACKLIGHT                      0x780F5
 #define APP_2ND_PAIR_KEY0                     0x780F6
 #define APP_2ND_PAIR_KEY1                     0x780F7
 
 #define APP_WOBLE_ADV_TYPE_ADDR               0x780F8
-#define APP_PERIODIC_WAKE_UP_TIMER            0x780F9
+#define APP_PERIODIC_WAKE_UP_TIMER            0x780F9   // 0x780F9~0x780FA(2B)
 #define APP_EN_PERIODIC_WAKE_UP               0x780FB
 #define APP_EN_SLAVE_RPA                      0x780FC
 #define APP_EN_BLE_ADV                        0x780FD

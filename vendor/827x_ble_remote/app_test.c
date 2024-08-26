@@ -314,7 +314,7 @@ static void _buzzer_stop(void){
 }
 #endif
 
-#define BOOST_IC_EN_GPIO                            (GPIO_PA0)
+//#define BOOST_IC_EN_GPIO                            (GPIO_PA0)
 #define BACKLIGHT_PWM_GPIO                          (GPIO_PC5)
 #define BACKLIGHT_PWM_ID                            (PWM3_ID)
 #define BACKLIGHT_PWM_FREQUENCY                     (600)     // hz
@@ -322,24 +322,37 @@ static void _buzzer_stop(void){
 #define BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE       (50)     // %
 #define BACKLIGHT_END_BRIGHTNESS                    (BACKLIGHT_PWM_CYCLE_TICK * BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE / 100)
 
+extern _attribute_data_retention_ u8 s_en_backlight;
+extern _attribute_data_retention_ u16 s_boost_gpio;
+
+extern u16 app_backlight_get_boost_pin(void);
+
 static void _backlight_init(void)
 {
+    /* enable boost */
+    u16 my_boot_pin = app_backlight_get_boost_pin();
+    if (0 == my_boot_pin)
+        return;
+
+    gpio_set_func(my_boot_pin, AS_GPIO);
+    gpio_set_input_en(my_boot_pin, 0);
+    gpio_set_output_en(my_boot_pin, 1);
+
+    gpio_setup_up_down_resistor(my_boot_pin, PM_PIN_PULLUP_10K);
+    gpio_write(s_boost_gpio, 1);
+
+    //    pwm_set_clk(CLOCK_SYS_CLOCK_HZ, BACKLIGHT_PWM_CLOCK);
     app_ui_init_pwm_clock();
     gpio_set_func(BACKLIGHT_PWM_GPIO, AS_PWM3_N);
     pwm_set_mode(BACKLIGHT_PWM_ID, PWM_NORMAL_MODE);
-    pwm_n_revert(BACKLIGHT_PWM_ID);
-
-    /* enable boost */
-    gpio_set_func(BOOST_IC_EN_GPIO, AS_GPIO);
-    gpio_set_input_en(BOOST_IC_EN_GPIO, 0);
-    gpio_set_output_en(BOOST_IC_EN_GPIO, 1);
-
-    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_PULLUP_10K);
-    gpio_write(BOOST_IC_EN_GPIO, 1);
+    pwm_n_revert(PWM3_ID);
 }
 
 static void _backlight_start(void)
 {
+    if(0 == s_en_backlight) // for C009 Key. 2024-01-09. by ghchu.
+        return;
+
     _backlight_init();
 
     pwm_set_cycle_and_duty(BACKLIGHT_PWM_ID, BACKLIGHT_PWM_CYCLE_TICK, BACKLIGHT_END_BRIGHTNESS);
@@ -350,9 +363,17 @@ static void _backlight_start(void)
 
 static void _backlight_stop(void)
 {
+    if(0 == s_en_backlight) // for C009 DEEPSLEEP_MODE. 2024-01-09. by ghchu.
+        return;
+
     pwm_stop(BACKLIGHT_PWM_ID);
-    gpio_setup_up_down_resistor(BOOST_IC_EN_GPIO, PM_PIN_UP_DOWN_FLOAT);
-    gpio_write(BOOST_IC_EN_GPIO, 0);
+
+    u16 my_boot_pin = app_backlight_get_boost_pin();
+    if (0 == my_boot_pin)
+        return;
+
+    gpio_setup_up_down_resistor(my_boot_pin, PM_PIN_UP_DOWN_FLOAT);
+    gpio_write(my_boot_pin, 0);
 }
 
 static void _switch_to_user_mode(void)
@@ -533,6 +554,7 @@ void test_proc_key(void)
                     _ctrl_led(_OFF, _ON);
                 else if (key_idx == _KEY_IDX_NETFLIX)
                     _ctrl_led(_ON, _OFF);
+                _backlight_stop();
                 _stat = TEST_STAT_LED;
                 led_off = 0;
                 break;
@@ -563,6 +585,7 @@ void test_proc_key(void)
             else if (key_idx == _KEY_IDX_BACK) {
                 _stat = TEST_STAT_ROOT;
                 _ctrl_led(_ON, _ON);
+                _backlight_start();
             }
             led_off = 0;
         }
@@ -572,6 +595,8 @@ void test_proc_key(void)
                 _buzzer_stop();
                 _stat = TEST_STAT_ROOT;
             }
+            else
+                led_off = 0;
         }
 #endif
         else if (_stat == TEST_STAT_BACKLIGHT) {
