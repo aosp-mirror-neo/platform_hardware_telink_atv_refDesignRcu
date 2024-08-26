@@ -27,16 +27,8 @@
 
 
 /**********************************************************************
- * ATT SERVICE
+ * GLOBAL DEFINES
  */
-
-extern const unsigned char app_fmr_service_uuid[16];
-extern const unsigned char app_fmr_char_uuid[16];
-
-extern volatile unsigned char app_fmr_data[3];
-extern unsigned short app_fmr_ccc;
-
-extern const unsigned char app_fmr_char_val[19];
 
 #define APP_FMR_HANDLE                          \
             APP_FMR_PS_H,                       \
@@ -49,29 +41,82 @@ extern const unsigned char app_fmr_char_val[19];
     {4,ATT_PERMISSIONS_READ, 2, 16,                         (u8*)(&my_primaryServiceUUID),  (u8*)(&app_fmr_service_uuid),   0},                     \
     {0,ATT_PERMISSIONS_READ, 2, sizeof(app_fmr_char_val),   (u8*)(&my_characterUUID),       (u8*)(app_fmr_char_val),        0},                     \
     {0,ATT_PERMISSIONS_RDWR, 16,sizeof(app_fmr_data),       (u8*)(&app_fmr_char_uuid),      (u8*)(app_fmr_data),            &app_fmr_write_cb, 0},  \
-    {0,ATT_PERMISSIONS_RDWR, 2, sizeof(app_fmr_ccc),        (u8*)(&clientCharacterCfgUUID), (u8*)(&app_fmr_ccc),            0},
+    {0,ATT_PERMISSIONS_RDWR, 2, sizeof(app_fmr_ccc),        (u8*)(&clientCharacterCfgUUID), (u8*)(&app_fmr_ccc),            0},                     \
 
+
+/**********************************************************************
+ * ATT SERVICE VARIABLES
+ */
+
+/* FMR UUID */
+extern const unsigned char app_fmr_service_uuid[16];
+extern const unsigned char app_fmr_char_uuid[16];
+
+/* FMR  attribute values */
+extern const unsigned char app_fmr_char_val[19];
+
+/* FMR data */
+extern volatile unsigned char app_fmr_data[3];
+extern unsigned short app_fmr_ccc;
 
 
 /**********************************************************************
  * GLOBAL FUNCTIONS
  */
 
-int app_fmr_write_cb(void * p);
-
-void app_fmr_on_button_event(void);
-
-unsigned char app_fmr_is_busy(void);
-
-void app_fmr_task(void);
-
+/**
+ * @brief This function is used to get whether FMR is enabled
+ *
+ * @param p the pointer of buffer
+ * @return unsigned char 1:enable 0:disable
+ */
 unsigned char app_fmr_is_fmr_en(void);
+
+/**
+ * @brief       This function is used to set whether FMR is enabled or disabled
+ *
+ * @param       en 1:enable 0:disable
+ * @return      none
+ */
 
 void app_fmr_set_fmr_en(unsigned char en);
 
 /**
- * periodic wake-up ADV
+ * @brief       This function is the write callback of the FMR service. Registered in FMR ATT table.
+ *
+ * @param       p the pointer of buffer
+ * @return      int Always returns 0
  */
+int app_fmr_write_cb(void * p);
+
+/**
+ * @brief       This function is used to clear all parameters related to FMR
+ * @param[in]   none
+ * @return      none
+ */
+void app_fmr_parameter_init(void);
+
+/**
+ * @brief       This function is used to confirm whether FMR is busy
+ * @param[in]   none
+ * @return      unsigned char 1:busy 0:idle
+ */
+unsigned char app_fmr_is_busy(void);
+
+/**
+ * @brief       This function is almost equal to FMR stop. Only used after keystroke discovery.
+ * @param[in]   none
+ * @return      none
+ */
+void app_fmr_on_button_event(void);
+
+/**
+ * @brief      The FMR task. It needs to be executed regularly when the buzzer is working,
+ *             so this function needs to be placed in the main loop.
+ * @param[in]  none
+ * @return     none
+ */
+void app_fmr_task(void);
 
 void app_fmr_set_periodic_wakeup(unsigned char en, unsigned short interval);
 

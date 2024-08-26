@@ -43,6 +43,8 @@
 
 #define FMR_DEBUG_LOG(...)
 
+#define fmr_buzzer_play(duty)     app_buzzer_play(APP_BUZZER_PLAY_INDEX_RINGTONE_0, APP_BUZZER_STATUS_PLAY_LOOP, duty);
+
 
 /**********************************************************************
  * LOCAL TYPES
@@ -75,15 +77,14 @@ typedef struct {
 const u8 app_fmr_service_uuid[16]   = WRAPPING_BRACES(GOOGLE_FMR_SERVICE_UUID);
 const u8 app_fmr_char_uuid[16]      = WRAPPING_BRACES(GOOGL_FMR_CHAR_UUID);
 
-_attribute_data_retention_ volatile u8 app_fmr_data[3]  = {0x00};
-_attribute_data_retention_ u16 app_fmr_ccc  = 0;
-_attribute_data_retention_ u32 s_fmr_counter_tick  = 0;
-
 const u8 app_fmr_char_val[19] = {
     CHAR_PROP_READ | CHAR_PROP_NOTIFY | CHAR_PROP_WRITE_WITHOUT_RSP,
     U16_LO(APP_FMR_CMD_OUT_DP_H), U16_HI(APP_FMR_CMD_OUT_DP_H),
     GOOGL_FMR_CHAR_UUID,
 };
+
+_attribute_data_retention_ volatile u8 app_fmr_data[3]  = {0x00};
+_attribute_data_retention_ u16 app_fmr_ccc  = 0;
 
 /**********************************************************************
  * GLOBAL VARIABLES
@@ -92,23 +93,15 @@ const u8 app_fmr_char_val[19] = {
 /**********************************************************************
  * LOCAL VARIABLES
  */
+_attribute_data_retention_ u32 s_fmr_counter_tick  = 0;
+
 _attribute_data_retention_ app_fmr_ctrl_t s_fmr_ctrl = {0};
 
 /**********************************************************************
  * LOCAL FUNCTIONS
  */
 
-#define fmr_buzzer_play()     app_buzzer_play(APP_BUZZER_PLAY_INDEX_RINGTONE_0, APP_BUZZER_STATUS_PLAY_LOOP, 50);
 
-
-
-u8 app_fmr_is_fmr_en(void){
-    return s_fmr_ctrl.en_fmr;
-}
-
-void app_fmr_set_fmr_en(u8 en){
-    s_fmr_ctrl.en_fmr = en;
-}
 
 fmr_event_t app_fmr_get_event(void){
 
@@ -159,19 +152,6 @@ void app_fmr_decrease_duration(void){
     }
 }
 
-u8 app_fmr_is_busy(void){
-
-    u8 my_event = app_fmr_get_event();
-    u16 my_duration = app_fmr_get_duration();
-
-    u8 my_flag_busy = 1;
-    if( (GOOGLE_FMR_EVENT_RCU_FOUND == my_event) || (0 == my_duration) ){
-        my_flag_busy = 0;
-    }
-
-    return my_flag_busy;
-}
-
 void app_fmr_set_fmr_para(fmr_event_t event, u16 duration){
 
     /* Is set in the response to write operation when the provided remaining buzz duration is too large.
@@ -190,15 +170,18 @@ void app_fmr_set_fmr_para(fmr_event_t event, u16 duration){
     array_printf((u8 *)app_fmr_data, sizeof(app_fmr_data));
 }
 
-void app_fmr_on_button_event(void){
+/**********************************************************************
+ * GLOBAL FUNCTIONS
+ */
 
-    if(app_fmr_is_busy() == 0) return;
-
-    /* Set when the user picks up the remote or presses any button while in the buzz mode. */
-    app_buzzer_stop();
-//    app_led_pwm_disable(ALP_CFG_INDEX_FMR);
-    app_fmr_set_fmr_para(GOOGLE_FMR_EVENT_RCU_FOUND, 0);
+u8 app_fmr_is_fmr_en(void){
+    return s_fmr_ctrl.en_fmr;
 }
+
+void app_fmr_set_fmr_en(u8 en){
+    s_fmr_ctrl.en_fmr = en;
+}
+
 
 int app_fmr_write_cb(void * p){
 
@@ -207,7 +190,7 @@ int app_fmr_write_cb(void * p){
 
     // TODO
 
-    #define FMR_LOW_VOLTABE     (2500)      //mv
+    #define FMR_LOW_VOLTABE     (2250)      //mv
 
     if(get_battery_voltage() < FMR_LOW_VOLTABE){
         app_fmr_set_fmr_para(GOOGLE_FMR_EVENT_LOW_BATTERY, 0);
@@ -229,7 +212,9 @@ int app_fmr_write_cb(void * p){
     if(my_duration){
         /* buzzer ON. The value that is implied by every successful write operation.*/
         s_fmr_counter_tick = clock_time()|1;
-        fmr_buzzer_play();
+
+        fmr_buzzer_play(app_buzzer_set_and_get_pwm_duty_by_voltage());
+
 //        app_led_pwm_enable(ALP_CFG_INDEX_FMR, 0);
         app_fmr_set_fmr_para(GOOGLE_FMR_EVENT_REQUEST, my_duration);
     }else{
@@ -242,7 +227,38 @@ int app_fmr_write_cb(void * p){
     return 0;
 }
 
+void app_fmr_parameter_init(void){
 
+    app_fmr_data[0] = 0x00;
+    app_fmr_data[1] = 0x00;
+    app_fmr_data[2] = 0x00;
+
+    s_fmr_counter_tick  = 0;
+    app_buzzer_buffer_init();
+}
+
+u8 app_fmr_is_busy(void){
+
+    u8 my_event = app_fmr_get_event();
+    u16 my_duration = app_fmr_get_duration();
+
+    u8 my_flag_busy = 1;
+    if( (GOOGLE_FMR_EVENT_RCU_FOUND == my_event) || (0 == my_duration) ){
+        my_flag_busy = 0;
+    }
+
+    return my_flag_busy;
+}
+
+void app_fmr_on_button_event(void){
+
+    if(app_fmr_is_busy() == 0) return;
+
+    /* Set when the user picks up the remote or presses any button while in the buzz mode. */
+    app_buzzer_stop();
+//    app_led_pwm_disable(ALP_CFG_INDEX_FMR);
+    app_fmr_set_fmr_para(GOOGLE_FMR_EVENT_RCU_FOUND, 0);
+}
 
 void app_fmr_task(void){
 

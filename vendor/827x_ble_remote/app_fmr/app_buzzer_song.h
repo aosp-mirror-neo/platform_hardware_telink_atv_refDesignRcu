@@ -81,6 +81,11 @@ typedef enum{
 
 }APP_BUZZER_NOTE_TIME_T;
 
+typedef struct {
+    unsigned int            note;        // musical notes. refer APP_BUZZER_NOTE_T
+    unsigned short          duration;    // note duration
+}app_buzzer_symbol_t;
+
 const app_buzzer_symbol_t app_song_loop[] =
 {
     {B_R_N0,    B_NT_50},

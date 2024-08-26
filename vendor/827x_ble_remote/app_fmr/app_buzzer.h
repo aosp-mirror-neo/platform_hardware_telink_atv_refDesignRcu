@@ -31,6 +31,10 @@
  * GLOBAL DEFINE
  */
 
+#define APP_BUZZER_SILENCE_TIME_MS          (500)       //500ms
+
+
+
 typedef enum{
     APP_BUZZER_STATUS_IDLE      = 0,
     APP_BUZZER_STATUS_PLAY_ONCE,
@@ -41,36 +45,68 @@ typedef enum{
     APP_BUZZER_PLAY_INDEX_RINGTONE_0,
 }APP_BUZZER_INDEX_T;
 
-typedef struct {
-    unsigned int     note;        // musical notes. refer APP_BUZZER_NOTE_T
-    unsigned short        duration;    // note duration
-}app_buzzer_symbol_t;
-
-
-typedef struct {
-    APP_BUZZER_STATUS_T   status;
-    unsigned char         sound_level;
-
-    unsigned char         song_index;
-    unsigned char         song_note_index;
-    unsigned short        song_size;
-
-    unsigned short        note_duration;
-    unsigned int          note_timer_tick;
-    unsigned int          song_start_tick;
-}app_buzzer_ctrl_t;
-
 
 /**********************************************************************
  * GLOBAL FUNCTIONS
  */
 
+/**
+ * @brief      Clear parameters of app_buzzer
+ * @param[in]  none
+ * @return     none
+ */
 void app_buzzer_buffer_init(void);
+
+/**
+ * @brief      Get buzzer status
+ * @param[in]  none
+ * @return     unsigned char  0: Idle other: busy
+ */
+unsigned char app_buzzer_is_buzy(void);
+
+/**
+ * @brief      Get buzzer status
+ * @param[in]  index        This parameter can be specified when the module provides multiple songs.
+ * @param[in]  status       1:play the song only once  2:play the same song in loop  other:illegal value
+ * @param[in]  sound_level  PWM duty value. The range is 0-100
+ * @return     none
+ */
 void app_buzzer_play(APP_BUZZER_INDEX_T index, APP_BUZZER_STATUS_T status, unsigned char sound_level);
+
+/**
+ * @brief      This function is used to stop the buzzer
+ * @param[in]  none
+ * @return     none
+ */
 void app_buzzer_stop(void);
+
+/**
+ * @brief      This function is used to obtain the starting system tick of the buzzer's silence.
+ * @param[in]  none
+ * @return     unsigned int 0:Non-silence state other:tick of silence
+ */
+unsigned int app_buzzer_get_silence_tick(void);
+
+/**
+ * @brief      This function is used to clear the start tick of silence.
+ * @param[in]  none
+ * @return     none
+ */
+void app_buzzer_clear_silence_tick(void);
+
+/**
+ * @brief      This function is used to dynamically modify the PWM duty according to the battery voltage.
+ * @param[in]  none
+ * @return     unsigned char PWM duty set according to voltage
+ */
+unsigned char app_buzzer_set_and_get_pwm_duty_by_voltage(void);
+
+/**
+ * @brief      The buzzer task. It needs to be executed regularly when the buzzer is working,
+ *             so this function needs to be placed in the main loop.
+ * @param[in]  none
+ * @return     none
+ */
 void app_buzzer_task(void);
-
-
-unsigned char app_buzzer_is_buzy();
 
 #endif /* APP_BUZZER_H_ */

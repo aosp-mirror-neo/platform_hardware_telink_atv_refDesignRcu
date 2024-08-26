@@ -28,18 +28,19 @@
 #define APP_OTA_H_
 
 
-#define CMD_REPORT_VERSION                    0xfe00
-#define CMD_CONTROL                           0xfe01
+#define OTA_PROTECT_VOLTAGE                     (2400)    //mv
 
-#define OTA_PROTECT_VOLTAGE                   2400    //mv
+#define CLIENT_REPORT_CMD                       (0xfe)
 
-#define CLIENT_REPORT_CMD                     0xfe
+#define app_ota_notify_result(...)              app_ota_notify_data(TYPE_OTA_RESULT, __VA_ARGS__)
+#define app_ota_notify_ver(...)                 app_ota_notify_data(TYPE_VERSION, __VA_ARGS__)
+#define app_ota_notify_auth_data(...)           app_ota_notify_data(TYPE_AUTHENTICATION_DATA, __VA_ARGS__)
 
 
 //report type
 enum{
     TYPE_VERSION = 0,
-    TYPE_SINATURE_DATA,
+    TYPE_AUTHENTICATION_DATA,
     TYPE_CONTROL_DATA,
     TYPE_OTA_RESULT,
 };
@@ -55,6 +56,7 @@ typedef enum{
     OTA_VER_CHECK,    //Includes battery voltage detection
     OTA_AUTHENTICATION,
     OTA_PROCESS,
+    OTA_SUCC_READY_REBOOT,
 }ota_status_type_t;
 
 enum{
@@ -71,6 +73,8 @@ enum{
      //app not
      GOOGLE_OTA_USER_TERMINATE,   //9
      GOOGLE_OTA_SIGNATURE_ERR,   //
+
+     GOOGLE_OTA_REBOOT_PENDING,     // b
 
 };
 
@@ -90,6 +94,11 @@ void app_ota_terminate(u8 reason);
 int app_ota_write(void * p);
 void app_ota_proc(void);
 
+
+u8 app_ota_notify_data(u8 data_type, u8 *p_buf, u8 buf_len);
+
+void app_ota_ClearDelayCount(void);
+unsigned short app_ota_isEnDelayReboot(void);
 //extern u16 ota_ctl_flag;
 
 #endif /* APP_OTA_H_ */

@@ -48,6 +48,7 @@
 #include "app_custom_lib.h"
 #include "./app_find_me/app_fms.h"
 #include "./app_fmr/app_fmr.h"
+#include "./app_fmr/app_buzzer.h"
 #include "./app_backlight/app_backlight.h"
 
 
@@ -168,7 +169,8 @@ const led_cfg_t led_cfg[] = {
         {APP_LED_RED,     1,   100,      100 ,   5,      0,  },    //5Hz for 5 seconds
         {APP_LED_RED,     1,   50,       50,     4,      0,  },
         {APP_LED_RED,     1,   100,      0,      0,      1,  },
-        {APP_LED_RED,     1,   0,        1000,   3,      1,  },
+//        {APP_LED_RED,     1,   0,        1000,   3,      1,  },
+        {APP_LED_RED,     1,   0,        100,    1,      0,  },
         {APP_LED_RED,     1,   100,      100 ,   1,      0,  },    //5Hz for 3 seconds
         {APP_LED_RED,     1,   1000,     1000 ,  15,     0,  },    //5Hz for 3 seconds
 };
@@ -271,27 +273,18 @@ void ir_dispatch_ext(u8 type, u8 keyindex){
 #if (BLE_REMOTE_OTA_ENABLE)
 #include "app_ota.h"
 extern u8  mac_public[6];
-u8 app_enter_ota_mode(u8 *data)
-{
-    printf("start data:");
-    array_printf(data,4);
-    extern u32 ota_program_offset;
-    extern int ota_program_bootAddr;
-    printf("ota_program_offset=%x\r\n",ota_program_offset);
-    printf("ota_program_offset=%x\r\n",ota_program_bootAddr);
+u8 app_enter_ota_mode(u8 *data){
 
-    u8 check_data[4];
-    bls_ota_get_random(check_data);
-
-    if(memcmp(check_data,data,4 )){
-
-        u8 report_data[3] ={CLIENT_REPORT_CMD, TYPE_OTA_RESULT, GOOGLE_OTA_START_KEY_ERR};
-
-        bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3);
-        printf("OTA_START_KEY_ERR\n");
-
+    /* FMR will cause the battery voltage to drop. So avoid performing OTA during FMR */
+    if(app_buzzer_is_buzy()){
         return 1;
     }
+
+    extern u32 ota_program_offset;
+    extern int ota_program_bootAddr;
+    printf("ota_program_offset:[%X]  ota_program_bootAddr:[%X]\r\n", ota_program_offset, ota_program_bootAddr);
+
+
     bls_pm_setSuspendMask (SUSPEND_DISABLE);
     ota_flag = 1;
 
@@ -352,35 +345,38 @@ void app_ota_get_ecdsa_pub_key(u8 *pub_key){
 
 void app_ota_result(u8 result)
 {
-    printf("google_ota_result result=%x\r\n",result);
-    u8 report_data[3];
-    report_data[0] = CLIENT_REPORT_CMD;
-    report_data[1] = TYPE_OTA_RESULT;
-    report_data[2] = (u8)result;
+    printf("OTA result:[%d]\r\n",result);
+    ota_is_working = 0;
+
     if(device_in_connection_state)
     {
         u16 i = 0;
-        while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
-        sleep_us(100);
-        i++;
+
+        while(app_ota_notify_result(&result, 1) &&  i < 2000){
+            sleep_us(100);
+            i++;
         }
 
-        i = 0;
-        while(app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN) &&  i < 2000){
-        sleep_us(100);
-        i++;
+        if(0 == app_ota_isEnDelayReboot()){
+            i = 0;
+            while(app_terminate(HCI_ERR_REMOTE_USER_TERM_CONN) &&  i < 2000){
+                sleep_us(100);
+                i++;
+            }
+
+            i = 0;
+            while(blc_ll_getTxFifoNumber() &&  i < 400){
+                sleep_us(10000);//printf("waiting TX fifo is empty\n"); //waiting TX fifo is empty
+                i++;
+            }
         }
 
-        i = 0;
-        while(blc_ll_getTxFifoNumber() &&  i < 400){
-        sleep_us(10000);//printf("waiting TX fifo is empty\n"); //waiting TX fifo is empty
-        i++;
-        }
     }
     if(result == 0)
     {
         printf("ota end red led off\r\n");
         device_led_setup(led_cfg[LED_OTA_END]);
+//        device_led_off();
         printf("ota_suc and write_ana\r\n");
         analog_write(USED_DEEP_ANA_REG, analog_read(USED_DEEP_ANA_REG) | OTA_FLG);
         printf("analog_read(USED_DEEP_ANA_REG)=%x\r\n",analog_read(USED_DEEP_ANA_REG));
@@ -446,10 +442,12 @@ void app_ota_status(u8 status)
 void app_ota_slave_terminate(void)
 {
     printf("app_ota_slave_terminate\n");
-    u8 report_data[3] = {CLIENT_REPORT_CMD, TYPE_OTA_RESULT, GOOGLE_OTA_USER_TERMINATE};
+
+    u8 my_ota_result[1] = {GOOGLE_OTA_USER_TERMINATE};
 
     u16 i = 0;
-    while(bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 3) &&  i < 2000){
+
+    while(app_ota_notify_result(my_ota_result, 1) &&  i < 2000){
        sleep_us(100);
        i++;
     }
@@ -505,17 +503,22 @@ void app_schedule_ota_enter_deep(void)
 
 void app_schedule_ota_send_notify_to_continue_ota(void)
 {
-    u8 dat[2] = {0};
-    u8 report_data[4] = {CLIENT_REPORT_CMD,0x04,0x73,0x6f};
+#define OTA_SCHEDULE_CONSUMER_KEY       (0x6f73)
+#define OTA_SCHEDULE_DATA_TYPE          (0x04)
+
+//    u8 report_data[4] = {CLIENT_REPORT_CMD,0x04,0x73,0x6f}; // 0xfe, 0x04,0x73,0x6f
     u8 data = analog_read(DEEP_ANA_REG2);
 
-    dat[0] = 0x73;
-    dat[1] = 0x6f;
+//    dat[0] = U16_LO(OTA_SCHEDULE_CONSUMER_KEY); // 0x73;
+//    dat[1] = U16_HI(OTA_SCHEDULE_CONSUMER_KEY); // 0x6f;
+
+    u8 my_consumer_key[2] = {U16_LO(OTA_SCHEDULE_CONSUMER_KEY), U16_HI(OTA_SCHEDULE_CONSUMER_KEY)};
+
     if((APP_WAKEUP_SRC_DEEP_TIMER == app_ui_get_wakeup_src()) && (data))//wake up for timer
     {
         printf("app_schedule_ota_send_notify_to_continue_ota\r\n");
-        bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, dat, 2);
-        bls_att_pushNotifyData(OTA_CMD_OUT_DP_H, report_data, 4);
+        bls_att_pushNotifyData(HID_CONSUME_REPORT_INPUT_DP_H, my_consumer_key, sizeof(my_consumer_key));
+        app_ota_notify_data(OTA_SCHEDULE_DATA_TYPE, my_consumer_key, sizeof(my_consumer_key));
         analog_write(DEEP_ANA_REG2, 0);
     }
 }
@@ -1387,7 +1390,6 @@ void key_change_proc(void)
     }
     else if(kb_event.cnt == 1)
     {
-        app_backlight_start();
 
         //retime
         advertise_tick_retime();
@@ -1430,6 +1432,8 @@ void key_change_proc(void)
              * When FMR is ON, the remote should avoid sending key events
              * (neither BLE,nor IR, nor Assistant) while in buzz mode. */
         }else{
+            app_backlight_start();
+
         #if (BLE_AUDIO_ENABLE)
             if(device_in_connection_state)
             {
@@ -1694,6 +1698,7 @@ void proc_keyboard (u8 e, u8 *p, int n)
 #endif
 
     if (det_key){
+        app_ota_ClearDelayCount();
 #if (MP_TEST_MODE)
         if (test_get_mode() == MODE_TEST) test_proc_key();
         else

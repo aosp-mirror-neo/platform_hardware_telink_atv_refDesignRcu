@@ -1561,8 +1561,6 @@ void user_init_normal(void)
     ////////////////// OTA relative ////////////////////////
     bls_ota_clearNewFwDataArea(); //must
 
-    bls_ota_init_handle(OTA_CMD_OUT_DP_H);
-
 #endif
     app_ui_init_normal();
     advertise_tick_retime();
@@ -1732,7 +1730,11 @@ void main_loop (void)
     app_backlight_task();
 
     #if (BATT_CHECK_ENABLE)
-        if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, 300000) ){
+        u32 my_battery_detect_interval = 300000;
+        if(app_fmr_is_busy()){
+            my_battery_detect_interval = 150000;
+        }
+        if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, my_battery_detect_interval) ){
             lowBattDet_tick = clock_time();
             #if(VBAT_LEAKAGE_PROTECT_EN)
 

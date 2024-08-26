@@ -804,7 +804,7 @@ void app_custom_init(void)
     u16 my_BoostGpio = 0x00;
 
     flash_read_page(APP_EN_BACKLIGHT,   sizeof(my_Backlight), &my_Backlight);
-    flash_read_page(APP_BOOST_PIN,      sizeof(my_BoostGpio), &my_BoostGpio);
+    flash_read_page(APP_BOOST_PIN,      sizeof(my_BoostGpio), (u8 *)&my_BoostGpio);
 
     /* disable backlight when the value is 0xff */
     app_backlight_set_ability(my_Backlight, my_BoostGpio);

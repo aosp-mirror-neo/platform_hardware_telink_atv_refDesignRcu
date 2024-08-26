@@ -26,6 +26,7 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 #include "../app_ui.h"
+#include "../app_ota.h"
 
 #include "app_buzzer.h"
 #include "app_buzzer_song.h"
@@ -51,10 +52,36 @@
 
 
 
+
+
+
+
 typedef struct{
-    app_buzzer_symbol_t* song;
-    int size;
+    app_buzzer_symbol_t*    song;
+    int                     size;
 }app_buzzer_song_t;
+
+typedef struct {
+    APP_BUZZER_STATUS_T     status;
+    unsigned char           sound_level;
+
+    unsigned char           song_index;
+    unsigned char           song_note_index;
+    unsigned short          song_size;
+
+    unsigned short          note_duration;
+    unsigned int            note_timer_tick;
+    unsigned int            song_start_tick;
+}app_buzzer_ctrl_t;
+
+enum{
+    BUZZER_DUTY_MAX = 100,
+    BUZZER_DUTY_50  = 50,
+    BUZZER_DUTY_30  = 30,
+    BUZZER_DUTY_15  = 15,
+    BUZZER_DUTY_5   = 5,
+    BUZZER_DUTY_MIN = 0,
+};
 
 /**********************************************************************
  * GLOBAL VARIABLES
@@ -72,14 +99,12 @@ const app_buzzer_song_t app_song[] =
 };
 
 _attribute_data_retention_ static app_buzzer_ctrl_t s_app_buzzer_ctrl={0};
+_attribute_data_retention_ static u32 s_buzzer_silence_tick = 0;
+
+
 /**********************************************************************
  * LOCAL FUNCTIONS
  */
-
-void app_buzzer_buffer_init(void){
-    /* clear buffer data */
-    memset(&s_app_buzzer_ctrl, 0x00, sizeof(app_buzzer_ctrl_t) );
-}
 
 void app_buzzer_pwm_init(void){
 
@@ -89,7 +114,17 @@ void app_buzzer_pwm_init(void){
     pwm_set_mode(BUZZER_PWM_ID, PWM_NORMAL_MODE);
 }
 
-u8 app_buzzer_is_buzy(){
+
+/**********************************************************************
+ * GLOBAL FUNCTIONS
+ */
+
+void app_buzzer_buffer_init(void){
+    /* clear buffer data */
+    memset(&s_app_buzzer_ctrl, 0x00, sizeof(app_buzzer_ctrl_t) );
+}
+
+u8 app_buzzer_is_buzy(void){
     return s_app_buzzer_ctrl.status;
 }
 
@@ -97,18 +132,27 @@ void app_buzzer_play(APP_BUZZER_INDEX_T index, APP_BUZZER_STATUS_T status, u8 so
 
     if(s_app_buzzer_ctrl.song_index == index && s_app_buzzer_ctrl.status == status){
         /* Dynamically modify the volume of the song */
-        s_app_buzzer_ctrl.sound_level = sound_level;
+        s_app_buzzer_ctrl.sound_level = min(sound_level, BUZZER_DUTY_MAX);
         return;
     }
 
+    /* Using a buzzer will cause the battery voltage to drop a lot. So stop OTA first */
+    if(ota_is_working){
+        app_ota_terminate(GOOGLE_OTA_USER_TERMINATE);
+        printf("play buzzer during OTA\n");
+    }
+    app_ota_ClearDelayCount();
+
     device_led_setup(led_cfg[LED_BUZZER]);
 
-    s_app_buzzer_ctrl.song_index = index;
+    /* Prevent index parameter errors */
+    s_app_buzzer_ctrl.song_index = min(index, APP_BUZZER_PLAY_INDEX_RINGTONE_0);
 
+    app_buzzer_clear_silence_tick();
     app_buzzer_pwm_init();
 
-    s_app_buzzer_ctrl.status = status;
-    s_app_buzzer_ctrl.sound_level = sound_level;
+    s_app_buzzer_ctrl.status = min(status, APP_BUZZER_STATUS_PLAY_LOOP);
+    s_app_buzzer_ctrl.sound_level = min(sound_level, BUZZER_DUTY_MAX);
 
     s_app_buzzer_ctrl.song_note_index = 0;
     s_app_buzzer_ctrl.song_size = app_song[s_app_buzzer_ctrl.song_index].size;
@@ -138,6 +182,47 @@ void app_buzzer_stop(void){
 
     pwm_stop(BUZZER_PWM_ID);
     app_buzzer_buffer_init();
+}
+
+u32 app_buzzer_get_silence_tick(void){
+    return s_buzzer_silence_tick;
+}
+
+void app_buzzer_clear_silence_tick(void){
+    s_buzzer_silence_tick = 0;
+}
+
+u8 app_buzzer_set_and_get_pwm_duty_by_voltage(void){
+
+    enum{ MAX_BAT_VOL = 3200 };
+
+    extern u16 get_battery_voltage(void);
+    u16 my_bat_vol = get_battery_voltage();
+    my_bat_vol = min(my_bat_vol, MAX_BAT_VOL);
+
+    u8 my_buzzer_duty = BUZZER_DUTY_50;
+
+    switch (my_bat_vol)
+    {
+    case 2600 ... 3300:     /*  When the battery voltage is between 2.6V to 3.2V, keep the default PWM duty. */
+        break;
+    case 2500 ... 2599:     /*  When the battery voltage is between 2.5V to 2.59V, change PWM duty to 30%.   */
+        my_buzzer_duty = BUZZER_DUTY_30;
+        break;
+    case 2350 ... 2499:     /*  When the battery voltage is between 2.35V to 2.49V, change PWM duty to 15%.   */
+        my_buzzer_duty = BUZZER_DUTY_15;
+        break;
+    case 2250 ... 2349:     /*  When the battery voltage is between 2.25V to 2.24V, change PWM duty to 5%.    */
+        my_buzzer_duty = BUZZER_DUTY_5;
+        break;
+    default:
+        my_buzzer_duty = BUZZER_DUTY_MIN;
+        break;
+    }
+
+    s_app_buzzer_ctrl.sound_level = min(my_buzzer_duty, BUZZER_DUTY_MAX);
+
+    return s_app_buzzer_ctrl.sound_level;
 }
 
 void app_buzzer_task(void){
@@ -171,10 +256,18 @@ void app_buzzer_task(void){
 
         if(note){
             u16 counter = BUZZER_CLOCK/note;
+
+            /* The value of s_app_buzzer_ctrl.sound_level will not exceed 100 when assigned. If this happens, set duty to the lowest value */
+            if(s_app_buzzer_ctrl.sound_level > 100){
+                s_app_buzzer_ctrl.sound_level = BUZZER_DUTY_MIN;
+            }
+
             pwm_set_cycle_and_duty(BUZZER_PWM_ID, counter, counter*s_app_buzzer_ctrl.sound_level/100);
+            app_buzzer_clear_silence_tick();
         }else{
             /* A cmp_tick of 0 will cause the PWM to continuously output low level. cycle_tick only requires non-0. */
             pwm_set_cycle_and_duty(BUZZER_PWM_ID, /* any non-zero value */32000, 0);
+            s_buzzer_silence_tick = clock_time()|1;
         }
 
         BUZZER_DEBUG_LOG("song_note_index: [%d] FREQ:[%d] duty:[%d] counter:[%d]", s_app_buzzer_ctrl.song_note_index, note, s_app_buzzer_ctrl.sound_level, counter);
@@ -183,4 +276,3 @@ void app_buzzer_task(void){
         s_app_buzzer_ctrl.note_duration = duration;
     }
 }
-

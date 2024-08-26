@@ -35,6 +35,7 @@
 #include "app_test.h"
 #include "./app_find_me/app_fms.h"
 #include "../../version.h"
+#include "./app_fmr/app_buzzer.h"
 
 typedef struct
 {
@@ -300,7 +301,7 @@ static u16 extServiceUUID;
 static const u8 my_OtaUUID[16]           = {TELINK_SPP_DATA_OTA};
 static const u8 my_OtaServiceUUID[16]    = TELINK_OTA_UUID_SERVICE;
 
-static u8 my_OtaData         = 0x00;
+static u8 my_OtaData         = 0x01;
 _attribute_data_retention_ u16 my_Otaccc = 0;
 
 static const u8  my_OtaName[] = {'O', 'T', 'A'};
@@ -608,6 +609,12 @@ int app_ota_handle(void * p){
     app_necir_or_dataupdate(p);
 
     result = app_ota_write(p);
+
+    /* FMR task */
+#if FIND_ME_ENABLE
+    app_fmr_task();
+    app_buzzer_task();
+#endif
 
     return result;
 }
