@@ -914,6 +914,8 @@ void task_connect (u8 e, u8 *p, int n)
 {
     printf("connect\r\n");
     app_mtu_size = 23;
+    app_slave_terminate = 0;
+
     bls_l2cap_setMinimalUpdateReqSendingTime_after_connCreate(1000);
     enterdeep_time = ADV_RECONN_ENTER_DEEP_COUNT;
 
@@ -1648,6 +1650,29 @@ void app_send_wakeup_resume(void)
        app_adv_indirect();
 }
 
+
+/**
+ * @brief      This function is check If IRK(local IRK or peer IRK) valid
+ * @param[in]  pIrk - pointer to IRK(local IRK or peer IRK)
+ * @return     1: IRK valid
+ * 			   0: IRK invalid
+ */
+bool blc_app_isIrkValid(u8* pIrk)
+{
+
+	u8 byte_all_0xFF[16] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	u8 byte_all_0x00[16] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+	/* IRK valid: not 16 0x00, not 16 0xFF */
+	if(memcmp(pIrk, byte_all_0xFF, 16) && memcmp(pIrk, byte_all_0x00, 16)){
+		return TRUE;
+	}
+	else{
+		return FALSE;
+	}
+}
+
+
 void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
 {
    // u8 tbl_scanRsp[30];
@@ -1663,6 +1688,19 @@ void app_start_send_wakeup(rf_packet_adv_ind_module_t advdata)
         {
             ll_whiteList_reset();
             ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
+        }else{
+
+            printf("RPA ADDR. ADD RESOLUTION ADDRESS\n");
+            ll_whiteList_reset();
+
+            if(blc_app_isIrkValid(bondInfo.peer_irk)){
+                ll_resolvingList_reset();
+                ll_resolvingList_add(bondInfo.peer_id_adrType, bondInfo.peer_id_addr, bondInfo.peer_irk, NULL);
+                ll_resolvingList_setAddrResolutionEnable(1);
+            }
+
+            ll_whiteList_add(bondInfo.peer_addr_type,bondInfo.peer_addr);
+            ll_whiteList_add(bondInfo.peer_id_adrType,bondInfo.peer_id_addr);
         }
     }
 
@@ -1730,11 +1768,15 @@ void main_loop (void)
     app_backlight_task();
 
     #if (BATT_CHECK_ENABLE)
-        u32 my_battery_detect_interval = 300000;
+//        u32 my_battery_detect_interval = 300000;
+        u32 my_battery_detect_interval = 2 *1000 *1000;	// 2 sec
+
         if(app_fmr_is_busy()){
             my_battery_detect_interval = 150000;
         }
-        if(battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, my_battery_detect_interval) ){
+
+        // TODO check brx state
+        if( (FALSE == blc_ll_isBrxBusy()) && battery_get_detect_enable() && clock_time_exceed(lowBattDet_tick, my_battery_detect_interval) ){
             lowBattDet_tick = clock_time();
             #if(VBAT_LEAKAGE_PROTECT_EN)
 

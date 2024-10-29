@@ -4,10 +4,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../vendor/827x_ble_remote/app_backlight/app_backlight.c 
+../vendor/827x_ble_remote/app_backlight/app_backlight.c \
+../vendor/827x_ble_remote/app_backlight/app_backlight_gatt.c
 
 OBJS += \
-./vendor/827x_ble_remote/app_backlight/app_backlight.o 
+./vendor/827x_ble_remote/app_backlight/app_backlight.o \
+./vendor/827x_ble_remote/app_backlight/app_backlight_gatt.o
 
 
 # Each subdirectory must supply rules for building sources it contributes

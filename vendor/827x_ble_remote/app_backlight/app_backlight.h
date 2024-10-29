@@ -8,6 +8,7 @@
 #ifndef APP_BACKLIGHT_H_
 #define APP_BACKLIGHT_H_
 
+#define BOOST_IC_EN_GPIO                            (GPIO_PA0)
 
 void app_backlight_set_ability(unsigned char en, unsigned short boost_pin);
 

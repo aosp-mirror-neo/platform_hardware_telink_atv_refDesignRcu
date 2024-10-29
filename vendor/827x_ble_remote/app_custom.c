@@ -806,8 +806,21 @@ void app_custom_init(void)
     flash_read_page(APP_EN_BACKLIGHT,   sizeof(my_Backlight), &my_Backlight);
     flash_read_page(APP_BOOST_PIN,      sizeof(my_BoostGpio), (u8 *)&my_BoostGpio);
 
-    /* disable backlight when the value is 0xff */
-    app_backlight_set_ability(my_Backlight, my_BoostGpio);
+
+    if(REMOTE_G11 == _custom_data.device_type){
+        /* G11 enables backlight by default */
+        if(my_Backlight==0xff){
+            my_Backlight = 1;
+        }
+
+        /* The default boost pin setting for G11 is PA0 */
+        if(my_BoostGpio==0xffff){
+            my_BoostGpio = BOOST_IC_EN_GPIO;
+        }
+    }
+
+	/* disable backlight when the value is 0xff */
+	app_backlight_set_ability(my_Backlight, my_BoostGpio);
 
 }
 
