@@ -27,9 +27,9 @@ import RPi.GPIO as GPIO
 # | Row1 | INPUT     | DOWN     | CH_DN   | 0        | 3      | RED   |
 # | Row2 | BOOKMARK  | BACK     | YOUTUBE | SUBTITLE | 2      | 6     |
 # | Row3 | ASSIST    | HOME     | NETFLIX | 9        | 1      | 5     |
-# | Row4 | DASHBOARD | GUIDE    | DISNEY  | 8        | BLUE   |       |
-# | Row5 | UP        | VOL_UP   | HBOMAX  | 7        | YELLOW |       |
-# | Row6 | LEFT      | CH_UP    |         |          |        |       |
+# | Row4 | DASHBOARD | GUIDE    | APP03   | 8        | BLUE   |       |
+# | Row5 | UP        | VOL_UP   | APP04   | 7        | YELLOW |       |
+# | Row6 | LEFT      | CH_UP    | FREETV  |          |        |       |
 # | Row7 | CENTER    | VOL_MUTE |         |          |        |       |
 # +------+-----------+----------+---------+----------+--------+-------+
 
@@ -46,6 +46,8 @@ buttons = {
     "7": (5, 3),
     "8": (4, 3),
     "9": (3, 3),
+    "APP03": (4, 2),
+    "APP04": (5, 2),
     "ASSIST": (3, 0),
     "BACK": (2, 1),
     "BLUE": (4, 4),
@@ -54,11 +56,10 @@ buttons = {
     "CH_DN": (1, 2),
     "CH_UP": (6, 1),
     "DASHBOARD": (4, 0),  # The settings gear button
-    "DISNEY": (4, 2),
     "DOWN": (1, 1),
+    "FREETV": (6, 2),
     "GREEN": (0, 5),
     "GUIDE": (4, 1),
-    "HBOMAX": (5, 2),
     "HOME": (3, 1),
     "INFO": (0, 3),
     "INPUT": (1, 0),
@@ -236,6 +237,7 @@ def press_buttons(btns: list[str], down_time: float = 0.1, release=True):
     release: If True, releases the buttons at the end; otherwise, leaves them
       held.
   """
+  release_time = time.monotonic() + down_time
   touched_ics = set()
 
   # Setup the switch inputs for the one or more buttons
@@ -259,13 +261,12 @@ def press_buttons(btns: list[str], down_time: float = 0.1, release=True):
     if eic in touched_ics:
       pin_set(eic + "EN", 1)
 
-  release_time = time.monotonic() + down_time
-  pin_set("BLUE_LED_OUT", 1)
-  if not wait_for_led():
-    pin_set("BLUE_LED_OUT", 0)
-    pin_set("GREEN_LED_OUT", 1)
-    release_time += 0.2
+  if not wait_for_led(timeout=down_time):
+    pin_set("RED_LED_OUT", 1)
+    release_time += 0.1
     print("Warning: RF button press failed. Holding longer for IR")
+  else:
+    pin_set("GREEN_LED_OUT", 1)
   while time.monotonic() < release_time:
     time.sleep(0.01)
   if release:
@@ -383,7 +384,7 @@ def wait_for_led(
         continue
       else:  # Wrong LED(s) are on
         print("\tWrong LEDs on")
-        break
+        return False
     # We want all LEDs off, so wait while any LED is on
     else:
       if wait_print:
@@ -439,7 +440,7 @@ def wait_for_led(
             " with %fs remaining step time"
             % (step, expectations[step], cur_leds, step_end_time - now)
         )
-        monitor_led(timeout=1.0)
+        monitor_led(timeout=timeout_time - now)
         return False
     # print("---")
 
@@ -570,8 +571,6 @@ def setup():
   GPIO.setup(pins["BUZZER"], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
   GPIO.setup(pins["BACKLIGHT"], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
-  pin_set("RESET", 0)
-  led_flash(0)
   print("BenderDriver for v0.3 hardware")
   pin_set("RESET", 1)
 
@@ -609,7 +608,7 @@ while True:
   elif cmd == "CLEAR":  # Clear bond cache
     press_buttons(("CENTER", "VOL_MUTE"), 5.0)
   elif cmd == "BUG":  # Bugreport
-    press_buttons(("CENTER", "BACK"), 5)
+    press_buttons(("CENTER", "BACK"), 1.5)
   elif cmd == "TALKBACK":  # Accessibility shortcut
     press_buttons(("BACK", "DOWN"), 1.5)
   elif cmd == "EXIT":
