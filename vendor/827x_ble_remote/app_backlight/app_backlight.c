@@ -9,6 +9,7 @@
 #include "drivers.h"
 #include "stack/ble/ble.h"
 #include "app_backlight.h"
+#include "app_backlight_gatt.h"
 #include "../app_ui.h"
 
 typedef struct {
@@ -28,10 +29,19 @@ typedef struct {
 
 }app_backlight_ctr_t;
 
+#define EN_BACKLIGHT_DEBUG
+
+#ifdef EN_BACKLIGHT_DEBUG
+    #define BACKLIGHT_DEBUG                             printf
+    #define BACKLIGHT_DEBUG_ARRAY                      	array_printf
+#else
+    #define BACKLIGHT_DEBUG(...)
+    #define BACKLIGHT_DEBUG_ARRAY(...)
+#endif
+
 
 #define get_clock_time()                            (clock_time()|1)
 
-#define BOOST_IC_EN_GPIO                            (GPIO_PA0)
 
 #define BACKLIGHT_REFRESH_INTERVAL                  (20)            // ms
 
@@ -41,11 +51,17 @@ typedef struct {
 #define BACKLIGHT_PWM_FREQUENCY                     (600)           // hz
 #define BACKLIGHT_PWM_CYCLE_TICK                    (CLOCK_SYS_CLOCK_HZ/BACKLIGHT_PWM_FREQUENCY)     // hz
 #define BACKLIGHT_PWM_MIN_CMP_TICK_PERCENTAGE       (0)             // %
-#define BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE       (50)            // %
+#define BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE       (40)            // %
 
+
+/**
+ * Step 1. Getting brighter 0.5sec
+ * Step 2. Maximum brightness 2.0sec with duty 40%
+ * Step 3. Getting darker 2.5sec
+ * */
 #define BACKLIGHT_TIME_RISE                         (500)           // 500ms
-#define BACKLIGHT_TIME_MAINTAIN                     (1000)          // 1000ms
-#define BACKLIGHT_TIME_DECLINE                      (1500)          // 1500ms
+#define BACKLIGHT_TIME_MAINTAIN                     (2000)          // 1000ms
+#define BACKLIGHT_TIME_DECLINE                      (2500)          // 1500ms
 
 #define BACKLIGHT_START_BRIGHTNESS                  (BACKLIGHT_PWM_CYCLE_TICK * BACKLIGHT_PWM_MIN_CMP_TICK_PERCENTAGE / 100)
 #define BACKLIGHT_END_BRIGHTNESS                    (BACKLIGHT_PWM_CYCLE_TICK * BACKLIGHT_PWM_MAX_CMP_TICK_PERCENTAGE / 100)
@@ -145,7 +161,7 @@ void app_backlight_set_ability(u8 en, u16 boost_pin){
             break;
     }
 
-    printf("BACKLIGHT SETTINGS. EN[0x%02X] GPIO:[0x%04X]\n", s_en_backlight, s_boost_gpio);
+    BACKLIGHT_DEBUG("BACKLIGHT SETTINGS. EN[0x%02X] GPIO:[0x%04X]\n", s_en_backlight, s_boost_gpio);
 }
 
 u16 app_backlight_get_boost_pin(void){
@@ -201,7 +217,7 @@ u8 app_backlight_is_busy(void){
 }
 
 void app_backlight_init(void){
-    printf("%s\n", __FUNCTION__);
+    BACKLIGHT_DEBUG("%s\n", __FUNCTION__);
 
     /* enable boost */
     u16 my_boot_pin = app_backlight_get_boost_pin();
@@ -238,12 +254,16 @@ void app_backlight_stop(void){
 void app_backlight_start(void){
 
     if(0 == s_en_backlight) return;
+    if(0 == app_backlight_gatt_is_allow_backlight()) return;
 
-    printf("%s\n", __FUNCTION__);
+
+    BACKLIGHT_DEBUG("%s\n", __FUNCTION__);
 
     if(s_backlight_task_tick){
+        // backlight already on
         app_backlight_ctr.table_pos = 1;
     }else{
+        // backlight fist on
         app_backlight_ctr.table_pos = 0;
         app_backlight_init();
         /* When initialization fails, backlight disable may be set in app_backlight_init */
@@ -260,7 +280,7 @@ void app_backlight_start(void){
     // TODO start PWM
     pwm_set_cycle_and_duty(BACKLIGHT_PWM_ID, BACKLIGHT_PWM_CYCLE_TICK, app_backlight_ctr.brightness);
 
-//    printf("song_note_index: %d cycle: %d counter: %d duty: %d\n",s_app_buzzer_ctrl.song_note_index, note ,counter, s_app_buzzer_ctrl.sound_level);
+//    BACKLIGHT_DEBUG("song_note_index: %d cycle: %d counter: %d duty: %d\n",s_app_buzzer_ctrl.song_note_index, note ,counter, s_app_buzzer_ctrl.sound_level);
     pwm_start(BACKLIGHT_PWM_ID);
 
     bls_pm_setSuspendMask (SUSPEND_DISABLE);
@@ -305,7 +325,7 @@ void app_backlight_task(void){
 
     s32 my_brightness = s_backlight_behavior[app_backlight_ctr.table_pos].start_value + (my_end_value- my_start_value)*sin_table[app_backlight_ctr.duration_cnt*100/my_duration]/U16_MAX;
 
-    printf("duration_cnt:[%d]/[%d] table_pos:[%d] my_brightness:[%d] brightness:[%d]\n",
+    BACKLIGHT_DEBUG("duration_cnt:[%d]/[%d] table_pos:[%d] my_brightness:[%d] brightness:[%d]\n",
             app_backlight_ctr.duration_cnt,
             s_backlight_behavior[app_backlight_ctr.table_pos].duration,
             app_backlight_ctr.table_pos,
@@ -322,7 +342,7 @@ void app_backlight_task(void){
     }
 
 
-//    printf("duration_cnt:[%d]/[%d] table_pos:[%d] my_brightness:[%d] brightness:[%d]\n", app_backlight_ctr.duration_cnt, app_backlight_ctr.table_pos, my_brightness, app_backlight_ctr.brightness);
+//    BACKLIGHT_DEBUG("duration_cnt:[%d]/[%d] table_pos:[%d] my_brightness:[%d] brightness:[%d]\n", app_backlight_ctr.duration_cnt, app_backlight_ctr.table_pos, my_brightness, app_backlight_ctr.brightness);
 
     /* Refresh only if they are not equal */
     if(app_backlight_ctr.brightness != my_brightness){
@@ -342,8 +362,78 @@ void app_backlight_task(void){
 
 
 
+u32 s_priv_trigger_tick = 0;
+
+u32 s_y = 0;
 
 
+#define CONSTANT_A                              (0.955)
+#define CONSTANT_B                              (1-CONSTANT_A)
+
+#define CONSTANT_THRESHOLD                      (0.900)
 
 
+#define FIXED_A                                 int /* data type for fixed point accumulator */
+#define FIXED_T                                 short /* data type for fixed point constants */
+#define CHAR_BIT                                (8)
 
+#define F_PROTO8(x)                             (FIXED_A) ((x * 2) * ( (FIXED_A)1 << (sizeof(FIXED_T) * CHAR_BIT - 1)) + 0.5)
+
+
+#define CONSTANT_JUDGE_TIME                     (30000)     //ms
+#define CONSTANT_JUDGE_COUNT                    (50)
+
+
+inline u16 formula_filter(u8 x){
+    u32 my_y = s_y*F_PROTO8(CONSTANT_A)/U16_MAX + x* F_PROTO8(CONSTANT_B);
+    printf("A:[%d] B:[%d] Y:[%05d] RES:[%s] \n", F_PROTO8(CONSTANT_A), F_PROTO8(CONSTANT_B), my_y, (my_y>=F_PROTO8(CONSTANT_THRESHOLD))?"Y":"N");
+    return my_y;
+}
+
+void app_backlight_record_trigger(void){
+
+    u32 my_spend_time_cnt = 0;
+    u32 my_spend_time_remainder = 1;
+
+    u32 my_spend_time_ms = 0;
+    if(s_priv_trigger_tick){
+        my_spend_time_ms = (clock_time() - s_priv_trigger_tick)/CLOCK_16M_SYS_TIMER_CLK_1MS;
+        my_spend_time_cnt = my_spend_time_ms/(CONSTANT_JUDGE_TIME/CONSTANT_JUDGE_COUNT);
+        my_spend_time_remainder = my_spend_time_ms%(CONSTANT_JUDGE_TIME/CONSTANT_JUDGE_COUNT);
+
+    }
+
+    s_priv_trigger_tick = clock_time()|1;
+//    printf("MS:[%d] CNT:[%d] REM:[%d] ", my_spend_time_ms, my_spend_time_cnt, my_spend_time_remainder);
+    if(my_spend_time_cnt){
+        for(int i=0;i<my_spend_time_cnt;i++){
+            s_y = formula_filter(0);
+        }
+    }
+
+    if(my_spend_time_remainder){
+        s_y = formula_filter(1);
+    }
+}
+
+#ifdef DEBUG_BACKLIGHT
+void app_backlight_record_trigger_test(void){
+
+    s_priv_trigger_tick = 0;
+    s_y = 0;
+    for(int i=0;i<50;i++){
+        app_backlight_record_trigger();
+        WaitMs(100);
+    }
+
+    printf("########################################\n");
+    s_priv_trigger_tick = 0;
+    s_y = 0;
+
+    for(int i=0;i<100;i++){
+        app_backlight_record_trigger();
+        WaitMs(650);
+    }
+
+}
+#endif

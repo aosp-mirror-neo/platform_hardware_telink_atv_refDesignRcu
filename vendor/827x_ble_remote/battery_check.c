@@ -246,7 +246,7 @@ void battery_percent(void)
     //printf("bak_batpercent = %d\r\n",bak_batpercent);
     if(batt_vol_mv <= 2000)
     {
-       my_batVal[0] = 0;
+       my_batVal[0] = 1;
     }
     else if(batt_vol_mv>3000)
        my_batVal[0] = 100;

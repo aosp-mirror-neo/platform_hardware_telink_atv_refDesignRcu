@@ -14,6 +14,7 @@ RM := rm -rf
 -include vendor/827x_ble_remote/pke_common/subdir.mk
 -include vendor/827x_ble_remote/app_fmr/subdir.mk
 -include vendor/827x_ble_remote/app_find_me/subdir.mk
+-include vendor/827x_ble_remote/app_common/subdir.mk
 -include vendor/827x_ble_remote/app_backlight/subdir.mk
 -include drivers/8278/subdir.mk
 -include drivers/8278/flash/subdir.mk
